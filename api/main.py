@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from api.routers import engine, config
 from toll.core.config import ROOT, CORS_ORIGINS
 
+
 app = FastAPI(title="تول API", version="1.0.0")
 
 app.add_middleware(

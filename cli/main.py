@@ -44,11 +44,17 @@ def main():
 
     if args.engine == "status":
         ai = AI()
-        s = ai.limit_status()
+        limits = ai.limit_status()
+        providers = ai.provider_status()
         print("📊 حالة الـ AI:")
-        for p, v in s.items():
+        for p, v in limits.items():
             icon = "✅" if v["can_use"] else "❌"
             print(f"  {icon} {p}: {v['remaining']} طلب متبقي")
+        print("\n🔌 المزودين:")
+        for category, items in providers.items():
+            for name, available in items.items():
+                icon = "✅" if available else "❌"
+                print(f"  {icon} {category}.{name}")
         return
 
     try:

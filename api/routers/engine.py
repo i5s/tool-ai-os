@@ -1,12 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from toll.engine.content_machine import ContentMachine
 from toll.engine.prompt_gen import PromptGenerator
 from toll.engine.reports import Reports
 from toll.core.ai import AI
 from toll.core.storage import Storage
+from toll.core.registry import ProviderRegistry
+from api.dependencies import get_registry
 
 router = APIRouter()
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -15,10 +18,12 @@ class ChatRequest(BaseModel):
     conversation_id: str = None
     model: str = "auto"
 
+
 class TaskRequest(BaseModel):
     task: str
     platform: str = "عام"
     slides: int = 5
+
 
 def detect_type(msg: str, preferred: str) -> str:
     if preferred != "auto":
@@ -38,8 +43,9 @@ def detect_type(msg: str, preferred: str) -> str:
             return t
     return "auto"
 
+
 @router.post("/chat")
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
     try:
         ai = AI()
         cm = ContentMachine()
@@ -61,12 +67,16 @@ def chat(req: ChatRequest):
             response_text = ai.ask(ai_prompt)
 
         elif task_type == "search":
-            from toll.core.browser import BrowserAI
-            br = BrowserAI()
             response_text = f"🔍 **بحث عن: {req.message}**\n\n---\n"
             try:
-                results = br.get(f"https://www.google.com/search?q={req.message}")
-                response_text += f"تم البحث في Google. النتائج متوفرة.\n\n{results[:2000]}"
+                results = ai.search(req.message, max_results=5)
+                if results:
+                    response_text += "\n\n".join(
+                        f"**{r['title']}**\n{r['snippet']}\n<{r['url']}>"
+                        for r in results
+                    )
+                else:
+                    response_text += "لم يتم العثور على نتائج."
             except Exception as e:
                 response_text += f"❌ فشل البحث: {e}"
 
@@ -104,6 +114,7 @@ def chat(req: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/content")
 def content(req: TaskRequest):
     try:
@@ -114,6 +125,7 @@ def content(req: TaskRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/prompt")
 def prompt(req: TaskRequest):
     try:
@@ -122,6 +134,7 @@ def prompt(req: TaskRequest):
         return {"prompt": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/report")
 def report(req: TaskRequest):
@@ -132,6 +145,7 @@ def report(req: TaskRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/present")
 def present(req: TaskRequest):
     try:
@@ -141,7 +155,11 @@ def present(req: TaskRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/status")
-def status():
+def status(registry: ProviderRegistry = Depends(get_registry)):
     ai = AI()
-    return ai.limit_status()
+    return {
+        "limits": ai.limit_status(),
+        "providers": registry.status(),
+    }

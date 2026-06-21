@@ -10,15 +10,15 @@
 | T4 | Remove `sys.path` hacks | ✅ Done | Package installed editable |
 | T28 | Restrict CORS | ✅ Done | Local origins only, env override |
 
-## Sprint 1: Core Infrastructure
+## Sprint 1: Core Infrastructure — ✅ COMPLETE
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| T5 | Add database migration system | ⬜ Pending | |
-| T6 | Define ports and adapters | ⬜ Pending | |
-| T10 | Refactor Provider Layer | ⬜ Pending | |
-| T11 | Fix or replace BrowserAI | ⬜ Pending | |
-| T12 | Wire Settings System | ⬜ Pending | |
+| T5 | Add database migration system | ✅ Done | `toll/model/migrations/` |
+| T6 | Define ports and adapters | ✅ Done | `toll/ports/`, `toll/adapters/` |
+| T10 | Refactor Provider Layer | ✅ Done | `ProviderRegistry` in `toll/core/registry.py` |
+| T11 | Fix or replace BrowserAI | ✅ Done | Replaced with DuckDuckGo search adapter |
+| T12 | Wire Settings System | ✅ Done | `toll/core/settings.py` |
 
 ## Sprint 2: Memory Graph + Workspace Manager
 

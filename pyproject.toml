@@ -28,3 +28,9 @@ toll = "cli.main:main"
 where = ["."]
 include = ["toll*", "api*", "cli*", "bot*"]
 exclude = [".venv*", "tests*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: tests that require network access",
+]

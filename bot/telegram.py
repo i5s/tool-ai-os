@@ -66,10 +66,17 @@ async def cmd_search(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     task = " ".join(ctx.args) or "افتراضي"
     await update.message.reply_chat_action("typing")
     try:
-        from toll.core.browser import BrowserAI
-        br = BrowserAI()
-        results = br.get(f"https://www.google.com/search?q={task}")
-        await update.message.reply_text(f"🔍 **نتائج بحث: {task}**\n\n{results[:3500]}")
+        ai = AI()
+        results = ai.search(task, max_results=5)
+        if results:
+            text = f"🔍 **نتائج بحث: {task}**\n\n"
+            text += "\n\n".join(
+                f"**{r['title']}**\n{r['snippet']}\n<{r['url']}>"
+                for r in results
+            )
+        else:
+            text = f"🔍 **نتائج بحث: {task}**\n\nلم يتم العثور على نتائج."
+        await update.message.reply_text(text[:4000])
     except Exception as e:
         await update.message.reply_text(f"❌ فشل البحث: {e}")
 

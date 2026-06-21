@@ -1,19 +1,19 @@
 import sqlite3
 from pathlib import Path
 from . import config
+from ..model.migrations.runner import MigrationRunner
 
 class Storage:
     def __init__(self, db_path: Path | str | None = None):
         self.db_path = Path(db_path) if db_path else config.DB_PATH
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._migrate()
         self.conn = sqlite3.connect(str(self.db_path))
         self.conn.row_factory = sqlite3.Row
-        self._init_db()
 
-    def _init_db(self):
-        schema = (config.ROOT / "toll" / "model" / "schema.sql").read_text()
-        self.conn.executescript(schema)
-        self.conn.commit()
+    def _migrate(self):
+        runner = MigrationRunner(self.db_path)
+        runner.migrate()
 
     def get_config(self, key, default=None):
         row = self.conn.execute("SELECT value FROM config WHERE key = ?", (key,)).fetchone()

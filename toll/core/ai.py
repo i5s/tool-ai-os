@@ -1,57 +1,52 @@
-import subprocess, json, tempfile
-from pathlib import Path
+"""High-level AI orchestrator.
+
+This module provides a backwards-compatible synchronous interface
+for existing CLI and bot code. New code (especially the FastAPI layer)
+should prefer using ProviderRegistry directly for async support.
+"""
+
+import asyncio
 from .limiter import Limiter
-from .browser import BrowserAI
-from .storage import Storage
-from . import config
+from .registry import ProviderRegistry
+from .settings import Settings
+
 
 class AI:
+    """Synchronous facade over the provider registry."""
+
     def __init__(self):
+        self.settings = Settings()
+        self.registry = ProviderRegistry(self.settings)
         self.limiter = Limiter()
-        self.browser = BrowserAI()
-        self.db = Storage()
-        self.providers = ["opencode", "ollama", "browser"]
 
     def ask(self, prompt: str, system: str = "") -> str:
-        for provider in self.providers:
-            if not self.limiter.can_use(provider):
+        """Ask available LLM providers with fallback and rate limiting."""
+        for name in self.registry.available_llm():
+            if not self.limiter.can_use(name):
                 continue
+            provider = self.registry.get_llm(name)
             try:
-                if provider == "opencode":
-                    return self._opencode(prompt, system)
-                elif provider == "ollama":
-                    return self._ollama(prompt, system)
-                elif provider == "browser":
-                    return self._browser(prompt)
-            except Exception as e:
+                response = asyncio.run(provider.ask(prompt, system))
+                self.limiter.log_usage(name)
+                return response.text
+            except Exception:
                 continue
         raise RuntimeError("كل مزودي AI غير متاحين اليوم (تم استهلاك الـ limit)")
 
-    def _opencode(self, prompt: str, system: str = "") -> str:
-        full = f"{system}\n\n{prompt}" if system else prompt
-        cmd = [str(config.OPENCODE_BIN), "run", full]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        self.limiter.log_usage("opencode")
-        if r.returncode == 0:
-            return r.stdout.strip() or r.stderr.strip()
-        raise RuntimeError(r.stderr.strip() or r.stdout.strip() or "opencode فشل")
-
-    def _ollama(self, prompt: str, system: str = "") -> str:
-        model = self.db.get_config("ollama_model", config.OLLAMA_MODEL_DEFAULT)
-        full = f"{system}\n{prompt}" if system else prompt
-        r = subprocess.run(
-            [config.OLLAMA_BIN, "run", model],
-            input=full, capture_output=True, text=True, timeout=120
-        )
-        self.limiter.log_usage("ollama")
-        if r.returncode == 0:
-            return r.stdout.strip()
-        raise RuntimeError(r.stderr.strip() or r.stdout.strip())
-
-    def _browser(self, prompt: str) -> str:
-        result = self.browser.ask(prompt)
-        self.limiter.log_usage("browser")
-        return result
+    def search(self, query: str, max_results: int = 5) -> list[dict]:
+        """Search using the configured search provider."""
+        provider = self.registry.get_search()
+        if hasattr(provider, "search_sync"):
+            results = provider.search_sync(query, max_results)
+        else:
+            results = asyncio.run(provider.search(query, max_results))
+        return [
+            {"title": r.title, "url": r.url, "snippet": r.snippet}
+            for r in results
+        ]
 
     def limit_status(self):
         return self.limiter.status()
+
+    def provider_status(self):
+        return self.registry.status()

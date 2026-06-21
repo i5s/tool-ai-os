@@ -13,8 +13,10 @@ def test_status_endpoint_available():
         response = client.get("/api/status")
         assert response.status_code == 200
         data = response.json()
-        assert "opencode" in data
-        assert "ollama" in data
+        assert "limits" in data
+        assert "providers" in data
+        assert "opencode" in data["limits"]
+        assert "ollama" in data["limits"]
 
 
 def test_chat_endpoint_available():
