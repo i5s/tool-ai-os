@@ -3,10 +3,10 @@
 ## Project Overview
 
 - **Mission**: توحيد — unified personal AI assistant for content creation, research, and workflow automation
-- **Current Version**: `0.7.0-beta`
-- **Current Status**: Prompt Intelligence Engine integrated into all production generation flows
-- **Test Count**: 422 passing
-- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B), `v0.6-media-foundation` (Sprint 6A), `v0.7a-prompt-intelligence-core` (Sprint 7A), `v0.7b-prompt-intelligence-integration` (Sprint 7B)
+- **Current Version**: `0.8.0-beta`
+- **Current Status**: Operations Layer active — usage tracking, storage management, cleanup system, provider dashboard
+- **Test Count**: 453 passing
+- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B), `v0.6-media-foundation` (Sprint 6A), `v0.7a-prompt-intelligence-core` (Sprint 7A), `v0.7b-prompt-intelligence-integration` (Sprint 7B), `v0.7c-prompt-learning-loop` (Sprint 7C), `v0.8a-operations-layer` (Sprint 8A), `v0.8b-operations-ui` (Sprint 8B)
 
 ## Completed Sprints
 
@@ -196,6 +196,52 @@
   - 15 new tests, 422 total passing
 
 - **Status**: Complete (tagged `v0.7b-prompt-intelligence-integration`)
+
+### Sprint 7C — Prompt Learning Loop
+
+- **Goal**: Close 3 HIGH-severity gaps: broken context injection, unwired learning loop, ignored quality scores
+- **Key Deliverables**:
+  - **Context Integration** — `_gather_context()` fixed: calls `ContextEngine.build()` instead of nonexistent `get_active_context()`; PIE now receives real workspace context (brand, university, project) and memory data
+  - **Learning Loop** — `record_success()` and `record_failure()` wired into all 4 generation services (Research, Report, Presentation, Media) after every execution
+  - **Score Consumption** — `_select_model()` uses `get_avg_score()` to rank non-blacklisted models by historical quality; model selection is now quality-driven
+  - 7 new verification tests, 425 total passing
+  - 3 of 10 audit gaps closed
+
+- **Status**: Complete (tagged `v0.7c-prompt-learning-loop`)
+
+### Sprint 8A — Operations Layer (Backend)
+
+- **Goal**: Build the operational layer for daily production use — usage tracking, storage management, cleanup system, provider dashboard
+- **Key Deliverables**:
+  - **Usage Center** — `usage_log` table, `UsageService` (record, summary, by-provider, by-model, daily cost)
+  - **Cost Monitoring** — `CostService` (total, by-provider, by-model, daily cost from raw usage_log)
+  - **Storage Management** — `StorageService` (artifact counts, published assets, disk size, retention policy CRUD)
+  - **Cleanup System** — `CleanupService` (dry-run simulate, execute with file deletion + metadata preservation, audit log); default 4-day retention
+  - **Provider Dashboard** — `ProviderDashboardService` (per-provider status, error rate, avg latency, model breakdown)
+  - **API** — 17 endpoints under `/api/operations`
+  - **Usage hooks** — wired into all 4 generation services (Media/Report/Presentation/Research)
+  - **Migration `0013_operations_layer.sql`** — `usage_log`, `retention_policies`, `cleanup_log` tables
+  - **Feature flags**: `operations_layer` (True), `cleanup_manual` (True)
+  - 28 new tests, 453 total passing
+
+- **Status**: Complete (tagged `v0.8a-operations-layer`)
+
+### Sprint 8B — Operations UI (Frontend)
+
+- **Goal**: Build the Operations UI panel consuming all `/api/operations` endpoints
+- **Key Deliverables**:
+  - **Sidebar nav** — "⚙️ العمليات" item between Lab and Settings
+  - **5 tabs**: Usage, Providers, Costs, Storage, Cleanup with tab switching
+  - **Usage tab** — stat cards (today/week/month), provider breakdown table
+  - **Providers tab** — status table with availability, error rate, latency, models
+  - **Costs tab** — total cost card, daily mini bar chart, per-model table
+  - **Storage tab** — artifact counts, published assets list, retention policies table
+  - **Cleanup tab** — dry-run preview, execute button with confirmation, cleanup log
+  - **CSS** — full operations panel styles (tabs, grids, tables, badges, mini-chart, buttons)
+  - **No backend changes, no migrations, no new tables** — pure UI
+  - 453 total passing (no regressions)
+
+- **Status**: Complete (tagged `v0.8b-operations-ui`)
 
 ## Current Architecture
 
@@ -757,6 +803,42 @@ Each artifact supports: creation, rendering (HTML), preview, archive (tar.gz), s
   - Single PIE instance created and injected into all services via HandlerRegistry
   - 15 new tests, 422 total passing (9 of 10 Sprint 7A audit gaps closed)
 
+### v0.7c-prompt-learning-loop
+
+- **Git Tag**: `v0.7c-prompt-learning-loop`
+- **Commit**: `f7524ee`
+- **Summary**:
+  - Context Integration: `_gather_context()` fixed — calls `ContextEngine.build()` for real workspace context
+  - Learning Loop activated: `record_success()`/`record_failure()` wired into all 4 services
+  - Score Consumption: `_select_model()` ranks models by `get_avg_score()` — quality-driven selection
+  - 7 new tests, 425 total passing (3 of 10 audit gaps closed)
+
+### v0.8a-operations-layer
+
+- **Git Tag**: `v0.8a-operations-layer`
+- **Commit**: `f2f892c`
+- **Summary**:
+  - Usage Center: `usage_log`, `UsageService` (record, summary, breakdowns)
+  - Storage Management: `StorageService` (artifact counts, published assets, retention CRUD)
+  - Cleanup System: `CleanupService` (dry-run, execute, keep-metadata, audit log)
+  - Provider Dashboard: `ProviderDashboardService` (status, error rate, latency, models)
+  - Cost Monitoring: `CostService` (total, by-provider, by-model, daily)
+  - API: 17 endpoints under `/api/operations`
+  - Migration `0013_operations_layer.sql`: `usage_log`, `retention_policies`, `cleanup_log`
+  - 28 new tests, 453 total passing
+
+### v0.8b-operations-ui
+
+- **Git Tag**: `v0.8b-operations-ui`
+- **Summary**:
+  - Operations UI panel with 5 tabs: Usage, Providers, Costs, Storage, Cleanup
+  - Mini bar chart for daily costs
+  - Provider status table with availability/latency/error rate
+  - Cleanup tab with dry-run preview and execute button
+  - Retention policy display
+  - No backend changes — pure UI on existing API
+  - 453 total passing (no regressions)
+
 ## Backup Locations
 
 ### GitHub
@@ -808,18 +890,17 @@ Protected Releases:
 
 ## Next Planned Sprint
 
-### Sprint 7C — Prompt Learning Loop
+### Sprint 9 — Video & Audio Generation
 
-- **Wire record_success() / record_failure()** into service flows after each generation
-- **Feedback scoring** — implicit (user keeps result) + explicit (ratings)
-- **Profile template tuning** — flag profiles with avg_score < 0.6 for review
-- **PromptMemory score integration** — use get_avg_score() as weight in engine._select_model()
-- Estimated: 4-6 days, ~6 files, 15 tests
+- **Video adapter** — Veo, Runway, or MiniMax via MediaPort (enable `media_video` flag)
+- **Audio adapter** — ElevenLabs, Kokoro TTS for NotebookLM audio overviews
+- **Character consistency** — seed/face anchor preservation across generations
+- Estimated: 8-10 days, ~12 files, 30 tests
 
 ## Future Roadmap
 
-- **Sprint 7C** — Prompt learning loop, feedback scoring, profile tuning
-- **Sprint 8** — Operations Layer (Usage Center, Provider Dashboard, Cost Monitoring, Caching)
+- **Sprint 8C** — Operations UI Polish (cache layer, usage_aggregates, advanced analytics)
 - **Sprint 9** — Video & Audio adapters (Veo, Runway, ElevenLabs, Kokoro), character consistency
-- **Sprint 10** — Advanced memory & knowledge graph (RAG pipeline, hybrid search)
-- **Sprint 11** — Production hardening (multi-user, PostgreSQL migration, proper auth)
+- **Sprint 10** — Research provider expansion (Semantic Scholar, arXiv, Crossref)
+- **Sprint 11** — Advanced memory & knowledge graph (RAG pipeline, hybrid search)
+- **Sprint 12** — Production hardening (multi-user, PostgreSQL migration, proper auth)

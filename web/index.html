@@ -182,6 +182,57 @@ body {
 .lab-score-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
 .lab-score-label { font-size: .8rem; color: var(--text2); }
 
+/* ===== OPERATIONS ===== */
+.op-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.op-header h2 { font-size: 1.1rem; flex: 1; }
+.op-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.op-tabs {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.op-tab {
+  flex: 1; padding: 10px 12px; text-align: center;
+  cursor: pointer; font-size: .82rem; font-weight: 500;
+  color: var(--text2); transition: .15s;
+  background: none; border: none; border-bottom: 2px solid transparent;
+}
+.op-tab:hover { color: var(--text); background: var(--sidebar-hover); }
+.op-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.op-section { display: none; }
+.op-section.active { display: block; }
+.op-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.op-stat-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px; border: 1px solid var(--border); text-align: center;
+}
+.op-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+.op-stat-label { font-size: .75rem; color: var(--text3); margin-top: 2px; }
+.op-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.op-table th { text-align: right; padding: 8px 10px; color: var(--text3); font-weight: 500; border-bottom: 1px solid var(--border); }
+.op-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.op-table tr:hover { background: var(--sidebar-hover); }
+.op-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: .75rem; font-weight: 500;
+}
+.op-badge.ok { background: rgba(34,197,94,.15); color: #22c55e; }
+.op-badge.warn { background: rgba(250,204,21,.15); color: #eab308; }
+.op-badge.err { background: rgba(239,68,68,.15); color: #ef4444; }
+.op-mini-chart { height: 60px; display: flex; align-items: flex-end; gap: 2px; margin: 8px 0; }
+.op-mini-chart .bar { width: 8px; background: var(--primary-dim); border-radius: 2px 2px 0 0; min-height: 2px; transition: height .3s; }
+.op-btn {
+  padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+  font-size: .8rem; font-weight: 500;
+}
+.op-btn-primary { background: var(--primary-dim); color: #fff; }
+.op-btn-danger { background: rgba(239,68,68,.8); color: #fff; }
+.op-btn-secondary { background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+
 .sidebar-footer {
   border-top: 1px solid var(--border); padding: 12px 16px;
   display: flex; flex-direction: column; gap: 4px;
@@ -705,6 +756,7 @@ body {
     <button class="sidebar-nav-item" data-view="notebook" onclick="switchView('notebook')">📓 دفاتر الملاحظات</button>
     <button class="sidebar-nav-item" data-view="models" onclick="switchView('models')">🤖 الموديلات</button>
     <button class="sidebar-nav-item" data-view="lab" onclick="switchView('lab')">🧪 مختبر القياس</button>
+    <button class="sidebar-nav-item" data-view="operations" onclick="switchView('operations')">⚙️ العمليات</button>
   </div>
 
   <div class="conversations" id="conversations">
@@ -1001,6 +1053,56 @@ body {
   </div>
 </div>
 
+<!-- ===== OPERATIONS PANEL ===== -->
+<div class="view-panel" id="operationsPanel">
+  <div class="op-header">
+    <h2>⚙️ العمليات</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="opBody">
+    <div class="op-tabs">
+      <button class="op-tab active" data-optab="usage" onclick="switchOpTab('usage')">📊 الاستخدام</button>
+      <button class="op-tab" data-optab="providers" onclick="switchOpTab('providers')">🔌 المزودون</button>
+      <button class="op-tab" data-optab="costs" onclick="switchOpTab('costs')">💰 التكاليف</button>
+      <button class="op-tab" data-optab="storage" onclick="switchOpTab('storage')">💾 التخزين</button>
+      <button class="op-tab" data-optab="cleanup" onclick="switchOpTab('cleanup')">🗑 التنظيف</button>
+    </div>
+
+    <!-- Usage Tab -->
+    <div class="op-section active" id="opSectionUsage">
+      <div id="opsUsageSummary"></div>
+      <div id="opsUsageByProvider"></div>
+      <div id="opsUsageChart"></div>
+    </div>
+
+    <!-- Providers Tab -->
+    <div class="op-section" id="opSectionProviders">
+      <div id="opsProvidersTable"></div>
+    </div>
+
+    <!-- Costs Tab -->
+    <div class="op-section" id="opSectionCosts">
+      <div id="opsCostSummary"></div>
+      <div id="opsCostChart"></div>
+      <div id="opsCostByModel"></div>
+    </div>
+
+    <!-- Storage Tab -->
+    <div class="op-section" id="opSectionStorage">
+      <div id="opsStorageSummary"></div>
+      <div id="opsStoragePublished"></div>
+      <div id="opsStorageRetention"></div>
+    </div>
+
+    <!-- Cleanup Tab -->
+    <div class="op-section" id="opSectionCleanup">
+      <div id="opsCleanupPreview"></div>
+      <div id="opsCleanupActions"></div>
+      <div id="opsCleanupLog"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== STATE =====
 const state = {
@@ -1284,6 +1386,276 @@ function switchView(view) {
     nbState.isActive = true;
     notebook.classList.add('active');
     loadNotebooks();
+  } else if (view === 'operations') {
+    document.getElementById('operationsPanel').classList.add('active');
+    loadOpsSummary();
+  }
+}
+
+// ===== OPERATIONS API =====
+let opState = { tab: 'usage' };
+
+function switchOpTab(tab) {
+  opState.tab = tab;
+  document.querySelectorAll('.op-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.optab === tab);
+  });
+  document.querySelectorAll('.op-section').forEach(el => el.classList.remove('active'));
+  const section = document.getElementById('opSection' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (section) section.classList.add('active');
+
+  if (tab === 'usage') loadOpsSummary();
+  else if (tab === 'providers') loadOpsProviders();
+  else if (tab === 'costs') loadOpsCosts();
+  else if (tab === 'storage') loadOpsStorage();
+  else if (tab === 'cleanup') loadOpsCleanup();
+}
+
+async function loadOpsSummary() {
+  try {
+    const [usage, cost, storage] = await Promise.all([
+      apiGet('/api/operations/usage/summary?days=30'),
+      apiGet('/api/operations/cost?days=30'),
+      apiGet('/api/operations/storage'),
+    ]);
+    const t = usage.today || {};
+    const w = usage.this_week || {};
+    const m = usage.this_month || {};
+    document.getElementById('opsUsageSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${t.requests || 0}</div>
+          <div class="op-stat-label">طلبات اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((t.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">تكلفة اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${m.requests || 0}</div>
+          <div class="op-stat-label">طلبات الشهر</div>
+        </div>
+      </div>
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((m.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">تكلفة الشهر</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${t.errors || 0}</div>
+          <div class="op-stat-label">أخطاء اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${storage.total_size_mb || 0} MB</div>
+          <div class="op-stat-label">المساحة المستخدمة</div>
+        </div>
+      </div>`;
+
+    const byProvider = await apiGet('/api/operations/usage/by-provider?days=30');
+    const provs = byProvider.providers || [];
+    document.getElementById('opsUsageByProvider').innerHTML = provs.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2)">حسب المزود</h3>
+      <table class="op-table">
+        <tr><th>المزود</th><th>الطلبات</th><th>الأخطاء</th><th>متوسط الزمن</th><th>التكلفة</th></tr>
+        ${provs.map(p => `<tr>
+          <td>${escHtml(p.provider)}</td>
+          <td>${p.requests}</td>
+          <td>${p.errors}</td>
+          <td>${p.avg_latency_ms ? p.avg_latency_ms + 'ms' : '—'}</td>
+          <td>$${((p.total_cost_cents || 0) / 100).toFixed(2)}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد بيانات استخدام بعد</div>';
+  } catch (e) {
+    document.getElementById('opsUsageSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsProviders() {
+  try {
+    const data = await apiGet('/api/operations/providers?hours=24');
+    const provs = data.providers || [];
+    document.getElementById('opsProvidersTable').innerHTML = provs.length ? `
+      <table class="op-table">
+        <tr><th>المزود</th><th>الحالة</th><th>نسبة الخطأ</th><th>متوسط الزمن</th><th>الطلبات</th><th>الموديلات</th></tr>
+        ${provs.map(p => `<tr>
+          <td>${escHtml(p.name)}</td>
+          <td><span class="op-badge ${p.available ? 'ok' : 'err'}">${p.available ? 'متاح' : 'غير متاح'}</span></td>
+          <td>${(p.error_rate * 100).toFixed(1)}%</td>
+          <td>${p.avg_latency_ms ? p.avg_latency_ms + 'ms' : '—'}</td>
+          <td>${p.requests}</td>
+          <td style="font-size:.75rem">${(p.models || []).map(m => escHtml(m.name)).join(', ')}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد بيانات</div>';
+  } catch (e) {
+    document.getElementById('opsProvidersTable').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsCosts() {
+  try {
+    const [total, daily, byModel] = await Promise.all([
+      apiGet('/api/operations/cost?days=30'),
+      apiGet('/api/operations/cost/daily?days=30'),
+      apiGet('/api/operations/usage/by-model?days=30'),
+    ]);
+    document.getElementById('opsCostSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((total.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">التكلفة الإجمالية (30 يوم)</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${total.total_requests || 0}</div>
+          <div class="op-stat-label">إجمالي الطلبات</div>
+        </div>
+      </div>`;
+
+    const days = daily.daily || [];
+    if (days.length) {
+      const maxVal = Math.max(...days.map(d => d.total_cost_cents || 0), 1);
+      document.getElementById('opsCostChart').innerHTML = `
+        <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2)">التكلفة اليومية</h3>
+        <div class="op-mini-chart">${days.map(d => {
+          const h = Math.max(2, ((d.total_cost_cents || 0) / maxVal) * 56);
+          return `<div class="bar" style="height:${h}px" title="${d.day}: $${((d.total_cost_cents || 0)/100).toFixed(2)}"></div>`;
+        }).join('')}</div>`;
+    }
+
+    const models = byModel.models || [];
+    document.getElementById('opsCostByModel').innerHTML = models.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">حسب الموديل</h3>
+      <table class="op-table">
+        <tr><th>الموديل</th><th>المزود</th><th>الطلبات</th><th>التكلفة</th></tr>
+        ${models.map(m => `<tr>
+          <td>${escHtml(m.model_id || '—')}</td>
+          <td>${escHtml(m.provider)}</td>
+          <td>${m.requests}</td>
+          <td>$${((m.total_cost_cents || 0) / 100).toFixed(2)}</td>
+        </tr>`).join('')}
+      </table>` : '';
+  } catch (e) {
+    document.getElementById('opsCostSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsStorage() {
+  try {
+    const [storage, published] = await Promise.all([
+      apiGet('/api/operations/storage'),
+      apiGet('/api/operations/storage/published?limit=10'),
+    ]);
+    const s = storage.summary || {};
+    document.getElementById('opsStorageSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${s.total_artifacts || 0}</div>
+          <div class="op-stat-label">إجمالي القطع</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${storage.total_size_mb || 0} MB</div>
+          <div class="op-stat-label">المساحة</div>
+        </div>
+      </div>`;
+
+    const types = s.by_type || {};
+    const typeKeys = Object.keys(types);
+    document.getElementById('opsStorageSummary').innerHTML += typeKeys.length ? `
+      <table class="op-table">
+        <tr><th>النوع</th><th>العدد</th></tr>
+        ${typeKeys.map(k => `<tr><td>${escHtml(k)}</td><td>${types[k].count || 0}</td></tr>`).join('')}
+      </table>` : '';
+
+    const assets = published.assets || [];
+    document.getElementById('opsStoragePublished').innerHTML = assets.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">أحدث المنشورات</h3>
+      <table class="op-table">
+        <tr><th>العنوان</th><th>النوع</th><th>التاريخ</th></tr>
+        ${assets.map(a => `<tr>
+          <td>${escHtml(a.title || '—')}</td>
+          <td>${escHtml(a.type)}</td>
+          <td>${(a.created_at || '').slice(0, 10)}</td>
+        </tr>`).join('')}
+      </table>` : '';
+
+    const ret = await apiGet('/api/operations/storage/retention');
+    const policies = ret.policies || [];
+    document.getElementById('opsStorageRetention').innerHTML = policies.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">سياسات الاحتفاظ</h3>
+      <table class="op-table">
+        <tr><th>الاسم</th><th>الأيام</th><th>الاحتفاظ بالبيانات</th><th>مفعلة</th></tr>
+        ${policies.map(p => `<tr>
+          <td>${escHtml(p.name)}</td>
+          <td>${p.retention_days}</td>
+          <td>${p.keep_metadata ? '✅' : '❌'}</td>
+          <td>${p.enabled ? '✅' : '❌'}</td>
+        </tr>`).join('')}
+      </table>` : '';
+  } catch (e) {
+    document.getElementById('opsStorageSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsCleanup() {
+  try {
+    const [sim, logData] = await Promise.all([
+      apiGet('/api/operations/cleanup/simulate'),
+      apiGet('/api/operations/cleanup/log?limit=10'),
+    ]);
+    document.getElementById('opsCleanupPreview').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${sim.total_artifacts || 0}</div>
+          <div class="op-stat-label">قطع للحذف</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${sim.total_mb || 0} MB</div>
+          <div class="op-stat-label">مساحة قابلة للتحرير</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <button class="op-btn op-btn-danger" onclick="executeOpsCleanup()">🗑 تنفيذ التنظيف</button>
+      </div>`;
+
+    const policies = sim.by_policy || [];
+    document.getElementById('opsCleanupPreview').innerHTML += policies.length ? `
+      <table class="op-table">
+        <tr><th>السياسة</th><th>المدة</th><th>العدد</th><th>الحجم</th><th>الاحتفاظ بالبيانات</th></tr>
+        ${policies.map(p => `<tr>
+          <td>${escHtml(p.policy_name)}</td>
+          <td>${p.retention_days} يوم</td>
+          <td>${p.artifact_count}</td>
+          <td>${(p.total_bytes / (1024*1024)).toFixed(1)} MB</td>
+          <td>${p.keep_metadata ? '✅' : '❌'}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد قطع للحذف</div>';
+
+    const entries = logData.entries || [];
+    document.getElementById('opsCleanupLog').innerHTML = entries.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">سجل التنظيف</h3>
+      <table class="op-table">
+        <tr><th>الإجراء</th><th>التفاصيل</th><th>التاريخ</th></tr>
+        ${entries.map(e => `<tr>
+          <td>${escHtml(e.action || '—')}</td>
+          <td>${escHtml(e.details || '')}</td>
+          <td>${(e.created_at || '').slice(0, 16)}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:20px;text-align:center">لا توجد عمليات تنظيف سابقة</div>';
+  } catch (e) {
+    document.getElementById('opsCleanupPreview').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function executeOpsCleanup() {
+  if (!confirm('تأكيد تنفيذ التنظيف؟ سيتم حذف جميع القطع الأقدم من مدة الاحتفاظ.')) return;
+  try {
+    const result = await apiPost('/api/operations/cleanup/execute', {});
+    document.getElementById('opsCleanupActions').innerHTML = `
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:var(--radius);padding:12px;margin-top:8px">
+        ✅ تم التنظيف: ${result.total_cleaned || 0} قطعة، ${result.total_freed_mb || 0} MB محررة
+      </div>`;
+    loadOpsCleanup();
+  } catch (e) {
+    document.getElementById('opsCleanupActions').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
   }
 }
 
