@@ -81,6 +81,9 @@ DEFAULT_FLAGS = {
     # Prompt Intelligence — Sprint 7A
     "prompt_intelligence": False,
     "prompt_intelligence_seed": True,
+    # Operations Layer — Sprint 8A
+    "operations_layer": True,
+    "cleanup_manual": True,
 }
 
 _PREFIX = "feature_"

@@ -10,6 +10,7 @@ from ..core.provider_selector import ProviderSelector
 from ..engine.renderers.preview_renderer import PreviewRenderer
 from ..engine.renderers.presentation_renderer import PresentationRenderer
 from ..model.artifact import Artifact, ArtifactStatus, ArtifactType
+from ..operations.usage_service import UsageService
 from .artifact_service import ArtifactService
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class PresentationService:
         self.renderer = PresentationRenderer()
         self.preview = PreviewRenderer()
         self.prompt_intelligence = prompt_intelligence
+        self.usage = UsageService(cm)
 
     def execute(self, plan: dict, metadata: dict | None = None) -> dict:
         title = plan.get("title", plan.get("intent", "presentation"))
@@ -55,6 +57,12 @@ class PresentationService:
                 self.prompt_intelligence.record_failure(
                     pie_profile_id, provider_name, str(e),
                 )
+            if self.flags.is_enabled("operations_layer", default=True):
+                self.usage.record(
+                    provider=provider_name, media_type="text",
+                    model_id=provider_name, success=False,
+                    error=str(e), profile_id=pie_profile_id,
+                )
             return {"error": str(e)}
 
         slides = self._parse_slides(raw) or self._fallback_slides(title, slide_count)
@@ -78,6 +86,13 @@ class PresentationService:
             self.prompt_intelligence.record_success(
                 pie_profile_id, provider_name, prompt,
                 artifact_id=artifact.id,
+            )
+
+        if self.flags.is_enabled("operations_layer", default=True):
+            self.usage.record(
+                provider=provider_name, media_type="text",
+                model_id=provider_name, success=True,
+                artifact_id=artifact.id, profile_id=pie_profile_id,
             )
 
         preview_html = self.preview.presentation_preview(artifact)

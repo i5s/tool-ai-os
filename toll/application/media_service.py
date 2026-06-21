@@ -11,6 +11,7 @@ from ..core.provider_selector import ProviderSelector
 from ..core.registry import ProviderRegistry
 from ..model.artifact import Artifact, ArtifactRepository, ArtifactStatus, ArtifactType
 from ..model_registry.service import ModelRegistryService
+from ..operations.usage_service import UsageService
 from ..ports.media import MediaRequest, MediaResult
 from ..ports.media_storage import MediaStorage
 
@@ -35,6 +36,7 @@ class MediaService:
         self.storage = storage
         self.model_registry = model_registry
         self.prompt_intelligence = prompt_intelligence
+        self.usage = UsageService(cm)
 
     def generate(self, params: dict) -> dict:
         media_type = params.get("media_type", "image")
@@ -84,6 +86,14 @@ class MediaService:
                     pie_profile_id, resolved_model_id or provider_name,
                     result.error or "Generation failed",
                 )
+            if self.flags.is_enabled("operations_layer", default=True):
+                self.usage.record(
+                    provider=provider_name, media_type=media_type,
+                    model_id=resolved_model_id,
+                    duration_ms=result.duration_ms or 0,
+                    success=False, error=result.error,
+                    profile_id=pie_profile_id,
+                )
             return {"success": False, "error": result.error}
 
         media_path = self._persist(result)
@@ -94,6 +104,17 @@ class MediaService:
             self.prompt_intelligence.record_success(
                 pie_profile_id, resolved_model_id or provider_name,
                 prompt, artifact_id=artifact.id,
+            )
+
+        if self.flags.is_enabled("operations_layer", default=True):
+            self.usage.record(
+                provider=provider_name,
+                media_type=media_type,
+                model_id=resolved_model_id,
+                duration_ms=result.duration_ms,
+                success=True,
+                artifact_id=artifact.id,
+                profile_id=pie_profile_id,
             )
 
         return {

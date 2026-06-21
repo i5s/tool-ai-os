@@ -10,6 +10,7 @@ from ..core.provider_selector import ProviderSelector
 from ..engine.renderers.preview_renderer import PreviewRenderer
 from ..engine.renderers.report_renderer import ReportRenderer
 from ..model.artifact import Artifact, ArtifactStatus, ArtifactType
+from ..operations.usage_service import UsageService
 from .artifact_service import ArtifactService
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class ReportService:
         self.renderer = ReportRenderer()
         self.preview = PreviewRenderer()
         self.prompt_intelligence = prompt_intelligence
+        self.usage = UsageService(cm)
 
     def execute(self, plan: dict, metadata: dict | None = None) -> dict:
         title = plan.get("title", plan.get("intent", "report"))
@@ -55,6 +57,12 @@ class ReportService:
                 self.prompt_intelligence.record_failure(
                     pie_profile_id, provider_name, str(e),
                 )
+            if self.flags.is_enabled("operations_layer", default=True):
+                self.usage.record(
+                    provider=provider_name, media_type="text",
+                    model_id=provider_name, success=False,
+                    error=str(e), profile_id=pie_profile_id,
+                )
             return {"error": str(e)}
 
         sections = self._parse_sections(raw) or self._fallback_sections(title, sections_list)
@@ -78,6 +86,13 @@ class ReportService:
             self.prompt_intelligence.record_success(
                 pie_profile_id, provider_name, prompt,
                 artifact_id=artifact.id,
+            )
+
+        if self.flags.is_enabled("operations_layer", default=True):
+            self.usage.record(
+                provider=provider_name, media_type="text",
+                model_id=provider_name, success=True,
+                artifact_id=artifact.id, profile_id=pie_profile_id,
             )
 
         preview_html = self.preview.report_preview(artifact)

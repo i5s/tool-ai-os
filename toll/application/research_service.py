@@ -9,6 +9,7 @@ from ..core.feature_flags import FeatureFlags
 from ..core.provider_selector import ProviderSelector
 from ..engine.renderers.preview_renderer import PreviewRenderer
 from ..model.artifact import Artifact, ArtifactStatus, ArtifactType
+from ..operations.usage_service import UsageService
 from ..ports.research_source import (
     CitationStyle,
     ResearchQuery,
@@ -43,6 +44,7 @@ class ResearchService:
             cm=cm, citation_engine=self.citation_engine
         )
         self.prompt_intelligence = prompt_intelligence
+        self.usage = UsageService(cm)
 
     def execute(self, plan: dict, metadata: dict | None = None) -> dict:
         topic = plan.get("title", plan.get("intent", "research"))
@@ -134,6 +136,14 @@ class ResearchService:
             self.prompt_intelligence.record_success(
                 pie_profile_id, model_id or ",".join(p.name for p in providers),
                 topic, artifact_id=artifact.id,
+            )
+
+        if self.flags.is_enabled("operations_layer", default=True):
+            self.usage.record(
+                provider=",".join(p.name for p in providers),
+                media_type="text", model_id=model_id or "",
+                success=True, artifact_id=artifact.id,
+                profile_id=pie_profile_id,
             )
 
         return {
