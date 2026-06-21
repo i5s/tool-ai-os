@@ -5,7 +5,6 @@ from ..core.feature_flags import FeatureFlags
 from ..core.provider_selector import ProviderSelector
 from ..core.registry import ProviderRegistry
 from ..core.settings import Settings
-from ..model.artifact import ArtifactType
 from ..workflow.engine import WorkflowEngine
 from .artifact_service import ArtifactService
 from .carousel_service import CarouselService

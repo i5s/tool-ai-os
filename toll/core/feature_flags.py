@@ -60,8 +60,9 @@ _PREFIX = "feature_"
 
 
 class FeatureFlags:
-    def __init__(self, cm: ConnectionManager):
+    def __init__(self, cm: ConnectionManager, settings=None):
         self.cm = cm
+        self._settings = settings
         self._ensure_defaults()
 
     def _ensure_defaults(self):
@@ -78,6 +79,10 @@ class FeatureFlags:
     def is_enabled(self, name: str, default: bool = False) -> bool:
         if name in DEFAULT_FLAGS:
             default = DEFAULT_FLAGS[name]
+        if self._settings:
+            val = self._settings.get(f"{_PREFIX}{name}")
+            if val is not None:
+                return val.lower() in ("true", "1", "yes", "on")
         row = self.cm.execute(
             "SELECT value FROM config WHERE key = ?", (f"{_PREFIX}{name}",)
         ).fetchone()

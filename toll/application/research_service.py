@@ -82,7 +82,7 @@ class ResearchService:
                 "style": style,
             },
             provider=",".join(p.name for p in providers),
-            intent="research",
+            intent=ArtifactType.RESEARCH,
             workflow_id=metadata.get("workflow_id") if metadata else None,
             conversation_id=(
                 metadata.get("conversation_id") if metadata else None
@@ -100,7 +100,7 @@ class ResearchService:
 
         return {
             "artifact_id": artifact.id,
-            "type": "research",
+            "type": ArtifactType.RESEARCH.value,
             "title": topic,
             "source_count": len(sources_data),
             "citation_count": len(citations),

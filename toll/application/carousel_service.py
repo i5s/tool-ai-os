@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
 
 from ..core.ai import AI
 from ..core.connection_manager import ConnectionManager
@@ -35,7 +34,7 @@ class CarouselService:
 
         prompt = self._build_prompt(topic, slides_count, style)
         try:
-            raw = self.ai.ask(prompt)
+            raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
             return {"error": str(e)}
 
@@ -48,7 +47,7 @@ class CarouselService:
             title=topic,
             content={"slides": slides, "style": style, "slide_count": slides_count},
             provider=provider_name,
-            intent="carousel",
+            intent=ArtifactType.CAROUSEL,
             workflow_id=metadata.get("workflow_id") if metadata else None,
             conversation_id=metadata.get("conversation_id") if metadata else None,
         )
@@ -62,7 +61,7 @@ class CarouselService:
 
         return {
             "artifact_id": artifact.id,
-            "type": "carousel",
+            "type": ArtifactType.CAROUSEL.value,
             "title": topic,
             "slides": len(slides),
             "preview_url": artifact.preview_url,

@@ -33,7 +33,7 @@ class ReportService:
 
         prompt = self._build_prompt(title, style, sections_list)
         try:
-            raw = self.ai.ask(prompt)
+            raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
             return {"error": str(e)}
 
@@ -46,7 +46,7 @@ class ReportService:
             title=title,
             content={"sections": sections, "style": style},
             provider=provider_name,
-            intent="report",
+            intent=ArtifactType.REPORT,
             workflow_id=metadata.get("workflow_id") if metadata else None,
             conversation_id=metadata.get("conversation_id") if metadata else None,
         )
@@ -60,7 +60,7 @@ class ReportService:
 
         return {
             "artifact_id": artifact.id,
-            "type": "report",
+            "type": ArtifactType.REPORT.value,
             "title": title,
             "sections": len(sections),
             "preview_url": artifact.preview_url,

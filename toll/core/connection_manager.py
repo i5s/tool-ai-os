@@ -9,6 +9,8 @@ Enforces:
 - Migrations applied at startup
 """
 
+from __future__ import annotations
+
 import sqlite3
 import threading
 from pathlib import Path

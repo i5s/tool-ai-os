@@ -5,6 +5,8 @@ for existing CLI and bot code. New code (especially the FastAPI layer)
 should prefer using ProviderRegistry directly for async support.
 """
 
+from __future__ import annotations
+
 import asyncio
 from .limiter import Limiter
 from .registry import ProviderRegistry
@@ -20,9 +22,18 @@ class AI:
         m = cm or ConnectionManager(DB_PATH)
         self.settings = Settings(cm=m)
         self.registry = ProviderRegistry(self.settings)
-        self.limiter = Limiter(cm=m)
+        self.limiter = Limiter(cm=m, settings=self.settings)
 
-    def ask(self, prompt: str, system: str = "") -> str:
+    def ask(self, prompt: str, system: str = "", provider_name: str | None = None) -> str:
+        if provider_name:
+            provider = self.registry.get_llm(provider_name)
+            if provider and self.limiter.can_use(provider_name):
+                try:
+                    response = asyncio.run(provider.ask(prompt, system))
+                    self.limiter.log_usage(provider_name)
+                    return response.text
+                except Exception:
+                    pass
         for name in self.registry.available_llm():
             if not self.limiter.can_use(name):
                 continue

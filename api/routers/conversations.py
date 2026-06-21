@@ -19,6 +19,11 @@ class TitleUpdate(BaseModel):
     title: str
 
 
+class MessageCreate(BaseModel):
+    role: str
+    content: str
+
+
 @router.get("/conversations")
 def list_conversations(
     workspace_type: Optional[str] = None,
@@ -60,6 +65,17 @@ def update_conversation_title(
     store = ConversationStore(cm=cm)
     store.update_title(id, req.title)
     return {"status": "updated"}
+
+
+@router.post("/conversations/{id}/messages")
+def add_message(
+    id: str,
+    req: MessageCreate,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
+    store = ConversationStore(cm=cm)
+    msg = store.add_message(id, req.role, req.content)
+    return msg
 
 
 @router.delete("/conversations/{id}")

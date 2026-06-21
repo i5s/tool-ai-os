@@ -2,10 +2,15 @@ from .connection_manager import ConnectionManager
 
 
 class Limiter:
-    def __init__(self, cm: ConnectionManager):
+    def __init__(self, cm: ConnectionManager, settings=None):
         self.cm = cm
+        self._settings = settings
 
     def _limit(self, provider: str) -> int:
+        if self._settings:
+            val = self._settings.get(f"daily_limit_{provider}")
+            if val is not None:
+                return int(val)
         row = self.cm.execute(
             "SELECT value FROM config WHERE key = ?", (f"daily_limit_{provider}",)
         ).fetchone()

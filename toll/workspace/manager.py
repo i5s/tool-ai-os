@@ -8,6 +8,8 @@ Manages active context for:
 University workspaces support semester structures.
 """
 
+from __future__ import annotations
+
 import json
 import uuid
 from dataclasses import dataclass

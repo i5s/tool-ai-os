@@ -6,6 +6,8 @@ Responsibilities:
 - Future provider routing
 """
 
+from __future__ import annotations
+
 from ..ports.llm import LLMProvider
 from ..ports.search import SearchPort
 from ..adapters.llm.opencode import OpenCodeProvider

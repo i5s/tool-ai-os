@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ..core.ai import AI
 from ..core.storage import Storage
 from ..core.connection_manager import ConnectionManager

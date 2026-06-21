@@ -1,11 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from toll.engine.content_machine import ContentMachine
 from toll.engine.prompt_gen import PromptGenerator
 from toll.engine.reports import Reports
 from toll.core.ai import AI
 from toll.core.connection_manager import ConnectionManager
-from toll.core.registry import ProviderRegistry
 from toll.core.conversations import ConversationStore
 from toll.context.engine import ContextEngine
 from toll.planner.planner import Planner, ApprovalLevel

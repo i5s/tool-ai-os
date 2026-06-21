@@ -8,6 +8,8 @@ Builds a summarized context window for the LLM by combining:
 Returns a prompt-ready context string plus structured metadata.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any
 

@@ -8,6 +8,8 @@ Stores and retrieves long-term memory across:
 - Knowledge Vault (type='knowledge')
 """
 
+from __future__ import annotations
+
 import json
 import uuid
 from dataclasses import dataclass

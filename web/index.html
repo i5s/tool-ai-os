@@ -716,7 +716,7 @@ async function apiDelete(path) {
 async function loadWorkspaces() {
   try {
     const data = await apiGet('/api/workspaces');
-    const active = await apiGet('/api/workspaces/active');
+    const active = await apiGet('/api/workspace/active');
     state.workspaces = data.workspaces || [];
     state.activeWorkspace = active.state || {};
     populateWorkspaceSelects();
@@ -755,7 +755,7 @@ function fillSelect(id, items, selected, defaultLabel) {
 
 async function loadSemesters(universityId) {
   try {
-    const data = await apiGet(`/api/workspaces/${universityId}/semesters`);
+    const data = await apiGet(`/api/semesters/${universityId}`);
     fillSelect('semesterSelect', data.semesters || [], state.activeWorkspace.active_semester_id, 'Semester');
   } catch (e) {
     console.error('Failed to load semesters', e);
@@ -775,7 +775,7 @@ async function activateWorkspace(kind, id) {
   if (kind === 'semester') body.semester_id = id || null;
 
   try {
-    const result = await apiPost('/api/workspaces/active', body);
+    const result = await apiPost('/api/workspace/active', body);
     state.activeWorkspace = result.state;
   } catch (e) {
     console.error('Failed to activate workspace', e);
@@ -809,7 +809,7 @@ async function createSemesterFromModal() {
   const name = document.getElementById('newSemesterName').value.trim();
   if (!universityId || !name) return;
   try {
-    await apiPost(`/api/workspaces/${universityId}/semesters`, { name });
+    await apiPost('/api/semesters', { university_id: universityId, name });
     document.getElementById('newSemesterName').value = '';
     if (state.activeWorkspace.active_university_id === universityId) {
       await loadSemesters(universityId);
@@ -850,7 +850,7 @@ async function handleChatCommand(cmd) {
   if (cmd.type === 'create_semester') {
     const uniId = state.activeWorkspace.active_university_id;
     if (!uniId) return '❌ اختر جامعة أولاً';
-    await apiPost(`/api/workspaces/${uniId}/semesters`, { name: cmd.name });
+    await apiPost('/api/semesters', { university_id: uniId, name: cmd.name });
     await loadSemesters(uniId);
     return `✅ تم إنشاء Semester: ${cmd.name}`;
   }
@@ -879,7 +879,7 @@ async function loadServerConversations() {
 
 async function loadServerMessages(conversationId) {
   try {
-    const data = await apiGet(`/api/conversations/${conversationId}/messages`);
+    const data = await apiGet(`/api/conversations/${conversationId}`);
     return (data.messages || []).map(m => ({ role: m.role, content: m.content }));
   } catch (e) {
     console.error('Failed to load messages', e);

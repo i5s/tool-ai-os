@@ -20,8 +20,8 @@ def test_artifact_types():
 
 def test_artifact_statuses():
     assert ArtifactStatus.DRAFT.value == "draft"
-    assert ArtifactStatus.COMPLETED.value == "completed"
-    assert ArtifactStatus.FAILED.value == "failed"
+    assert ArtifactStatus.COMPLETED.value == "artifact_completed"
+    assert ArtifactStatus.FAILED.value == "artifact_failed"
     assert ArtifactStatus.ARCHIVED.value == "archived"
     assert ArtifactStatus.DELETED.value == "deleted"
 

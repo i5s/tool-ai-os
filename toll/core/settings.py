@@ -6,6 +6,8 @@ Precedence (highest to lowest):
 3. Default values
 """
 
+from __future__ import annotations
+
 import os
 from typing import Any
 from .storage import Storage

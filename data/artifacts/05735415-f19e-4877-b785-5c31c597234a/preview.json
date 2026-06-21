@@ -1,0 +1,17 @@
+{
+  "id": "05735415-f19e-4877-b785-5c31c597234a",
+  "type": "research",
+  "title": "اختبار البحث",
+  "status": "draft",
+  "version": 1,
+  "created_at": "2026-06-21T14:48:19.929167+00:00",
+  "provider": "web",
+  "model": null,
+  "intent": "research",
+  "tags": [],
+  "workspace_type": null,
+  "workspace_id": null,
+  "summary": "Research: 3 sources",
+  "full_url": "/data/artifacts/05735415-f19e-4877-b785-5c31c597234a/index.html",
+  "preview_url": "/data/artifacts/05735415-f19e-4877-b785-5c31c597234a/preview.html"
+}

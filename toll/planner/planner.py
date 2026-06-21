@@ -4,6 +4,8 @@ Classifies user intent and produces a Plan that the Workflow Engine
 can execute, pause, or reject based on approval requirements.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any

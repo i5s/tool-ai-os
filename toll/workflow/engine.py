@@ -21,8 +21,8 @@ class WorkflowStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
+    COMPLETED = "workflow_completed"
+    FAILED = "workflow_failed"
 
 
 @dataclass

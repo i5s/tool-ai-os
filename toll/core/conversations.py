@@ -4,6 +4,8 @@ Conversations are separate from memories.
 Many conversations may generate a small number of memories.
 """
 
+from __future__ import annotations
+
 import json
 import uuid
 from datetime import datetime, timezone

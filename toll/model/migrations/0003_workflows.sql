@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS workflows (
     id TEXT PRIMARY KEY,
     plan TEXT NOT NULL,  -- JSON
-    status TEXT NOT NULL CHECK(status IN ('pending', 'approved', 'rejected', 'running', 'completed', 'failed')),
+    status TEXT NOT NULL CHECK(status IN ('pending', 'approved', 'rejected', 'running', 'workflow_completed', 'workflow_failed')),
     result TEXT,  -- JSON
     error TEXT,
     metadata TEXT,  -- JSON

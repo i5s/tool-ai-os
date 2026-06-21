@@ -33,7 +33,7 @@ class PresentationService:
 
         prompt = self._build_prompt(title, slide_count, style)
         try:
-            raw = self.ai.ask(prompt)
+            raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
             return {"error": str(e)}
 
@@ -46,7 +46,7 @@ class PresentationService:
             title=title,
             content={"slides": slides, "style": style, "slide_count": slide_count},
             provider=provider_name,
-            intent="presentation",
+            intent=ArtifactType.PRESENTATION,
             workflow_id=metadata.get("workflow_id") if metadata else None,
             conversation_id=metadata.get("conversation_id") if metadata else None,
         )
@@ -60,7 +60,7 @@ class PresentationService:
 
         return {
             "artifact_id": artifact.id,
-            "type": "presentation",
+            "type": ArtifactType.PRESENTATION.value,
             "title": title,
             "slides": len(slides),
             "preview_url": artifact.preview_url,

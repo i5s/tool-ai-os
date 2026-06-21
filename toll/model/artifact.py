@@ -25,8 +25,8 @@ class ArtifactType(str, Enum):
 
 class ArtifactStatus(str, Enum):
     DRAFT = "draft"
-    COMPLETED = "completed"
-    FAILED = "failed"
+    COMPLETED = "artifact_completed"
+    FAILED = "artifact_failed"
     ARCHIVED = "archived"
     DELETED = "deleted"
 
