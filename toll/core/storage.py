@@ -1,11 +1,12 @@
-import sqlite3, json
+import sqlite3
 from pathlib import Path
 from . import config
 
 class Storage:
-    def __init__(self):
-        config.DATA.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(config.DB_PATH))
+    def __init__(self, db_path: Path | str | None = None):
+        self.db_path = Path(db_path) if db_path else config.DB_PATH
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.conn = sqlite3.connect(str(self.db_path))
         self.conn.row_factory = sqlite3.Row
         self._init_db()
 

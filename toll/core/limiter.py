@@ -1,9 +1,9 @@
 from .storage import Storage
-from . import config
+
 
 class Limiter:
-    def __init__(self):
-        self.db = Storage()
+    def __init__(self, storage: Storage | None = None):
+        self.db = storage or Storage()
 
     def can_use(self, provider):
         limit_key = f"daily_limit_{provider}"

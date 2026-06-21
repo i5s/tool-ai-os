@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import sys, argparse
-sys.path.insert(0, str(__import__('pathlib').Path(__file__).resolve().parent.parent))
+import sys
+import argparse
 
 from toll.engine.content_machine import ContentMachine
 from toll.engine.prompt_gen import PromptGenerator

@@ -11,3 +11,7 @@ __pycache__/
 .env
 .env.local
 *.log
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
