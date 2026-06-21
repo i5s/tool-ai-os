@@ -28,16 +28,40 @@ def register_handlers(
     selector = ProviderSelector(registry, settings, flags)
     artifact_service = ArtifactService(cm)
 
+    bench_repo = None
+    if flags.is_enabled("benchmark_lab", default=False):
+        from ..benchmark.repository import BenchmarkRepository
+        bench_repo = BenchmarkRepository(cm)
+    selector = ProviderSelector(registry, settings, flags, benchmark_repo=bench_repo)
+
+    prompt_engine = None
+    if flags.is_enabled("prompt_intelligence", default=False):
+        from ..model_registry.service import ModelRegistryService as _ModelRegistryService
+        from ..prompt.engine import PromptIntelligenceEngine
+        _mr = _ModelRegistryService(cm=cm, flags=flags)
+        prompt_engine = PromptIntelligenceEngine(cm=cm, flags=flags, registry=registry,
+                                                 model_registry=_mr)
+        wf_engine.register_handler("prompt_intelligence", lambda p, _m, _e=prompt_engine: (
+            _e.resolve(
+                user_input=p.get("user_input", ""),
+                media_type=p.get("media_type", "image"),
+                execution_profile_id=p.get("execution_profile_id", ""),
+                model_id=p.get("model_id"),
+            )
+        ))
+
     if flags.is_enabled("carousel_engine"):
         svc = CarouselService(artifact_service, selector, cm)
         wf_engine.register_handler("carousel", svc.execute)
 
     if flags.is_enabled("report_engine"):
-        svc = ReportService(artifact_service, selector, cm)
+        svc = ReportService(artifact_service, selector, cm, flags=flags,
+                            prompt_intelligence=prompt_engine)
         wf_engine.register_handler("report", svc.execute)
 
     if flags.is_enabled("presentation_engine"):
-        svc = PresentationService(artifact_service, selector, cm)
+        svc = PresentationService(artifact_service, selector, cm, flags=flags,
+                                  prompt_intelligence=prompt_engine)
         wf_engine.register_handler("presentation", svc.execute)
 
     if flags.is_enabled("opendesign_integration"):
@@ -45,7 +69,8 @@ def register_handlers(
         wf_engine.register_handler("opendesign_push", svc.push_from_workflow)
 
     if flags.is_enabled("research_provider"):
-        svc = ResearchService(artifact_service, selector, cm, flags)
+        svc = ResearchService(artifact_service, selector, cm, flags,
+                              prompt_intelligence=prompt_engine)
         wf_engine.register_handler("research", svc.execute)
         wf_engine.register_handler("research_quick", svc.execute_quick)
         wf_engine.register_handler("research_deep", svc.execute_deep)
@@ -81,7 +106,8 @@ def register_handlers(
         from ..model_registry.service import ModelRegistryService
         model_registry = ModelRegistryService(cm=cm, flags=flags)
         svc = MediaService(cm, registry, selector, flags,
-                           model_registry=model_registry)
+                           model_registry=model_registry,
+                           prompt_intelligence=prompt_engine)
         wf_engine.register_handler("media_generate", svc.generate)
 
     if flags.is_enabled("benchmark_lab", default=False):
@@ -91,18 +117,3 @@ def register_handlers(
         wf_engine.register_handler("benchmark_create_suite", bench_svc.create_suite)
         wf_engine.register_handler("benchmark_list_suites", bench_svc.list_suites)
         wf_engine.register_handler("benchmark_model_scores", bench_svc.model_scores)
-
-    if flags.is_enabled("prompt_intelligence", default=False):
-        from ..model_registry.service import ModelRegistryService as _ModelRegistryService
-        from ..prompt.engine import PromptIntelligenceEngine
-        _mr = _ModelRegistryService(cm=cm, flags=flags)
-        _pie = PromptIntelligenceEngine(cm=cm, flags=flags, registry=registry,
-                                        model_registry=_mr)
-        wf_engine.register_handler("prompt_intelligence", lambda p, _m, _e=_pie: (
-            _e.resolve(
-                user_input=p.get("user_input", ""),
-                media_type=p.get("media_type", "image"),
-                execution_profile_id=p.get("execution_profile_id", ""),
-                model_id=p.get("model_id"),
-            )
-        ))

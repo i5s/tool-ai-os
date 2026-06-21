@@ -84,6 +84,7 @@ class Planner:
         "research": ApprovalLevel.APPROVAL,
         "research_quick": ApprovalLevel.AUTO,
         "research_deep": ApprovalLevel.APPROVAL,
+        "prompt_intelligence": ApprovalLevel.AUTO,
     }
 
     KEYWORDS: dict[str, list[str]] = {
@@ -128,6 +129,10 @@ class Planner:
         "research": ["research", "بحث", "أبحاث"],
         "research_quick": ["quick research", "بحث سريع"],
         "research_deep": ["deep research", "بحث معمق"],
+        "prompt_intelligence": [
+            "optimize prompt", "enhance prompt", "prompt intelligence",
+            "تحسين البرومبت", "prompt enhance",
+        ],
     }
 
     def __init__(self, mode: PlannerMode = PlannerMode.BALANCED):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from ..core.ai import AI
 from ..core.connection_manager import ConnectionManager
@@ -29,6 +30,7 @@ class ResearchService:
         selector: ProviderSelector,
         cm: ConnectionManager,
         flags: FeatureFlags | None = None,
+        prompt_intelligence: Any = None,
     ):
         self.artifact_service = artifact_service
         self.selector = selector
@@ -40,11 +42,19 @@ class ResearchService:
         self.source_manager = SourceManager(
             cm=cm, citation_engine=self.citation_engine
         )
+        self.prompt_intelligence = prompt_intelligence
 
     def execute(self, plan: dict, metadata: dict | None = None) -> dict:
         topic = plan.get("title", plan.get("intent", "research"))
         style = plan.get("style", "apa")
         max_sources = plan.get("max_sources", 10)
+
+        model_id = None
+        if self.prompt_intelligence and self.flags.is_enabled("prompt_intelligence", default=False):
+            pkg = self.prompt_intelligence.resolve(
+                topic, media_type="text", execution_profile_id="research"
+            )
+            model_id = pkg.model_id or None
 
         providers = self._get_providers()
         query = ResearchQuery(
@@ -65,7 +75,7 @@ class ResearchService:
             citations = self.citation_engine.format_batch(
                 all_sources, style
             )
-            synopsis = self._synthesize(all_sources, topic)
+            synopsis = self._synthesize(all_sources, topic, model_id=model_id)
 
         key_findings = self._extract_findings(synopsis)
         has_notebook = bool(notebook_sources)
@@ -189,7 +199,8 @@ class ResearchService:
             return []
 
     def _synthesize(
-        self, sources: list[ResearchSource], topic: str
+        self, sources: list[ResearchSource], topic: str,
+        model_id: str | None = None,
     ) -> str:
         try:
             source_list = "\n".join(
@@ -201,7 +212,7 @@ class ResearchService:
                 f"{source_list}\n\n"
                 f"الملخص يجب أن يكون فقرة واحدة مترابطة تغطي النقاط الرئيسية."
             )
-            return self.ai.ask(prompt)
+            return self.ai.ask(prompt, provider_name=model_id) if model_id else self.ai.ask(prompt)
         except Exception as e:
             logger.warning("Synthesis failed: %s", e)
             return self._fallback_synthesis(topic)

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from typing import Any
+
 from ..model.artifact import ArtifactType
 from .registry import ProviderRegistry
 from .settings import Settings
@@ -18,10 +20,12 @@ class ProviderCandidate:
 
 
 class ProviderSelector:
-    def __init__(self, registry: ProviderRegistry, settings: Settings, flags: FeatureFlags):
+    def __init__(self, registry: ProviderRegistry, settings: Settings, flags: FeatureFlags,
+                 benchmark_repo: Any = None):
         self.registry = registry
         self.settings = settings
         self.flags = flags
+        self.benchmark_repo = benchmark_repo
 
     def select(self, task_type: ArtifactType, prefer: str | None = None) -> str | None:
         available = self.registry.available_llm()
@@ -56,8 +60,12 @@ class ProviderSelector:
         return candidates[0].provider_name
 
     def _quality_score(self, provider: str) -> float:
-        scores: dict[str, float] = {
+        if self.benchmark_repo and self.flags.is_enabled("benchmark_auto_quality", default=False):
+            scores = self.benchmark_repo.avg_scores(provider)
+            if scores and scores.get("avg_quality_auto") is not None:
+                return scores["avg_quality_auto"]
+        static: dict[str, float] = {
             "opencode": 0.9,
             "ollama": 0.5,
         }
-        return scores.get(provider, 0.3)
+        return static.get(provider, 0.3)

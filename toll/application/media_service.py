@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from typing import Any
 
 from ..core.connection_manager import ConnectionManager
 from ..core.feature_flags import FeatureFlags
@@ -25,6 +26,7 @@ class MediaService:
         flags: FeatureFlags,
         storage: MediaStorage | None = None,
         model_registry: ModelRegistryService | None = None,
+        prompt_intelligence: Any = None,
     ):
         self.cm = cm
         self.registry = registry
@@ -32,6 +34,7 @@ class MediaService:
         self.flags = flags
         self.storage = storage
         self.model_registry = model_registry
+        self.prompt_intelligence = prompt_intelligence
 
     def generate(self, params: dict) -> dict:
         media_type = params.get("media_type", "image")
@@ -43,6 +46,14 @@ class MediaService:
         prompt = params.get("prompt", "")
         if not prompt:
             return {"success": False, "error": "No prompt provided"}
+
+        if self.prompt_intelligence and self.flags.is_enabled("prompt_intelligence", default=False):
+            pkg = self.prompt_intelligence.resolve(
+                prompt, media_type=media_type,
+                model_id=params.get("provider_model_id") or params.get("provider"),
+            )
+            prompt = pkg.prompt
+            params["prompt"] = prompt
 
         provider_name, resolved_model_id = self._resolve_provider(params, media_type)
         if not provider_name:

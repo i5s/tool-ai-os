@@ -147,13 +147,16 @@ class PromptIntelligenceEngine:
                 return preferred
             return preferred
 
-        if self.prompt_memory.is_blacklisted(prompt_profile.id, preferred or ""):
-            pass
-
         if self.model_registry:
-            best = self.model_registry.find_best(media_type=media_type)
-            if best:
-                return best.id
+            models = self.model_registry.list(media_type=media_type, status="active")
+            filtered = [
+                m for m in models
+                if not self.prompt_memory.is_blacklisted(prompt_profile.id, m.id)
+            ]
+            if filtered:
+                return filtered[0].id
+            if models:
+                return models[0].id
 
         available = self.registry.available_media()
         if available:

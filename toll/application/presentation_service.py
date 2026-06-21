@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from ..core.ai import AI
 from ..core.connection_manager import ConnectionManager
+from ..core.feature_flags import FeatureFlags
 from ..core.provider_selector import ProviderSelector
 from ..engine.renderers.preview_renderer import PreviewRenderer
 from ..engine.renderers.presentation_renderer import PresentationRenderer
@@ -14,13 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class PresentationService:
-    def __init__(self, artifact_service: ArtifactService, selector: ProviderSelector, cm: ConnectionManager):
+    def __init__(self, artifact_service: ArtifactService, selector: ProviderSelector,
+                 cm: ConnectionManager, flags: FeatureFlags | None = None,
+                 prompt_intelligence: Any = None):
         self.artifact_service = artifact_service
         self.selector = selector
         self.cm = cm
+        self.flags = flags or FeatureFlags(cm=cm)
         self.ai = AI(cm=cm)
         self.renderer = PresentationRenderer()
         self.preview = PreviewRenderer()
+        self.prompt_intelligence = prompt_intelligence
 
     def execute(self, plan: dict, metadata: dict | None = None) -> dict:
         title = plan.get("title", plan.get("intent", "presentation"))
@@ -32,6 +38,14 @@ class PresentationService:
             return {"error": "No available provider for presentation generation"}
 
         prompt = self._build_prompt(title, slide_count, style)
+
+        if self.prompt_intelligence and self.flags.is_enabled("prompt_intelligence", default=False):
+            pkg = self.prompt_intelligence.resolve(
+                title, media_type="text", execution_profile_id="presentation",
+                model_id=provider_name,
+            )
+            provider_name = pkg.model_id or provider_name
+
         try:
             raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
