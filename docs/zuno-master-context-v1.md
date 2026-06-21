@@ -204,18 +204,34 @@ product_ad, food_photography, travel_poster, social_media, research_report, acad
 - Sprint 7A: Prompt Intelligence Engine core
 - Sprint 7B: Production integration into all services
 - Sprint 7C: Learning loop, context fix, score consumption
+- Sprint 8A: Operations Layer backend
+- Sprint 8B: Operations UI
 
-### Next: Sprint 9 — Video & Audio Generation
-- Video adapter (Veo, Runway, MiniMax) via MediaPort — enable `media_video`
-- Audio adapter (ElevenLabs, Kokoro TTS) for NotebookLM audio overviews
-- Character consistency — seed/face anchor preservation
-- Estimated: 8-10 days, ~12 files, 30 tests
+### Next: Sprint 9A — Brand DNA Engine
+- Brand DNA system — store and apply brand identity (fonts, colors, logos, voice)
+- KO Ghorab, Dast Nevis, DIN Next Arabic brand typography integration
+- Brand style profiles with workspace-level application
+- Estimated: 6-8 days
+
+### Sprint 9B — HTML Design Engine
+- Generate brand-compliant HTML designs (social cards, posters, banners, ads)
+- Template engine using brand DNA profiles for automatic styling
+- Dark/light theme generation per brand
+- Export-ready HTML output
+- Estimated: 6-8 days
+
+### Sprint 10 — Publish Layer
+- One-click publish from Artifact to web/storage
+- Public share links with expiration
+- Social media card generation
+- Archive with retention policy enforcement
+- Estimated: 8-10 days
 
 ### Future
-- Sprint 8C: Operations UI polish (cache layer, usage_aggregates, advanced analytics)
-- Sprint 10: Research provider expansion (Semantic Scholar, arXiv, Crossref)
-- Sprint 11: Advanced memory (RAG pipeline, hybrid search)
-- Sprint 12: Production hardening (multi-user, PostgreSQL, auth)
+- Video & Audio Generation (Veo, Runway, ElevenLabs, Kokoro)
+- Research provider expansion (Semantic Scholar, arXiv, Crossref)
+- Advanced memory (RAG pipeline, hybrid search)
+- Production hardening (multi-user, PostgreSQL, auth)
 
 ---
 
@@ -274,16 +290,24 @@ product_ad, food_photography, travel_poster, social_media, research_report, acad
 
 ---
 
-## 13. Approved Typography
+## 13. Typography
 
-- **Primary**: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`
-- **Code**: `'SF Mono', 'Fira Code', monospace`
-- **Report**: `'Times New Roman', serif`
+### UI Typography
+- **Primary interface**: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`
+- **Code/monospace**: `'SF Mono', 'Fira Code', monospace`
+- **Reports (print-style)**: `'Times New Roman', serif`
 - **Base size**: 16px (body)
 - **Header sizes**: 1.15rem (sidebar h1), 1.1rem (panel headers), 1.5rem (card titles)
 - **Body text**: 0.85rem - 0.9rem
 - **Meta/labels**: 0.75rem - 0.85rem
 - **Line height**: 1.7 (body), 1.8 (lists)
+- No `@font-face` or custom font loading — system fonts only
+
+### Brand Typography
+- **Headlines / display**: KO Ghorab (Arabic display — titles, hero text, large headings)
+- **Decorative / artistic**: Dast Nevis (Arabic calligraphic — signatures, artistic elements)
+- **UI / body (Arabic)**: DIN Next Arabic (clean sans-serif for Arabic UI text)
+- **Usage rule**: Brand fonts used in generated brand assets, posters, social graphics, and marketing output — not in the ZUNO application UI itself
 
 ---
 
@@ -305,10 +329,12 @@ product_ad, food_photography, travel_poster, social_media, research_report, acad
 
 ## 15. Future Sprint Order
 
-1. **Sprint 9**: Video & Audio Generation (Veo, Runway, ElevenLabs) — 8-10d
-2. **Sprint 8C**: Operations polish (cache layer, aggregates) — 5-7d
-3. **Sprint 10**: Research provider expansion (Semantic Scholar, arXiv) — 8-12d
-4. **Sprint 11**: Advanced memory (RAG pipeline, hybrid search) — 10-14d
-5. **Sprint 12**: Production hardening (multi-user, PostgreSQL, auth) — 10-15d
+1. **Sprint 9A**: Brand DNA Engine — brand identity system, typography, color profiles — 6-8d
+2. **Sprint 9B**: HTML Design Engine — brand-compliant HTML designs, templates, export — 6-8d
+3. **Sprint 10**: Publish Layer — one-click publish, share links, social cards — 8-10d
+4. **Sprint 11**: Video & Audio Generation — Veo, Runway, ElevenLabs, Kokoro — 8-10d
+5. **Sprint 12**: Research provider expansion — Semantic Scholar, arXiv, Crossref — 8-12d
+6. **Sprint 13**: Advanced memory — RAG pipeline, hybrid search — 10-14d
+7. **Sprint 14**: Production hardening — multi-user, PostgreSQL, auth — 10-15d
 
 **Do not start a sprint until the previous sprint is fully closed** (commit, tag, push, docs).

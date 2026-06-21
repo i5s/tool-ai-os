@@ -118,12 +118,12 @@ danger button:  rgba(239,68,68,.8) bg, #fff text
 
 ## 4. Typography System
 
-### Font Stack
+### UI Typography (ZUNO Application)
 - **Primary interface**: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`
 - **Code/monospace**: `'SF Mono', 'Fira Code', monospace`
 - **Reports (print-style)**: `'Times New Roman', serif`
 
-### Size Scale
+### UI Size Scale
 ```
 sidebar h1:       1.15rem / 600 weight
 panel headers:    1.1rem
@@ -134,18 +134,34 @@ stat values:      1.4rem — 1.8rem / 700 weight
 badges:           0.75rem
 ```
 
-### Line Heights
+### UI Line Heights
 ```
 body text:    1.7
 lists:        1.8
 code:         1.5
 ```
 
-### Usage Rules
+### UI Usage Rules
 - RTL text alignment (text-align: right) for Arabic content
 - LTR (text-align: left) for code and English-only content
 - No `@font-face` or custom font loading — system fonts only
 - Monospace for code previews, serif for report previews
+
+### Brand Typography (Generated Assets)
+Used in generated brand assets, social cards, posters, banners, ads — not in the ZUNO application UI.
+
+| Font | Role | Usage |
+|------|------|-------|
+| **KO Ghorab** | Arabic display headline | Titles, hero text, large headings, poster headers |
+| **Dast Nevis** | Arabic decorative / calligraphic | Signatures, artistic elements, ornamental text, watermark overlays |
+| **DIN Next Arabic** | Arabic UI / body | Clean sans-serif for Arabic body text, labels, descriptions, buttons in brand assets |
+
+#### Brand Typography Rules
+- KO Ghorab for display only — never for body text or small sizes (<24px)
+- Dast Nevis for accent only — never for readable content or navigation
+- DIN Next Arabic for all Arabic body text in generated assets
+- Brand fonts are loaded only when generating brand assets — not in the core ZUNO UI
+- Fallback chain: KO Ghorab → DIN Next Arabic → system-ui → sans-serif
 
 ---
 
