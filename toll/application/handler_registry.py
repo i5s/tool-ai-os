@@ -91,3 +91,18 @@ def register_handlers(
         wf_engine.register_handler("benchmark_create_suite", bench_svc.create_suite)
         wf_engine.register_handler("benchmark_list_suites", bench_svc.list_suites)
         wf_engine.register_handler("benchmark_model_scores", bench_svc.model_scores)
+
+    if flags.is_enabled("prompt_intelligence", default=False):
+        from ..model_registry.service import ModelRegistryService as _ModelRegistryService
+        from ..prompt.engine import PromptIntelligenceEngine
+        _mr = _ModelRegistryService(cm=cm, flags=flags)
+        _pie = PromptIntelligenceEngine(cm=cm, flags=flags, registry=registry,
+                                        model_registry=_mr)
+        wf_engine.register_handler("prompt_intelligence", lambda p, _m, _e=_pie: (
+            _e.resolve(
+                user_input=p.get("user_input", ""),
+                media_type=p.get("media_type", "image"),
+                execution_profile_id=p.get("execution_profile_id", ""),
+                model_id=p.get("model_id"),
+            )
+        ))

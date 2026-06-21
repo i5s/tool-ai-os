@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from api.routers import engine, config, workspaces, conversations, planner, artifacts, research, notebooks, models, benchmark
+from api.routers import engine, config, workspaces, conversations, planner, artifacts, research, notebooks, models, benchmark, prompt
 from toll.core.config import ROOT, DB_PATH, CORS_ORIGINS
 from toll.core.connection_manager import ConnectionManager, HealthCheckError
 from toll.workflow.engine import WorkflowEngine
@@ -44,6 +44,7 @@ app.include_router(research.router, prefix="/api")
 app.include_router(notebooks.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
 app.include_router(benchmark.router, prefix="/api")
+app.include_router(prompt.router, prefix="/api")
 
 WEB = ROOT / "web"
 if WEB.exists():

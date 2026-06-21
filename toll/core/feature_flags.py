@@ -78,6 +78,9 @@ DEFAULT_FLAGS = {
     # Benchmark Lab — Sprint 6A
     "benchmark_lab": False,
     "benchmark_auto_quality": False,
+    # Prompt Intelligence — Sprint 7A
+    "prompt_intelligence": False,
+    "prompt_intelligence_seed": True,
 }
 
 _PREFIX = "feature_"
