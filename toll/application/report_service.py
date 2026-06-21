@@ -33,6 +33,7 @@ class ReportService:
         style = plan.get("style", "academic")
         sections_list = plan.get("sections", None)
 
+        pie_profile_id = None
         provider_name = self.selector.select(ArtifactType.REPORT)
         if not provider_name:
             return {"error": "No available provider for report generation"}
@@ -45,10 +46,15 @@ class ReportService:
                 model_id=provider_name,
             )
             provider_name = pkg.model_id or provider_name
+            pie_profile_id = pkg.profile_id
 
         try:
             raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
+            if pie_profile_id and self.prompt_intelligence:
+                self.prompt_intelligence.record_failure(
+                    pie_profile_id, provider_name, str(e),
+                )
             return {"error": str(e)}
 
         sections = self._parse_sections(raw) or self._fallback_sections(title, sections_list)
@@ -67,6 +73,12 @@ class ReportService:
 
         rendered = self.renderer.render(title, sections)
         artifact = self.artifact_service.create(artifact, rendered)
+
+        if pie_profile_id and self.prompt_intelligence:
+            self.prompt_intelligence.record_success(
+                pie_profile_id, provider_name, prompt,
+                artifact_id=artifact.id,
+            )
 
         preview_html = self.preview.report_preview(artifact)
         preview_json = self.preview.json_preview(artifact)

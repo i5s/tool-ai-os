@@ -49,12 +49,15 @@ class ResearchService:
         style = plan.get("style", "apa")
         max_sources = plan.get("max_sources", 10)
 
-        model_id = None
+        pie_profile_id = None
         if self.prompt_intelligence and self.flags.is_enabled("prompt_intelligence", default=False):
             pkg = self.prompt_intelligence.resolve(
                 topic, media_type="text", execution_profile_id="research"
             )
             model_id = pkg.model_id or None
+            pie_profile_id = pkg.profile_id
+        else:
+            model_id = None
 
         providers = self._get_providers()
         query = ResearchQuery(
@@ -76,7 +79,6 @@ class ResearchService:
                 all_sources, style
             )
             synopsis = self._synthesize(all_sources, topic, model_id=model_id)
-
         key_findings = self._extract_findings(synopsis)
         has_notebook = bool(notebook_sources)
 
@@ -127,6 +129,12 @@ class ResearchService:
                 )
             except Exception as e:
                 logger.warning("Research memory indexing failed: %s", e)
+
+        if pie_profile_id and self.prompt_intelligence:
+            self.prompt_intelligence.record_success(
+                pie_profile_id, model_id or ",".join(p.name for p in providers),
+                topic, artifact_id=artifact.id,
+            )
 
         return {
             "artifact_id": artifact.id,

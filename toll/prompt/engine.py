@@ -154,7 +154,13 @@ class PromptIntelligenceEngine:
                 if not self.prompt_memory.is_blacklisted(prompt_profile.id, m.id)
             ]
             if filtered:
-                return filtered[0].id
+                scored = [
+                    (m, self.prompt_memory.get_avg_score(prompt_profile.id, m.id)
+                          or 0.0)
+                    for m in filtered
+                ]
+                scored.sort(key=lambda x: x[1], reverse=True)
+                return scored[0][0].id
             if models:
                 return models[0].id
 
@@ -180,10 +186,19 @@ class PromptIntelligenceEngine:
             "color_palette": "neutral",
         }
         try:
-            ctx = self.context_engine.get_active_context()
-            if ctx:
-                context["active_brand"] = ctx.get("brand", "")
-                context["active_project"] = ctx.get("project", "")
+            result = self.context_engine.build(user_input)
+            if result.active_workspace:
+                for key in ("brand", "university", "project", "semester"):
+                    item = result.active_workspace.get(key)
+                    if item:
+                        context[f"active_{key}"] = item.get("name", "")
+            if result.memories:
+                memory_lines = [
+                    f"{m.get('type', '')}: {m.get('value', '')}"
+                    for m in result.memories[:3]
+                ]
+                if memory_lines:
+                    context["memory_context"] = " | ".join(memory_lines)
         except Exception as e:
             logger.debug("Context assembly failed: %s", e)
         return context
@@ -195,6 +210,15 @@ class PromptIntelligenceEngine:
             if placeholder in result:
                 result = result.replace(placeholder, str(val))
         return result
+
+    def record_success(self, profile_id: str, model_id: str,
+                       prompt: str, artifact_id: str | None = None,
+                       score: float | None = None):
+        self.prompt_memory.record_success(profile_id, model_id, prompt,
+                                          artifact_id, score)
+
+    def record_failure(self, profile_id: str, model_id: str, reason: str):
+        self.prompt_memory.record_failure(profile_id, model_id, reason)
 
     def _fallback(self, user_input: str, model_id: str | None) -> PromptPackage:
         return PromptPackage(

@@ -47,6 +47,7 @@ class MediaService:
         if not prompt:
             return {"success": False, "error": "No prompt provided"}
 
+        pie_profile_id = None
         if self.prompt_intelligence and self.flags.is_enabled("prompt_intelligence", default=False):
             pkg = self.prompt_intelligence.resolve(
                 prompt, media_type=media_type,
@@ -54,6 +55,7 @@ class MediaService:
             )
             prompt = pkg.prompt
             params["prompt"] = prompt
+            pie_profile_id = pkg.profile_id
 
         provider_name, resolved_model_id = self._resolve_provider(params, media_type)
         if not provider_name:
@@ -77,11 +79,22 @@ class MediaService:
 
         result = media_port.generate(request)
         if not result.success:
+            if pie_profile_id and self.prompt_intelligence:
+                self.prompt_intelligence.record_failure(
+                    pie_profile_id, resolved_model_id or provider_name,
+                    result.error or "Generation failed",
+                )
             return {"success": False, "error": result.error}
 
         media_path = self._persist(result)
         artifact = self._store_artifact(params, result, provider_name, prompt,
                                         resolved_model_id, media_path)
+
+        if pie_profile_id and self.prompt_intelligence:
+            self.prompt_intelligence.record_success(
+                pie_profile_id, resolved_model_id or provider_name,
+                prompt, artifact_id=artifact.id,
+            )
 
         return {
             "success": True,

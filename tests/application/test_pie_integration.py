@@ -18,6 +18,13 @@ class FakePIE:
             debug_info={"intent": "test"},
         )
 
+    def record_success(self, profile_id, model_id, prompt,
+                       artifact_id=None, score=None):
+        pass
+
+    def record_failure(self, profile_id, model_id, reason):
+        pass
+
 
 def test_report_service_pie_enabled(feature_flags, cm):
     from toll.application.report_service import ReportService
@@ -77,6 +84,11 @@ def test_media_service_pie_enabled(feature_flags, cm):
 def test_media_service_pie_optimizes_prompt(feature_flags, cm):
     from toll.application.media_service import MediaService
     from toll.ports.media import MediaPort, MediaRequest, MediaResult
+    from toll.prompt.repository import PromptProfile, PromptProfileRepository
+
+    repo = PromptProfileRepository(cm)
+    repo.create(PromptProfile(id="product_ad", name="Test Ad",
+                              media_types=["image"]))
 
     class FakeMedia(MediaPort):
         name = "fake"

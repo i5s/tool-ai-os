@@ -33,6 +33,7 @@ class PresentationService:
         slide_count = plan.get("slides", 5)
         style = plan.get("style", "editorial")
 
+        pie_profile_id = None
         provider_name = self.selector.select(ArtifactType.PRESENTATION)
         if not provider_name:
             return {"error": "No available provider for presentation generation"}
@@ -45,10 +46,15 @@ class PresentationService:
                 model_id=provider_name,
             )
             provider_name = pkg.model_id or provider_name
+            pie_profile_id = pkg.profile_id
 
         try:
             raw = self.ai.ask(prompt, provider_name=provider_name)
         except RuntimeError as e:
+            if pie_profile_id and self.prompt_intelligence:
+                self.prompt_intelligence.record_failure(
+                    pie_profile_id, provider_name, str(e),
+                )
             return {"error": str(e)}
 
         slides = self._parse_slides(raw) or self._fallback_slides(title, slide_count)
@@ -67,6 +73,12 @@ class PresentationService:
 
         rendered = self.renderer.render(title, slides)
         artifact = self.artifact_service.create(artifact, rendered)
+
+        if pie_profile_id and self.prompt_intelligence:
+            self.prompt_intelligence.record_success(
+                pie_profile_id, provider_name, prompt,
+                artifact_id=artifact.id,
+            )
 
         preview_html = self.preview.presentation_preview(artifact)
         preview_json = self.preview.json_preview(artifact)
