@@ -1,0 +1,41 @@
+import sqlite3, json
+from pathlib import Path
+from . import config
+
+class Storage:
+    def __init__(self):
+        config.DATA.mkdir(parents=True, exist_ok=True)
+        self.conn = sqlite3.connect(str(config.DB_PATH))
+        self.conn.row_factory = sqlite3.Row
+        self._init_db()
+
+    def _init_db(self):
+        schema = (config.ROOT / "toll" / "model" / "schema.sql").read_text()
+        self.conn.executescript(schema)
+        self.conn.commit()
+
+    def get_config(self, key, default=None):
+        row = self.conn.execute("SELECT value FROM config WHERE key = ?", (key,)).fetchone()
+        return row["value"] if row else default
+
+    def set_config(self, key, value):
+        self.conn.execute("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, str(value)))
+        self.conn.commit()
+
+    def log_usage(self, provider, action="ask"):
+        self.conn.execute("INSERT INTO usage (provider, action) VALUES (?, ?)", (provider, action))
+        self.conn.commit()
+
+    def usage_today(self, provider):
+        row = self.conn.execute(
+            "SELECT COUNT(*) as c FROM usage WHERE provider = ? AND date(timestamp) = date('now')",
+            (provider,)
+        ).fetchone()
+        return row["c"] if row else 0
+
+    def save_history(self, engine, task, result=""):
+        self.conn.execute("INSERT INTO history (engine, task, result) VALUES (?, ?, ?)", (engine, task, result))
+        self.conn.commit()
+
+    def history(self, limit=20):
+        return self.conn.execute("SELECT * FROM history ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
