@@ -136,6 +136,42 @@ body {
 }
 .sidebar-footer button:hover { background: var(--sidebar-hover); color: var(--text); }
 
+.workspace-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace-section h3 {
+  font-size: .75rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+}
+.workspace-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: .85rem;
+  margin-bottom: 8px;
+  outline: none;
+}
+.workspace-select:focus { border-color: var(--primary); }
+.workspace-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: .8rem;
+  cursor: pointer;
+  transition: .2s;
+}
+.workspace-btn:hover { background: var(--surface-hover); color: var(--text); }
+
 /* ===== MAIN ===== */
 .main {
   flex: 1; display: flex; flex-direction: column;
@@ -432,6 +468,23 @@ body {
     <input type="text" placeholder="بحث في المحادثات..." oninput="searchConversations(this.value)">
   </div>
 
+  <div class="workspace-section">
+    <h3>Workspace</h3>
+    <select id="brandSelect" class="workspace-select" onchange="activateWorkspace('brand', this.value)">
+      <option value="">Brand...</option>
+    </select>
+    <select id="universitySelect" class="workspace-select" onchange="activateWorkspace('university', this.value)">
+      <option value="">University...</option>
+    </select>
+    <select id="semesterSelect" class="workspace-select" onchange="activateWorkspace('semester', this.value)">
+      <option value="">Semester...</option>
+    </select>
+    <select id="projectSelect" class="workspace-select" onchange="activateWorkspace('project', this.value)">
+      <option value="">Project...</option>
+    </select>
+    <button class="workspace-btn" onclick="openWorkspaceModal()">+ إدارة Workspace</button>
+  </div>
+
   <div class="conversations" id="conversations">
     <div class="conv-group-label">📌 مثبتة</div>
     <div id="pinnedList"></div>
@@ -526,6 +579,42 @@ body {
   </div>
 </div>
 
+<!-- ===== WORKSPACE MODAL ===== -->
+<div class="modal-overlay" id="workspaceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🗂️ Workspace</h2>
+      <button class="close-modal" onclick="closeWorkspaceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <label>النوع</label>
+        <select id="newWorkspaceType">
+          <option value="brand">Brand</option>
+          <option value="university">University</option>
+          <option value="project">Project</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label>الاسم</label>
+        <input type="text" id="newWorkspaceName" placeholder="اسم Workspace">
+      </div>
+      <div class="setting-group" id="semesterGroup" style="display:none">
+        <label>الجامعة</label>
+        <select id="newSemesterUniversity"></select>
+      </div>
+      <button class="workspace-btn" onclick="createWorkspaceFromModal()" style="margin-top:8px">إنشاء</button>
+      <hr style="border:0;border-top:1px solid var(--border);margin:16px 0">
+      <div class="setting-group">
+        <label>إضافة Semester</label>
+        <select id="semesterUniversitySelect"></select>
+        <input type="text" id="newSemesterName" placeholder="اسم Semester" style="margin-top:8px">
+        <button class="workspace-btn" onclick="createSemesterFromModal()" style="margin-top:8px">إضافة Semester</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== SETTINGS MODAL ===== -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
@@ -579,25 +668,251 @@ body {
 <script>
 // ===== STATE =====
 const state = {
-  conversations: JSON.parse(localStorage.getItem('toll_convs') || '[]'),
+  conversations: [],
   currentId: null,
   settings: JSON.parse(localStorage.getItem('toll_settings') || '{}'),
   darkMode: localStorage.getItem('toll_theme') !== 'light',
   imageData: null,
   isDark: true,
+  workspaces: [],
+  activeWorkspace: {},
 };
 
 // ===== INIT =====
+// ===== API HELPERS =====
+async function apiGet(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiPost(path, body) {
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiPut(path, body) {
+  const r = await fetch(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiDelete(path) {
+  const r = await fetch(path, { method: 'DELETE' });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ===== WORKSPACE =====
+async function loadWorkspaces() {
+  try {
+    const data = await apiGet('/api/workspaces');
+    const active = await apiGet('/api/workspaces/active');
+    state.workspaces = data.workspaces || [];
+    state.activeWorkspace = active.state || {};
+    populateWorkspaceSelects();
+  } catch (e) {
+    console.error('Failed to load workspaces', e);
+  }
+}
+
+function populateWorkspaceSelects() {
+  const byType = (type) => state.workspaces.filter(w => w.type === type);
+  fillSelect('brandSelect', byType('brand'), state.activeWorkspace.active_brand_id, 'Brand');
+  fillSelect('universitySelect', byType('university'), state.activeWorkspace.active_university_id, 'University');
+  fillSelect('projectSelect', byType('project'), state.activeWorkspace.active_project_id, 'Project');
+
+  const uniId = state.activeWorkspace.active_university_id;
+  if (uniId) loadSemesters(uniId);
+  else fillSelect('semesterSelect', [], '', 'Semester');
+
+  // Modal selects
+  fillSelect('newSemesterUniversity', byType('university'), '', 'اختر جامعة');
+  fillSelect('semesterUniversitySelect', byType('university'), '', 'اختر جامعة');
+}
+
+function fillSelect(id, items, selected, defaultLabel) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${defaultLabel}...</option>`;
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.name;
+    if (item.id === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadSemesters(universityId) {
+  try {
+    const data = await apiGet(`/api/workspaces/${universityId}/semesters`);
+    fillSelect('semesterSelect', data.semesters || [], state.activeWorkspace.active_semester_id, 'Semester');
+  } catch (e) {
+    console.error('Failed to load semesters', e);
+  }
+}
+
+async function activateWorkspace(kind, id) {
+  const body = {};
+  if (kind === 'brand') body.brand_id = id || null;
+  if (kind === 'university') {
+    body.university_id = id || null;
+    body.semester_id = null;
+    if (id) await loadSemesters(id);
+    else fillSelect('semesterSelect', [], '', 'Semester');
+  }
+  if (kind === 'project') body.project_id = id || null;
+  if (kind === 'semester') body.semester_id = id || null;
+
+  try {
+    const result = await apiPost('/api/workspaces/active', body);
+    state.activeWorkspace = result.state;
+  } catch (e) {
+    console.error('Failed to activate workspace', e);
+  }
+}
+
+function openWorkspaceModal() {
+  document.getElementById('workspaceModal').classList.add('open');
+  populateWorkspaceSelects();
+}
+
+function closeWorkspaceModal() {
+  document.getElementById('workspaceModal').classList.remove('open');
+}
+
+async function createWorkspaceFromModal() {
+  const type = document.getElementById('newWorkspaceType').value;
+  const name = document.getElementById('newWorkspaceName').value.trim();
+  if (!name) return;
+  try {
+    await apiPost('/api/workspaces', { type, name });
+    await loadWorkspaces();
+    document.getElementById('newWorkspaceName').value = '';
+  } catch (e) {
+    alert('فشل إنشاء Workspace: ' + e.message);
+  }
+}
+
+async function createSemesterFromModal() {
+  const universityId = document.getElementById('semesterUniversitySelect').value;
+  const name = document.getElementById('newSemesterName').value.trim();
+  if (!universityId || !name) return;
+  try {
+    await apiPost(`/api/workspaces/${universityId}/semesters`, { name });
+    document.getElementById('newSemesterName').value = '';
+    if (state.activeWorkspace.active_university_id === universityId) {
+      await loadSemesters(universityId);
+    }
+  } catch (e) {
+    alert('فشل إنشاء Semester: ' + e.message);
+  }
+}
+
+// ===== CHAT COMMANDS =====
+function parseChatCommand(text) {
+  const cmd = text.trim();
+  if (cmd.startsWith('/brand ')) {
+    const name = cmd.slice(7).trim();
+    return { type: 'create_workspace', workspace_type: 'brand', name };
+  }
+  if (cmd.startsWith('/university ')) {
+    const name = cmd.slice(12).trim();
+    return { type: 'create_workspace', workspace_type: 'university', name };
+  }
+  if (cmd.startsWith('/project ')) {
+    const name = cmd.slice(9).trim();
+    return { type: 'create_workspace', workspace_type: 'project', name };
+  }
+  if (cmd.startsWith('/semester ')) {
+    const name = cmd.slice(10).trim();
+    return { type: 'create_semester', name };
+  }
+  return null;
+}
+
+async function handleChatCommand(cmd) {
+  if (cmd.type === 'create_workspace') {
+    await apiPost('/api/workspaces', { type: cmd.workspace_type, name: cmd.name });
+    await loadWorkspaces();
+    return `✅ تم إنشاء ${cmd.workspace_type}: ${cmd.name}`;
+  }
+  if (cmd.type === 'create_semester') {
+    const uniId = state.activeWorkspace.active_university_id;
+    if (!uniId) return '❌ اختر جامعة أولاً';
+    await apiPost(`/api/workspaces/${uniId}/semesters`, { name: cmd.name });
+    await loadSemesters(uniId);
+    return `✅ تم إنشاء Semester: ${cmd.name}`;
+  }
+  return null;
+}
+
+// ===== SERVER-SIDE CONVERSATIONS =====
+async function loadServerConversations() {
+  try {
+    const data = await apiGet('/api/conversations');
+    state.conversations = (data.conversations || []).map(c => ({
+      id: String(c.id),
+      title: c.title,
+      pinned: false,
+      createdAt: c.created_at,
+      messages: []
+    }));
+    renderConversations();
+    if (state.conversations.length > 0) {
+      await loadConversation(state.conversations[0].id);
+    }
+  } catch (e) {
+    console.error('Failed to load conversations', e);
+  }
+}
+
+async function loadServerMessages(conversationId) {
+  try {
+    const data = await apiGet(`/api/conversations/${conversationId}/messages`);
+    return (data.messages || []).map(m => ({ role: m.role, content: m.content }));
+  } catch (e) {
+    console.error('Failed to load messages', e);
+    return [];
+  }
+}
+
+async function createServerConversation(title) {
+  try {
+    const result = await apiPost('/api/conversations', { title });
+    return String(result.conversation_id);
+  } catch (e) {
+    console.error('Failed to create conversation', e);
+    return Date.now().toString();
+  }
+}
+
+async function addServerMessage(conversationId, role, content) {
+  try {
+    await apiPost(`/api/conversations/${conversationId}/messages`, { role, content });
+  } catch (e) {
+    console.error('Failed to add message', e);
+  }
+}
+
 function init() {
   applyTheme();
-  renderConversations();
+  loadWorkspaces();
+  loadServerConversations();
   const saved = state.settings.defaultType || 'auto';
   document.querySelectorAll('.task-type').forEach(el => {
     el.classList.toggle('active', el.dataset.type === saved);
   });
-  if (state.conversations.length > 0) {
-    loadConversation(state.conversations[0].id);
-  }
   loadStatus();
 }
 init();
@@ -660,19 +975,18 @@ function createConvItem(conv) {
   return div;
 }
 
-function newChat() {
-  const id = Date.now().toString();
+async function newChat() {
+  const id = await createServerConversation('محادثة جديدة');
   state.currentId = id;
   const conv = { id, title: 'محادثة جديدة', messages: [], pinned: false, createdAt: new Date().toISOString() };
   state.conversations.unshift(conv);
-  saveConversations();
   renderConversations();
   showWelcome();
   document.getElementById('chatInput').focus();
   if (window.innerWidth <= 768) toggleSidebar();
 }
 
-function loadConversation(id) {
+async function loadConversation(id) {
   state.currentId = id;
   const conv = state.conversations.find(c => c.id === id);
   if (!conv) return;
@@ -680,11 +994,13 @@ function loadConversation(id) {
 
   const container = document.getElementById('chatMessages');
   container.innerHTML = '';
-  if (conv.messages.length === 0) {
+  const messages = await loadServerMessages(id);
+  conv.messages = messages;
+  if (messages.length === 0) {
     showWelcome();
     return;
   }
-  conv.messages.forEach(m => appendMessage(m.role, m.content, false));
+  messages.forEach(m => appendMessage(m.role, m.content, false));
   container.scrollTop = container.scrollHeight;
 }
 
@@ -817,11 +1133,26 @@ async function sendMessage() {
   const type = getSelectedType();
 
   if (!state.currentId) {
-    newChat();
+    await newChat();
   }
 
   const conv = getCurrentConv();
   if (!conv) return;
+
+  // Handle workspace chat commands
+  const chatCmd = parseChatCommand(text);
+  if (chatCmd) {
+    appendMessage('user', text);
+    const reply = await handleChatCommand(chatCmd);
+    appendMessage('assistant', reply);
+    await addServerMessage(state.currentId, 'user', text);
+    await addServerMessage(state.currentId, 'assistant', reply);
+    input.value = '';
+    input.style.height = 'auto';
+    btn.disabled = false;
+    input.focus();
+    return;
+  }
 
   const userContent = state.imageData
     ? `${text}\n\n<div class="file-preview"><img src="${state.imageData}" style="max-width:200px;border-radius:8px"></div>`
@@ -832,8 +1163,8 @@ async function sendMessage() {
   if (conv.title === 'محادثة جديدة' && text.length > 0) {
     conv.title = text.slice(0, 40) + (text.length > 40 ? '...' : '');
   }
-  saveConversations();
   renderConversations();
+  await addServerMessage(state.currentId, 'user', userContent);
 
   input.value = '';
   input.style.height = 'auto';
@@ -858,14 +1189,14 @@ async function sendMessage() {
     const reply = data.response || data.error || '❌ حدث خطأ';
     conv.messages.push({ role: 'assistant', content: reply });
     appendMessage('assistant', reply);
-    saveConversations();
+    await addServerMessage(state.currentId, 'assistant', reply);
     renderConversations();
 
     if (data.html_files) {
       const fileMsg = `📁 تم إنشاء: ${data.html_files.join(', ')}`;
       conv.messages.push({ role: 'assistant', content: fileMsg });
       appendMessage('assistant', fileMsg);
-      saveConversations();
+      await addServerMessage(state.currentId, 'assistant', fileMsg);
     }
   } catch (e) {
     removeTyping();
@@ -955,11 +1286,15 @@ function escHtml(str) {
 document.getElementById('settingsModal').onclick = function(e) {
   if (e.target === this) closeSettings();
 };
+document.getElementById('workspaceModal').onclick = function(e) {
+  if (e.target === this) closeWorkspaceModal();
+};
 
 // ===== KEYBOARD SHORTCUT =====
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeSettings();
+    closeWorkspaceModal();
     if (window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('open')) {
       toggleSidebar();
     }

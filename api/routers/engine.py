@@ -6,6 +6,7 @@ from toll.engine.reports import Reports
 from toll.core.ai import AI
 from toll.core.storage import Storage
 from toll.core.registry import ProviderRegistry
+from toll.core.conversations import ConversationStore
 from api.dependencies import get_registry
 
 router = APIRouter()
@@ -52,6 +53,21 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
         pg = PromptGenerator()
         rp = Reports()
         db = Storage()
+        conv_store = ConversationStore()
+
+        # Load or create conversation
+        if req.conversation_id:
+            conversation = conv_store.get(req.conversation_id)
+            if not conversation:
+                raise HTTPException(status_code=404, detail="Conversation not found")
+        else:
+            title = req.message[:50] + ("..." if len(req.message) > 50 else "")
+            conversation = conv_store.create(title=title)
+
+        conv_id = conversation["id"]
+
+        # Store user message
+        conv_store.add_message(conv_id, "user", req.message)
 
         task_type = detect_type(req.message, req.type)
         files = []
@@ -106,11 +122,22 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
         if req.image:
             response_text += "\n\n📎 تم استلام الصورة."
 
+        # Store assistant message
+        metadata = {"type": task_type, "html_files": files}
+        conv_store.add_message(conv_id, "assistant", response_text, metadata)
+
         db.save_history("chat", req.message[:100], response_text[:200])
-        return {"response": response_text, "type": task_type, "html_files": files}
+        return {
+            "response": response_text,
+            "type": task_type,
+            "html_files": files,
+            "conversation_id": conv_id,
+        }
 
     except RuntimeError as e:
-        return {"response": f"⚠️ {str(e)}\n\nاستخدم مزود AI آخر أو حاول لاحقاً.", "type": "error", "html_files": []}
+        return {"response": f"⚠️ {str(e)}\n\nاستخدم مزود AI آخر أو حاول لاحقاً.", "type": "error", "html_files": [], "conversation_id": req.conversation_id}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -20,14 +20,17 @@
 | T11 | Fix or replace BrowserAI | ✅ Done | Replaced with DuckDuckGo search adapter |
 | T12 | Wire Settings System | ✅ Done | `toll/core/settings.py` |
 
-## Sprint 2: Memory Graph + Workspace Manager
+## Sprint 2: Memory Graph + Workspace Manager — ✅ COMPLETE
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| T9 | Memory Graph v1 | ⬜ Pending | Include importance_score |
-| T33 | Workspace Manager | ⬜ Pending | Brand/University/Project only |
-| T34 | Workspace API endpoints | ⬜ Pending | |
-| T35 | Workspace UI in dashboard | ⬜ Pending | Global sidebar selector |
+| T9 | Memory Graph v1 | ✅ Done | `toll/memory/graph.py`; JSON values, unique (type, entity_id, key), importance learning |
+| T33 | Workspace Manager | ✅ Done | `toll/workspace/manager.py`; Brand/University/Project + semester structures |
+| T34 | Workspace API endpoints | ✅ Done | `api/routers/workspaces.py` |
+| T35 | Workspace UI + chat commands | ✅ Done | Sidebar selector + `/brand`, `/university`, `/project`, `/semester` |
+| — | Conversations system | ✅ Done | `toll/core/conversations.py`; server-side, separate from memories |
+| — | Conversation API endpoints | ✅ Done | `api/routers/conversations.py` |
+| — | Update /api/chat | ✅ Done | Persists messages via `ConversationStore` |
 
 ## Sprint 3: Context Engine + Planner + Workflow Engine
 
