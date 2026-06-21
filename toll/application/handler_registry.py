@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..adapters.media.ollama import OllamaMediaAdapter
+from ..adapters.media.replicate import ReplicateMediaAdapter
 from ..core.connection_manager import ConnectionManager
 from ..core.feature_flags import FeatureFlags
 from ..core.provider_selector import ProviderSelector
@@ -8,6 +10,7 @@ from ..core.settings import Settings
 from ..workflow.engine import WorkflowEngine
 from .artifact_service import ArtifactService
 from .carousel_service import CarouselService
+from .media_service import MediaService
 from .report_service import ReportService
 from .presentation_service import PresentationService
 from .opendesign_service import OpenDesignService
@@ -70,3 +73,21 @@ def register_handlers(
                 notebook_id=p["notebook_id"], question=p["question"],
             ),
         )
+
+    if flags.is_enabled("media_generation", default=True):
+        if flags.is_enabled("media_image", default=True):
+            registry.register_media("replicate", ReplicateMediaAdapter())
+            registry.register_media("ollama", OllamaMediaAdapter())
+        from ..model_registry.service import ModelRegistryService
+        model_registry = ModelRegistryService(cm=cm, flags=flags)
+        svc = MediaService(cm, registry, selector, flags,
+                           model_registry=model_registry)
+        wf_engine.register_handler("media_generate", svc.generate)
+
+    if flags.is_enabled("benchmark_lab", default=False):
+        from ..benchmark.service import BenchmarkService
+        bench_svc = BenchmarkService(cm=cm, registry=registry, flags=flags)
+        wf_engine.register_handler("benchmark_run", bench_svc.execute)
+        wf_engine.register_handler("benchmark_create_suite", bench_svc.create_suite)
+        wf_engine.register_handler("benchmark_list_suites", bench_svc.list_suites)
+        wf_engine.register_handler("benchmark_model_scores", bench_svc.model_scores)

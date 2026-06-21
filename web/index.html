@@ -124,6 +124,64 @@ body {
 }
 .conv-actions button:hover { color: var(--text); background: var(--bg); }
 
+/* ===== NAVIGATION ===== */
+.sidebar-nav {
+  padding: 4px 12px; display: flex; flex-direction: column; gap: 1px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 8px;
+  cursor: pointer; font-size: .88rem; font-weight: 500;
+  color: var(--text2); transition: .15s; border: none; background: none; width: 100%; text-align: right;
+}
+.sidebar-nav-item:hover { background: var(--sidebar-hover); color: var(--text); }
+.sidebar-nav-item.active { background: var(--sidebar-hover); color: var(--primary); }
+
+/* ===== VIEW PANELS ===== */
+.view-panel { display: none; height: 100%; flex-direction: column; }
+.view-panel.active { display: flex; }
+
+.models-header, .lab-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.models-header h2, .lab-header h2 { font-size: 1.1rem; flex: 1; }
+.models-body, .lab-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+.model-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); transition: .15s;
+}
+.model-card:hover { border-color: var(--primary-dim); }
+.model-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.model-card .model-meta { font-size: .8rem; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; }
+.model-card .model-status {
+  display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem;
+}
+.model-status.active { background: rgba(34,197,94,.15); color: #22c55e; }
+.model-status.disabled { background: rgba(239,68,68,.15); color: #ef4444; }
+.model-status.coming_soon { background: rgba(250,204,21,.15); color: #eab308; }
+
+.lab-suite-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.lab-suite-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.lab-suite-meta { font-size: .8rem; color: var(--text2); }
+.lab-suite-prompts { margin-top: 8px; font-size: .82rem; color: var(--text3); }
+.lab-run-btn { margin-top: 8px; padding: 6px 14px; border-radius: 6px; background: var(--primary-dim); color: #fff; border: none; cursor: pointer; font-size: .8rem; }
+
+.lab-score-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); text-align: center;
+}
+.lab-score-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.lab-score-label { font-size: .8rem; color: var(--text2); }
+
 .sidebar-footer {
   border-top: 1px solid var(--border); padding: 12px 16px;
   display: flex; flex-direction: column; gap: 4px;
@@ -642,9 +700,11 @@ body {
     <button class="workspace-btn" onclick="openWorkspaceModal()">+ إدارة Workspace</button>
   </div>
 
-  <div class="workspace-section">
-    <h3>أدوات</h3>
-    <button class="workspace-btn" onclick="toggleNotebookMode()">📓 دفاتر الملاحظات</button>
+  <div class="sidebar-nav">
+    <button class="sidebar-nav-item active" data-view="chat" onclick="switchView('chat')">💬 الدردشة</button>
+    <button class="sidebar-nav-item" data-view="notebook" onclick="switchView('notebook')">📓 دفاتر الملاحظات</button>
+    <button class="sidebar-nav-item" data-view="models" onclick="switchView('models')">🤖 الموديلات</button>
+    <button class="sidebar-nav-item" data-view="lab" onclick="switchView('lab')">🧪 مختبر القياس</button>
   </div>
 
   <div class="conversations" id="conversations">
@@ -830,7 +890,7 @@ body {
 <!-- ===== NOTEBOOK PANEL ===== -->
 <div class="notebook-panel" id="notebookPanel">
   <div class="np-header" id="npHeader">
-    <button onclick="toggleNotebookMode()" title="رجوع">← رجوع</button>
+    <button onclick="switchView('chat')" title="رجوع">← رجوع</button>
     <h2>📓 دفاتر الملاحظات</h2>
     <button class="np-btn np-btn-primary" onclick="showNewNotebookForm()">+ جديد</button>
   </div>
@@ -907,6 +967,37 @@ body {
   </div>
   <div class="np-body" id="npQueryResultContainer" style="display:none;padding:0 24px 16px">
     <div class="np-query-result" id="npQueryResult"></div>
+  </div>
+</div>
+
+<!-- ===== MODELS PANEL ===== -->
+<div class="view-panel" id="modelsPanel">
+  <div class="models-header">
+    <h2>🤖 الموديلات</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="models-body" id="modelsBody">
+    <div id="modelsList"></div>
+  </div>
+</div>
+
+<!-- ===== LAB PANEL ===== -->
+<div class="view-panel" id="labPanel">
+  <div class="lab-header">
+    <h2>🧪 مختبر القياس</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="lab-body" id="labBody">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
+        <h3 style="font-size:.95rem;margin-bottom:8px">إنشاء مجموعة قياس جديدة</h3>
+        <input type="text" id="newLabSuiteName" placeholder="اسم المجموعة" style="width:100%;padding:8px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;margin-bottom:8px;outline:none">
+        <textarea id="newLabSuitePrompts" placeholder="أدخل prompts، كل سؤال في سطر جديد" style="width:100%;min-height:60px;padding:8px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;resize:vertical;font-family:inherit;outline:none;margin-bottom:8px"></textarea>
+        <button class="lab-run-btn" onclick="createLabSuite()">إنشاء المجموعة</button>
+      </div>
+      <div id="labSuitesList"></div>
+      <div id="labResults"></div>
+    </div>
   </div>
 </div>
 
@@ -1161,6 +1252,155 @@ function init() {
   loadStatus();
 }
 init();
+
+// ===== VIEW SWITCHING =====
+function switchView(view) {
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+  const chat = document.getElementById('chatMessages');
+  const input = document.querySelector('.input-area');
+  const header = document.querySelector('.chat-header');
+  const notebook = document.getElementById('notebookPanel');
+
+  if (view === 'chat') {
+    chat.style.display = ''; input.style.display = ''; header.style.display = '';
+    notebook.style.display = '';
+    if (nbState.isActive) { nbState.isActive = false; notebook.classList.remove('active'); }
+    return;
+  }
+  chat.style.display = 'none'; input.style.display = 'none'; header.style.display = 'none';
+  notebook.style.display = 'none';
+
+  if (view === 'models') {
+    document.getElementById('modelsPanel').classList.add('active');
+    loadModels();
+  } else if (view === 'lab') {
+    document.getElementById('labPanel').classList.add('active');
+    loadLabSuites();
+  } else if (view === 'notebook') {
+    notebook.style.display = '';
+    nbState.isActive = true;
+    notebook.classList.add('active');
+    loadNotebooks();
+  }
+}
+
+// ===== MODELS API =====
+async function loadModels() {
+  const list = document.getElementById('modelsList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/models');
+    const models = data.models || [];
+    if (models.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">لا توجد موديلات مسجلة</div>';
+      return;
+    }
+    list.innerHTML = models.map(m => `
+      <div class="model-card">
+        <h3>${escHtml(m.name)}</h3>
+        <div class="model-meta">
+          <span>${escHtml(m.provider)}:${escHtml(m.provider_model_id)}</span>
+          <span class="model-status ${m.status}">${m.status}</span>
+          ${m.family ? `<span>${escHtml(m.family)}</span>` : ''}
+          ${m.cost_per_unit != null ? `<span>💰 ${m.cost_per_unit}/${m.cost_unit || 'unit'}</span>` : ''}
+        </div>
+        <div class="model-meta" style="margin-top:4px">
+          <span>📋 ${(m.media_types || []).join(', ')}</span>
+          ${m.tags && m.tags.length ? `<span>🏷️ ${m.tags.join(', ')}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:40px">❌ فشل تحميل الموديلات: ${e.message}</div>`;
+  }
+}
+
+// ===== LAB API =====
+async function loadLabSuites() {
+  const list = document.getElementById('labSuitesList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/benchmark/suites');
+    const suites = data.suites || [];
+    if (suites.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">لا توجد مجموعات قياس. أنشئ واحدة أعلاه.</div>';
+      return;
+    }
+    list.innerHTML = suites.map(s => `
+      <div class="lab-suite-card">
+        <h3>${escHtml(s.name)}</h3>
+        <div class="lab-suite-meta">${s.prompts} prompts • ${s.media_type} • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        <button class="lab-run-btn" onclick="runLabSuite('${s.id}')">تشغيل القياس</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ فشل التحميل: ${e.message}</div>`;
+  }
+}
+
+async function createLabSuite() {
+  const name = document.getElementById('newLabSuiteName').value.trim();
+  const promptsText = document.getElementById('newLabSuitePrompts').value.trim();
+  if (!name) { alert('الرجاء إدخال اسم المجموعة'); return; }
+  const prompts = promptsText.split('\n').filter(p => p.trim());
+  if (prompts.length === 0) { alert('الرجاء إدخال prompt واحد على الأقل'); return; }
+  try {
+    const result = await apiPost('/api/benchmark/suites', { name, prompts, media_type: 'image' });
+    if (result.success) {
+      document.getElementById('newLabSuiteName').value = '';
+      document.getElementById('newLabSuitePrompts').value = '';
+      loadLabSuites();
+    } else {
+      alert('فشل الإنشاء: ' + (result.error || 'خطأ غير معروف'));
+    }
+  } catch (e) {
+    alert('خطأ: ' + e.message);
+  }
+}
+
+async function runLabSuite(suiteId) {
+  const resultsDiv = document.getElementById('labResults');
+  resultsDiv.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">⏳ جاري تشغيل القياس...</div>';
+  try {
+    const modelsData = await apiGet('/api/models');
+    const models = modelsData.models || [];
+    if (models.length === 0) {
+      resultsDiv.innerHTML = '<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ لا توجد موديلات للتقييم</div>';
+      return;
+    }
+    const scores = [];
+    for (const m of models.slice(0, 3)) {
+      try {
+        const runResult = await apiPost('/api/benchmark/run', { suite_id: suiteId, model_id: m.id });
+        const scoreData = await apiGet(`/api/benchmark/models/${m.id}/scores`);
+        scores.push({
+          name: m.name,
+          id: m.id,
+          avg_quality: scoreData.avg_quality_auto,
+          avg_latency: scoreData.avg_latency_ms,
+          run_count: scoreData.run_count,
+          error: runResult.error,
+        });
+      } catch (e) {
+        scores.push({ name: m.name, id: m.id, error: e.message });
+      }
+    }
+    resultsDiv.innerHTML = '<h3 style="font-size:.95rem;margin-bottom:12px">نتائج القياس</h3>' +
+      scores.map(s => `
+        <div class="lab-score-card">
+          <div class="lab-score-value">${s.error ? '❌' : (s.avg_quality != null ? s.avg_quality.toFixed(2) : '—')}</div>
+          <div class="lab-score-label">${escHtml(s.name)}</div>
+          ${s.avg_latency != null ? `<div style="font-size:.75rem;color:var(--text3)">⚡ ${s.avg_latency}ms • ${s.run_count} تشغيلات</div>` : ''}
+          ${s.error ? `<div style="font-size:.75rem;color:#ef4444">${escHtml(s.error)}</div>` : ''}
+        </div>
+      `).join('');
+  } catch (e) {
+    resultsDiv.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ خطأ: ${e.message}</div>`;
+  }
+}
 
 // ===== NOTEBOOK STATE =====
 let nbState = { notebooks: [], currentId: null, isActive: false };

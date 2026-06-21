@@ -251,4 +251,10 @@ a {{ display:inline-block; margin-top:16px; color:#3b82f6; text-decoration:none;
         if artifact.type == ArtifactType.RESEARCH:
             sources = artifact.content.get("sources", [])
             return f"Research: {len(sources)} sources"
+        if artifact.type == ArtifactType.IMAGE_GEN:
+            prompt = artifact.content.get("prompt", "")
+            return f"Generated Image: {prompt[:50]}…" if len(prompt) > 50 else f"Generated Image: {prompt}"
+        if artifact.type == ArtifactType.VIDEO:
+            prompt = artifact.content.get("prompt", "")
+            return f"Generated Video: {prompt[:50]}…" if len(prompt) > 50 else f"Generated Video: {prompt}"
         return f"{artifact.type.value}: {artifact.title}"

@@ -20,6 +20,8 @@ class ArtifactType(str, Enum):
     SOCIAL_POST = "social_post"
     RESEARCH = "research"
     IMAGE = "image"
+    IMAGE_GEN = "image_gen"
+    VIDEO = "video"
     GENERIC = "generic"
 
 

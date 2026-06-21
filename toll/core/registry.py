@@ -9,6 +9,7 @@ Responsibilities:
 from __future__ import annotations
 
 from ..ports.llm import LLMProvider
+from ..ports.media import MediaPort
 from ..ports.search import SearchPort
 from ..adapters.llm.opencode import OpenCodeProvider
 from ..adapters.llm.ollama import OllamaProvider
@@ -20,6 +21,7 @@ class ProviderRegistry:
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or Settings()
         self._llm: dict[str, LLMProvider] = {}
+        self._media: dict[str, MediaPort] = {}
         self._search: dict[str, SearchPort] = {}
         self._register_defaults()
 
@@ -31,17 +33,26 @@ class ProviderRegistry:
     def register_llm(self, name: str, provider: LLMProvider):
         self._llm[name] = provider
 
+    def register_media(self, name: str, provider: MediaPort):
+        self._media[name] = provider
+
     def register_search(self, name: str, provider: SearchPort):
         self._search[name] = provider
 
     def available_llm(self) -> list[str]:
         return [name for name, provider in self._llm.items() if provider.is_available()]
 
+    def available_media(self) -> list[str]:
+        return [name for name, provider in self._media.items() if provider.is_available()]
+
     def available_search(self) -> list[str]:
         return [name for name, provider in self._search.items() if provider.is_available()]
 
     def all_llm(self) -> dict[str, LLMProvider]:
         return dict(self._llm)
+
+    def all_media(self) -> dict[str, MediaPort]:
+        return dict(self._media)
 
     def all_search(self) -> dict[str, SearchPort]:
         return dict(self._search)
@@ -60,6 +71,20 @@ class ProviderRegistry:
                 return provider
 
         raise RuntimeError("No LLM provider available")
+
+    def get_media(self, name: str | None = None) -> MediaPort:
+        """Get a media provider by name, or fall back to first available."""
+        if name:
+            provider = self._media.get(name)
+            if provider and provider.is_available():
+                return provider
+            raise RuntimeError(f"Media provider '{name}' is not available")
+
+        for provider in self._media.values():
+            if provider.is_available():
+                return provider
+
+        raise RuntimeError("No media provider available")
 
     def get_search(self, name: str | None = None) -> SearchPort:
         """Get a search provider by name, or fall back to first available."""
@@ -80,6 +105,10 @@ class ProviderRegistry:
             "llm": {
                 name: provider.is_available()
                 for name, provider in self._llm.items()
+            },
+            "media": {
+                name: provider.is_available()
+                for name, provider in self._media.items()
             },
             "search": {
                 name: provider.is_available()

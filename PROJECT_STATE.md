@@ -4,7 +4,7 @@
 
 - **Mission**: توحيد — unified personal AI assistant for content creation, research, and workflow automation
 - **Current Version**: `1.0.0`
-- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A)
+- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B)
 
 ## Completed Sprints
 
@@ -116,6 +116,51 @@
 
 - **Status**: Complete
 
+### Sprint 5B — NotebookLM Integration
+
+- **Goal**: NotebookLM-style research notebooks — source management, notes, snapshots, audio overviews
+- **Key Deliverables**:
+  - `toll/ports/notebook.py` — NotebookPort ABC (upload_source, create_notes, query, list_sources, delete_source, create_snapshot, list/get/delete snapshots, generate_audio_overview)
+  - `toll/adapters/notebooks/notebooklm.py` — NotebookLMProvider implementation
+  - `toll/application/notebook_service.py` — NotebookService with full lifecycle
+  - `toll/model/migrations/0007_notebook_source_content.sql`, `0008_drop_notebook_fts.sql`, `0009_research_memory.sql`
+  - `api/routers/notebooks.py` — full Notebook API (17 endpoints)
+  - 34 new tests
+  - Tag: `v0.6.0-notebooklm`
+
+- **Status**: Complete
+
+### Sprint 5C — Research Memory Automation
+
+- **Goal**: Automated research memory — importance scoring, auto-indexing, knowledge vault, context-aware retrieval
+- **Key Deliverables**:
+  - `toll/research/importance.py` — ImportanceScorer with learned weights
+  - `toll/research/memory_service.py` — MemoryService with auto-indexing and context retrieval
+  - Research memory feature flags: `research_memory_auto_index`, `research_memory_context`, `research_memory_importance_learn`, `research_memory_knowledge_vault`
+  - Notebook port made synchronous with content field
+  - Notebook handlers refactored to lambda wrappers
+  - 34 new tests
+  - Tag: `v0.5.1-research-memory`
+
+- **Status**: Complete
+
+### Sprint 6A — Media Foundation + Model Registry + Benchmark Lab
+
+- **Goal**: Image generation infrastructure, model registry, and benchmarking capability
+- **Key Deliverables**:
+  - **Media Layer** — `MediaService`, `ReplicateMediaAdapter`, `OllamaMediaAdapter`, `FsMediaStorage`, `MediaPreviewRenderer`
+  - **Model Registry** — `ModelRegistryService`, `ModelRepository`, seed data (4 models: flux-schnell, flux-pro, sdxl, dall-e-3)
+  - **Benchmark Lab** — `BenchmarkService`, `BenchmarkRepository`, `BenchmarkRunner`, `QualityScorer` (weighted: no_error 0.5, latency 0.3, file_size 0.2)
+  - **API** — `/api/models` (5 endpoints), `/api/benchmark` (7 endpoints)
+  - **Migrations** — `0010_media.sql` (media_meta, media_resources), `0011_model_registry.sql` (models, model_tags, benchmark_suites, benchmark_runs — 5 tables + 8 indexes)
+  - **Feature flags** (8 new): `media_generation`, `media_image`, `media_video` (default F), `media_local_storage`, `model_registry`, `model_registry_seed`, `benchmark_lab` (default F), `benchmark_auto_quality` (default F)
+  - **Handler registrations**: `media_generate`, `benchmark_run`, `benchmark_create_suite`, `benchmark_list_suites`, `benchmark_model_scores`
+  - **UI** — ZUNO sidebar navigation (Chat/Notebooks/Models/Lab), Models view, Lab view with suite creation and run
+  - 108 new tests (Phases 1-5), 352 total passing
+  - 17 new files, 7 modified files
+
+- **Status**: Complete (tagged `v0.6-media-foundation`)
+
 ## Current Architecture
 
 ### Core Layer
@@ -135,14 +180,34 @@
 
 ### Artifact Layer
 - **toll/model/artifact.py** — Artifact model with repository (CRUD, archive/restore, file I/O)
-- **toll/engine/renderers/** — 6 renderers (carousel, report, presentation, code, preview, research preview)
+- **toll/engine/renderers/** — 8 renderers (carousel, report, presentation, code, preview, research preview, image_preview, video_preview)
 - **toll/application/artifact_service.py** — Full lifecycle management
 
 ### Research Layer
 - **toll/ports/research.py**, **toll/ports/research_source.py** — Provider ABC and data model
-- **toll/research/** — WebResearcher, SourceManager, DedupEngine, CitationEngine
+- **toll/research/** — WebResearcher, SourceManager, DedupEngine, CitationEngine, ImportanceScorer, MemoryService
 - **toll/adapters/research/** — GoogleDriveAdapter (Phase 1: local backup)
 - **toll/application/research_service.py** — 3-mode workflow handler
+
+### Notebook Layer
+- **toll/ports/notebook.py** — NotebookPort ABC
+- **toll/adapters/notebooks/notebooklm.py** — NotebookLMProvider
+- **toll/application/notebook_service.py** — NotebookService
+
+### Media Layer
+- **toll/ports/media.py** — MediaPort ABC, MediaRequest, MediaResult dataclasses
+- **toll/ports/media_storage.py** — MediaStorage ABC
+- **toll/adapters/media/** — ReplicateMediaAdapter (image gen), OllamaMediaAdapter (stub), FsMediaStorage
+- **toll/application/media_service.py** — MediaService with provider resolution and artifact storage
+- **toll/engine/renderers/media_renderer.py** — MediaPreviewRenderer (image_preview, video_preview HTML)
+
+### Model Registry
+- **toll/ports/model_registry.py** — Model dataclass
+- **toll/model_registry/** — ModelRegistryService, ModelRepository (CRUD, filtering, tagging), seed data (4 models)
+
+### Benchmark Lab
+- **toll/ports/benchmark.py** — BenchmarkRun, BenchmarkSuite dataclasses
+- **toll/benchmark/** — BenchmarkService, BenchmarkRepository, BenchmarkRunner, QualityScorer (weighted criteria)
 
 ## Current Directory Structure
 
@@ -158,7 +223,10 @@
 │       ├── conversations.py   # Conversation CRUD
 │       ├── planner.py         # Plan, workflow management
 │       ├── artifacts.py       # Artifact CRUD, render, preview
-│       └── research.py        # Research, citation styles, modes
+│       ├── research.py        # Research, citation styles, modes
+│       ├── notebooks.py       # Notebook CRUD, sources, notes, snapshots
+│       ├── models.py          # Model Registry CRUD
+│       └── benchmark.py       # Benchmark suites, runs, scores
 ├── bot/
 │   └── telegram.py
 ├── cli/
@@ -169,30 +237,73 @@
 ├── docs/
 │   ├── sprint-reports/
 │   ├── sprint4-report.md
-│   └── sprint5a-report.md
+│   ├── sprint5a-report.md
+│   ├── sprint-5b.2-fixes-report.md
+│   ├── sprint-5c-research-memory-design.md
+│   ├── sprint-6-media-layer-design.md
+│   ├── sprint-6a-execution-plan.md
+│   ├── sprint-6a-model-registry-benchmark-design.md
+│   └── v0.6-architecture-audit.md
 ├── tests/
 │   ├── adapters/
+│   │   ├── test_duckduckgo.py
+│   │   ├── test_fs_storage.py
+│   │   ├── test_ollama_adapter.py
+│   │   └── test_replicate_adapter.py
 │   ├── api/
+│   │   ├── test_artifacts_api.py
+│   │   ├── test_benchmark_api.py
+│   │   ├── test_models_api.py
+│   │   ├── test_notebooks_api.py
+│   │   ├── test_research_memory_api.py
+│   │   └── test_research_api.py
 │   ├── application/
+│   │   ├── test_carousel_service.py
+│   │   ├── test_handler_registry.py
+│   │   ├── test_media_service.py
+│   │   ├── test_notebook_service.py
+│   │   └── test_report_service.py
+│   ├── benchmark/
+│   │   ├── test_quality_scorer.py
+│   │   ├── test_repository.py
+│   │   ├── test_runner.py
+│   │   └── test_service.py
 │   ├── core/
 │   ├── engine/
+│   │   └── renderers/
+│   │       └── test_media_renderer.py
+│   ├── model_registry/
+│   │   ├── test_repository.py
+│   │   └── test_service.py
+│   ├── ports/
+│   │   ├── test_benchmark.py
+│   │   ├── test_media.py
+│   │   └── test_model_registry.py
 │   └── research/
+│       ├── test_importance.py
+│       ├── test_memory_service.py
+│       ├── test_source_manager.py
+│       └── test_web_researcher.py
 ├── toll/
 │   ├── adapters/
 │   │   ├── llm/               # OpenCodeProvider, OllamaProvider
+│   │   ├── media/             # ReplicateMediaAdapter, OllamaMediaAdapter, FsMediaStorage
+│   │   ├── notebooks/         # NotebookLMProvider
 │   │   ├── research/          # GoogleDriveAdapter
 │   │   └── search/            # DuckDuckGoSearch
-│   ├── application/           # Service handlers
+│   ├── application/           # Service handlers (+ MediaService)
+│   ├── benchmark/             # BenchmarkService, Repository, Runner, QualityScorer
 │   ├── context/               # ContextEngine
 │   ├── core/                  # Config, Storage, Settings, Flags, etc.
 │   ├── engine/
-│   │   └── renderers/         # 6 HTML renderers
+│   │   └── renderers/         # 8 HTML renderers (+ media_renderer)
 │   ├── memory/                # MemoryGraph
 │   ├── model/
-│   │   └── migrations/        # 5 migration files
+│   │   └── migrations/        # 11 migration files
+│   ├── model_registry/        # ModelRegistryService, Repository, Seed
 │   ├── planner/               # Planner
-│   ├── ports/                 # ABCs
-│   ├── research/              # WebResearcher, SourceManager, DedupEngine, CitationEngine
+│   ├── ports/                 # ABCs (+ Media, MediaStorage, Benchmark, Model)
+│   ├── research/              # WebResearcher, SourceManager, DedupEngine, CitationEngine, ImportanceScorer, MemoryService
 │   ├── workflow/              # WorkflowEngine
 │   └── workspace/             # WorkspaceManager
 └── web/
@@ -259,11 +370,35 @@
 | `provider_crossref` | `False` |
 | `provider_zotero` | `False` |
 
-### Image & Misc
+### Sprint 5B — NotebookLM Integration
 | Flag | Default |
 |------|---------|
-| `image_generation` | `False` |
-| `provider_replicate` | `False` |
+| `notebooklm_enabled` | `True` |
+| `notebooklm_memory_index` | `True` |
+| `notebooklm_artifact_create` | `True` |
+| `notebooklm_strict_local` | `False` |
+| `notebooklm_snapshots` | `True` |
+| `notebooklm_audio_overview` | `False` |
+
+### Sprint 5C — Research Memory
+| Flag | Default |
+|------|---------|
+| `research_memory_auto_index` | `True` |
+| `research_memory_context` | `False` |
+| `research_memory_importance_learn` | `True` |
+| `research_memory_knowledge_vault` | `True` |
+
+### Sprint 6A — Media Foundation
+| Flag | Default |
+|------|---------|
+| `media_generation` | `True` |
+| `media_image` | `True` |
+| `media_video` | `False` |
+| `media_local_storage` | `True` |
+| `model_registry` | `True` |
+| `model_registry_seed` | `True` |
+| `benchmark_lab` | `False` |
+| `benchmark_auto_quality` | `False` |
 
 ## Providers
 
@@ -294,9 +429,16 @@
 | Open Design | **Implemented** (gated by `opendesign_integration`, default `False`) — pushes artifacts via `opendesign create` CLI |
 
 ### Media Providers
-| Provider | Status |
-|----------|--------|
-| Replicate | **Planned** (flag: `provider_replicate`, default `False`) |
+| Provider | File | Status |
+|----------|------|--------|
+| Replicate | `toll/adapters/media/replicate.py` | **Implemented** — image generation via Replicate API (requires API token; `replicate` package) |
+| Ollama | `toll/adapters/media/ollama.py` | **Stub** — returns "not yet supported" |
+
+### Model Registry Providers
+| Provider | Seed Model |
+|----------|-----------|
+| Replicate | `replicate:flux-schnell` (active), `replicate:flux-pro` (active), `replicate:sdxl` (active) |
+| OpenAI | `openai:dall-e-3` (coming_soon) |
 
 ## Database
 
@@ -308,14 +450,25 @@
 | `0003_workflows.sql` | `workflows` |
 | `0004_artifacts.sql` | `artifacts` |
 | `0005_research.sql` | `research_sources`, `research_citations`, `research_dedup_log` |
+| `0006_notebooks.sql` | `notebooks` |
+| `0007_notebook_source_content.sql` | `notebook_source_content` |
+| `0008_drop_notebook_fts.sql` | Drops FTS virtual table |
+| `0009_research_memory.sql` | Research memory tables |
+| `0010_media.sql` | `media_meta`, `media_resources` |
+| `0011_model_registry.sql` | `models`, `model_tags`, `benchmark_suites`, `benchmark_runs` |
 
-### Current Major Tables (17 total)
+### Current Major Tables (26 total)
 - **System**: `usage`, `config`, `history`, `migrations`
 - **Memory**: `memories`
 - **Workspace**: `workspaces`, `semesters`, `workspace_state`
 - **Conversation**: `conversations`, `messages`
 - **Workflow**: `workflows`
 - **Artifact**: `artifacts`
+- **Media**: `media_meta`, `media_resources`
+- **Model Registry**: `models`, `model_tags`
+- **Benchmark**: `benchmark_suites`, `benchmark_runs`
+- **Notebook**: `notebooks`, `notebook_source_content`
+- **Research Memory**: research memory tables
 - **Research**: `research_sources`, `research_citations`, `research_dedup_log`
 
 ## API Surface
@@ -444,8 +597,9 @@ Each artifact supports: creation, rendering (HTML), preview, archive (tar.gz), s
 - **Crossref provider** — `provider_crossref` flag
 - **Zotero provider** — `provider_zotero` flag
 - **Google Drive real API integration** — true upload/download/sync (not Phase 1 local backup)
-- **NotebookLM integration** — Sprint 5B
-- **Research Memory Automation** — Sprint 5C
+- **Video generation** — enable `media_video` flag with Veo/Runway adapter
+- **Character consistency** — seed-based style preservation for media generation
+- **Advanced benchmark automation** — scheduled runs, trend analysis, model comparison dashboard
 
 ## Release History
 
@@ -476,6 +630,43 @@ Each artifact supports: creation, rendering (HTML), preview, archive (tar.gz), s
   - Migration `0005_research.sql` — 3 tables + 7 indexes
   - 43 new tests, 170 total passing
 
+### v0.5.1-research-memory
+
+- **Git Tag**: `v0.5.1-research-memory`
+- **Commit**: `5727af8`
+- **Summary**:
+  - Research Memory Automation — ImportanceScorer, MemoryService, knowledge vault
+  - Notebook port made synchronous with content field
+  - Notebook handlers refactored to lambda wrappers
+  - Migrations 0007-0009: notebook source content, drop FTS, research memory tables
+  - Feature flags: `research_memory_auto_index`, `research_memory_context`, `research_memory_importance_learn`, `research_memory_knowledge_vault`
+  - 34 new tests, 244 total passing
+
+### v0.6.0-notebooklm
+
+- **Git Tag**: `v0.6.0-notebooklm`
+- **Commit**: `994759b`
+- **Summary**:
+  - NotebookLM Integration — NotebookPort ABC, NotebookLM provider, NotebookService
+  - Full Notebook API with 17 endpoints
+  - Snapshots, notes, sources, audio overview support
+  - Feature flags: `notebooklm_enabled`, `notebooklm_memory_index`, `notebooklm_artifact_create`, `notebooklm_strict_local`, `notebooklm_snapshots`, `notebooklm_audio_overview`
+  - 34 new tests
+
+### v0.6-media-foundation
+
+- **Git Tag**: `v0.6-media-foundation`
+- **Commit**: (current)
+- **Summary**:
+  - Media Layer — MediaService, ReplicateMediaAdapter, OllamaMediaAdapter, FsMediaStorage, MediaPreviewRenderer
+  - Model Registry — ModelRegistryService, ModelRepository, seed data (4 models), CRUD API
+  - Benchmark Lab — BenchmarkService, BenchmarkRepository, BenchmarkRunner, QualityScorer
+  - API: `/api/models` (5 endpoints), `/api/benchmark` (7 endpoints)
+  - Migrations 0010-0011: media_meta, media_resources, models, model_tags, benchmark_suites, benchmark_runs (6 tables + 8 indexes)
+  - Feature flags (8 new): media_generation, media_image, media_video, media_local_storage, model_registry, model_registry_seed, benchmark_lab, benchmark_auto_quality
+  - ZUNO UI: sidebar navigation (Chat/Notebooks/Models/Lab), Models view, Lab view
+  - 108 new tests, 352 total passing
+
 ## Backup Locations
 
 ### GitHub
@@ -486,6 +677,9 @@ Protected Releases:
 
 - `v0.4-artifact-system`
 - `v0.5-research-foundation`
+- `v0.5.1-research-memory`
+- `v0.6.0-notebooklm`
+- `v0.6-media-foundation`
 
 ### Local Database
 
@@ -509,20 +703,30 @@ Protected Releases:
 - Rate limiter uses daily counts — no per-user or per-endpoint granularity
 - Research `deep` mode is functionally identical to standard mode
 - No scheduled tasks or background job system
-- No media generation (image, audio, video) beyond placeholders
+- Media generation limited to image via Replicate (no video/audio)
+- Replicate adapter requires `replicate` Python package and API token to be available
+- Benchmark Lab is opt-in only (`benchmark_lab` flag defaults to `False`)
+- ProviderSelector does not consume benchmark data for model ranking — static scoring only
+- No video adapter implemented (Veo, Runway, other video platforms)
+- No character/style consistency between media generations
 - No data export/import for workspace or memory data
 - No integration tests for end-to-end workflows
-- Test coverage does not include API integration tests (beyond artifacts API)
+- Test coverage does not include all API integration tests
 - SQLite database — no migration path to PostgreSQL or other production DB
 
 ## Next Planned Sprint
 
-### Sprint 5.5 — Cleanup
+### Sprint 6B — Media Layer 2 (Video & Audio)
 
-TBD — code quality, test hardening, documentation updates, and deferred minor fixes from Sprint 5A.
+- **Video adapter** — Veo, Runway, or MiniMax video generation via MediaPort (enable `media_video` flag)
+- **Audio adapter** — TTS and audio processing (ElevenLabs, Kokoro)
+- **Character consistency** — seed/face anchor preservation across generations
+- **Benchmark-driven model selection** — `ProviderSelector.select()` consumes benchmark aggregates
+- **Advanced benchmark dashboard** — trend charts, model comparison, automated quality gates
+- **ZUNO Lab view enhancements** — run history, score history, side-by-side model comparison
 
 ## Future Roadmap
 
-- **Sprint 5B** — NotebookLM integration (research briefs, automated literature reviews)
-- **Sprint 5C** — Research Memory Automation (auto-tagging, citation graph, research history)
-- **Sprint 6** — Media Layer (image generation, audio/video processing, Replicate integration)
+- **Sprint 6B** — Video & Audio adapters, character consistency, benchmark-driven selection
+- **Sprint 7** — Advanced memory & knowledge graph (RAG pipeline, hybrid search, knowledge base import)
+- **Sprint 8** — Production hardening (multi-user, PostgreSQL migration, proper auth)

@@ -67,6 +67,17 @@ DEFAULT_FLAGS = {
     "research_memory_context": False,
     "research_memory_importance_learn": True,
     "research_memory_knowledge_vault": True,
+    # Media Layer — Sprint 6A
+    "media_generation": True,
+    "media_image": True,
+    "media_video": False,
+    "media_local_storage": True,
+    # Model Registry — Sprint 6A
+    "model_registry": True,
+    "model_registry_seed": True,
+    # Benchmark Lab — Sprint 6A
+    "benchmark_lab": False,
+    "benchmark_auto_quality": False,
 }
 
 _PREFIX = "feature_"
