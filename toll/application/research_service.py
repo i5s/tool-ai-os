@@ -1,0 +1,256 @@
+from __future__ import annotations
+
+import logging
+
+from ..core.ai import AI
+from ..core.connection_manager import ConnectionManager
+from ..core.feature_flags import FeatureFlags
+from ..core.provider_selector import ProviderSelector
+from ..engine.renderers.preview_renderer import PreviewRenderer
+from ..model.artifact import Artifact, ArtifactStatus, ArtifactType
+from ..ports.research_source import (
+    CitationStyle,
+    ResearchQuery,
+    ResearchSource,
+)
+from ..research.citation_engine import CitationEngine
+from ..research.source_manager import SourceManager
+from ..research.web_researcher import WebResearcher
+from .artifact_service import ArtifactService
+
+logger = logging.getLogger(__name__)
+
+
+class ResearchService:
+    def __init__(
+        self,
+        artifact_service: ArtifactService,
+        selector: ProviderSelector,
+        cm: ConnectionManager,
+        flags: FeatureFlags | None = None,
+    ):
+        self.artifact_service = artifact_service
+        self.selector = selector
+        self.cm = cm
+        self.flags = flags or FeatureFlags(cm=cm)
+        self.ai = AI(cm=cm)
+        self.preview = PreviewRenderer()
+        self.citation_engine = CitationEngine()
+        self.source_manager = SourceManager(
+            cm=cm, citation_engine=self.citation_engine
+        )
+
+    def execute(self, plan: dict, metadata: dict | None = None) -> dict:
+        topic = plan.get("title", plan.get("intent", "research"))
+        style = plan.get("style", "apa")
+        max_sources = plan.get("max_sources", 10)
+
+        providers = self._get_providers()
+        query = ResearchQuery(
+            query=topic,
+            max_sources=max_sources,
+            style=style,
+        )
+
+        all_sources = self.source_manager.collect(query, providers)
+        if not all_sources:
+            synopsis = self._fallback_synthesis(topic)
+            sources_data = []
+            citations = []
+        else:
+            sources_data = [s.to_dict() for s in all_sources]
+            citations = self.citation_engine.format_batch(
+                all_sources, style
+            )
+            synopsis = self._synthesize(all_sources, topic)
+
+        key_findings = self._extract_findings(synopsis)
+
+        artifact = Artifact(
+            id="",
+            type=ArtifactType.RESEARCH,
+            status=ArtifactStatus.DRAFT,
+            title=topic,
+            content={
+                "query": topic,
+                "sources": sources_data,
+                "source_count": len(sources_data),
+                "citations": citations,
+                "citation_count": len(citations),
+                "synopsis": synopsis,
+                "key_findings": key_findings,
+                "style": style,
+            },
+            provider=",".join(p.name for p in providers),
+            intent="research",
+            workflow_id=metadata.get("workflow_id") if metadata else None,
+            conversation_id=(
+                metadata.get("conversation_id") if metadata else None
+            ),
+        )
+
+        rendered = self._render_research(topic, sources_data, citations, synopsis, key_findings)
+        artifact = self.artifact_service.create(artifact, rendered)
+
+        preview_html = self.preview.research_preview(artifact)
+        preview_json = self.preview.json_preview(artifact)
+        self.artifact_service.write_preview(artifact, preview_html, preview_json)
+
+        self._store_sources(sources_data, artifact.id, style)
+
+        return {
+            "artifact_id": artifact.id,
+            "type": "research",
+            "title": topic,
+            "source_count": len(sources_data),
+            "citation_count": len(citations),
+            "preview_url": artifact.preview_url,
+            "rendered_path": artifact.rendered_path,
+        }
+
+    def execute_quick(
+        self, plan: dict, metadata: dict | None = None
+    ) -> dict:
+        topic = plan.get("title", plan.get("intent", "research"))
+        providers = self._get_providers()
+        query = ResearchQuery(query=topic, max_sources=3)
+        all_sources = self.source_manager.collect(query, providers)
+        sources_data = [s.to_dict() for s in all_sources]
+
+        return {
+            "type": "research_quick",
+            "title": topic,
+            "sources": sources_data,
+            "source_count": len(sources_data),
+        }
+
+    def execute_deep(
+        self, plan: dict, metadata: dict | None = None
+    ) -> dict:
+        return self.execute(plan, metadata)
+
+    def _get_providers(self) -> list:
+        providers = []
+        if self.flags.is_enabled("research_provider"):
+            providers.append(WebResearcher())
+        return providers
+
+    def _synthesize(
+        self, sources: list[ResearchSource], topic: str
+    ) -> str:
+        try:
+            source_list = "\n".join(
+                f"- {s.title} ({s.authors[0] if s.authors else 'Unknown'}, {s.year or 'n.d.'})"
+                for s in sources[:5]
+            )
+            prompt = (
+                f"اكتب ملخصاً بالعربية عن '{topic}' بناءً على المصادر التالية:\n\n"
+                f"{source_list}\n\n"
+                f"الملخص يجب أن يكون فقرة واحدة مترابطة تغطي النقاط الرئيسية."
+            )
+            return self.ai.ask(prompt)
+        except Exception as e:
+            logger.warning("Synthesis failed: %s", e)
+            return self._fallback_synthesis(topic)
+
+    def _fallback_synthesis(self, topic: str) -> str:
+        return f"موضوع البحث: {topic}. لم يتم العثور على مصادر كافية لتوليد ملخص."
+
+    def _extract_findings(self, synopsis: str) -> list[str]:
+        if not synopsis:
+            return []
+        sentences = [
+            s.strip()
+            for s in synopsis.replace("،", ".").replace(".", ".").split(".")
+            if len(s.strip()) > 20
+        ]
+        return sentences[:3]
+
+    def _render_research(
+        self,
+        topic: str,
+        sources: list[dict],
+        citations: list[str],
+        synopsis: str,
+        key_findings: list[str],
+    ) -> str:
+        src_rows = "".join(
+            f"""<tr>
+              <td>{s.get('title', '')}</td>
+              <td>{', '.join(s.get('authors', []))}</td>
+              <td>{s.get('year', '') or ''}</td>
+              <td>{s.get('source_type', '')}</td>
+            </tr>"""
+            for s in sources
+        )
+        cite_list = "".join(
+            f"<li>{c}</li>" for c in citations
+        )
+        kf_list = "".join(
+            f"<li>{k}</li>" for k in key_findings
+        )
+        return f"""<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{topic} — بحث</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ font-family:system-ui,'Times New Roman',serif; background:#f8f6f0; color:#1a1a2e; padding:40px; }}
+.container {{ max-width:960px; margin:auto; background:#fff; padding:48px; border-radius:8px; box-shadow:0 2px 20px rgba(0,0,0,.06); }}
+h1 {{ font-size:2rem; margin-bottom:8px; border-bottom:3px solid #1a365d; padding-bottom:12px; }}
+h2 {{ font-size:1.3rem; margin:28px 0 12px; color:#1a365d; }}
+.meta {{ color:#64748b; font-size:.9rem; margin-bottom:24px; }}
+.synopsis {{ background:#f8fafc; padding:20px; border-radius:8px; line-height:1.9; margin:16px 0; }}
+.kf {{ background:#f0fdf4; padding:16px 24px; border-radius:8px; margin:16px 0; }}
+.kf li {{ margin:6px 0; line-height:1.7; }}
+table {{ width:100%; border-collapse:collapse; margin:16px 0; font-size:.9rem; }}
+th, td {{ border:1px solid #e2e8f0; padding:10px 12px; text-align:right; }}
+th {{ background:#f1f5f9; color:#475569; font-weight:600; }}
+tr:nth-child(even) {{ background:#fafafa; }}
+.citations {{ background:#f8fafc; padding:16px 24px; border-radius:8px; }}
+.citations li {{ margin:8px 0; line-height:1.7; font-size:.9rem; }}
+.footer {{ margin-top:32px; padding-top:16px; border-top:1px solid #e2e8f0; color:#94a3b8; font-size:.8rem; text-align:center; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>{topic}</h1>
+  <div class="meta">{len(sources)} مصادر • {len(citations)} استشهاد</div>
+  {f'<div class="synopsis"><strong>الملخص:</strong><br>{synopsis}</div>' if synopsis else ''}
+  {f'<div class="kf"><strong>النتائج الرئيسية:</strong><ul>{kf_list}</ul></div>' if kf_list else ''}
+  <h2>المصادر</h2>
+  <table><thead><tr><th>العنوان</th><th>المؤلفون</th><th>السنة</th><th>النوع</th></tr></thead><tbody>{src_rows}</tbody></table>
+  {f'<h2>الاستشهادات</h2><ol class="citations">{cite_list}</ol>' if cite_list else ''}
+  <div class="footer">تم التوليد بواسطة تول v1.0.0 — Research Layer</div>
+</div>
+</body>
+</html>"""
+
+    def _store_sources(
+        self,
+        sources_data: list[dict],
+        artifact_id: str,
+        style: str,
+    ):
+        for sd in sources_data:
+            source = ResearchSource(
+                title=sd.get("title", ""),
+                url=sd.get("url"),
+                authors=sd.get("authors", []),
+                year=sd.get("year"),
+                citation=sd.get("citation", ""),
+                relevance_score=sd.get("relevance_score", 0.0),
+                confidence_score=sd.get("confidence_score", 0.0),
+                source_type=sd.get("source_type"),
+                doi=sd.get("doi"),
+                journal=sd.get("journal"),
+                abstract=sd.get("abstract"),
+                provider=sd.get("provider", ""),
+                provider_source_id=sd.get("provider_source_id"),
+                citation_count=sd.get("citation_count", 0),
+                language=sd.get("language", "en"),
+                tags=sd.get("tags", []),
+            )
+            self.source_manager.store(source, artifact_id)

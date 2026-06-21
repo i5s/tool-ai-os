@@ -39,6 +39,18 @@ DEFAULT_FLAGS = {
     "self_improvement": False,
     "users_enabled": False,
     "opendesign_integration": False,
+    # Research Layer — Sprint 5A
+    "research_provider": True,
+    "research_deep": False,
+    "citation_engine": True,
+    "source_dedup": True,
+    "source_import": False,
+    "google_drive_backup": False,
+    "provider_semantic_scholar": False,
+    "provider_google_scholar": False,
+    "provider_arxiv": False,
+    "provider_crossref": False,
+    "provider_zotero": False,
     # Image & Misc
     "image_generation": False,
     "provider_replicate": False,

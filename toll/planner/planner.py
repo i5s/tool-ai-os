@@ -79,6 +79,9 @@ class Planner:
         "image_generation": ApprovalLevel.APPROVAL,
         "pdf_export": ApprovalLevel.APPROVAL,
         "data_import": ApprovalLevel.APPROVAL,
+        "research": ApprovalLevel.APPROVAL,
+        "research_quick": ApprovalLevel.AUTO,
+        "research_deep": ApprovalLevel.APPROVAL,
     }
 
     KEYWORDS: dict[str, list[str]] = {
@@ -120,6 +123,9 @@ class Planner:
         "image_generation": ["generate image", "create image", "صورة جديدة"],
         "pdf_export": ["export pdf", "pdf"],
         "data_import": ["import data", "استيراد بيانات"],
+        "research": ["research", "بحث", "أبحاث"],
+        "research_quick": ["quick research", "بحث سريع"],
+        "research_deep": ["deep research", "بحث معمق"],
     }
 
     def __init__(self, mode: PlannerMode = PlannerMode.BALANCED):
