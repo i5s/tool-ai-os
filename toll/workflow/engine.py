@@ -4,13 +4,16 @@ Executes Plans produced by the Planner. Handles approval checkpoints,
 persistence, and state transitions.
 """
 
+from __future__ import annotations
+
+import json
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable
 
-from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
 
 
 class WorkflowStatus(str, Enum):
@@ -35,21 +38,18 @@ class Workflow:
 
 
 class WorkflowEngine:
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager):
+        self.cm = cm
         self._handlers: dict[str, Callable] = {}
 
     def register_handler(self, intent: str, handler: Callable):
-        """Register a handler function for a given intent."""
         self._handlers[intent] = handler
 
     def create(self, plan: dict, metadata: dict | None = None) -> Workflow:
-        """Create a workflow from a plan."""
         wf_id = str(uuid.uuid4())
         now = self._now()
         plan_copy = dict(plan)
 
-        # Auto-execute workflows skip pending
         status = WorkflowStatus.PENDING
         if plan_copy.get("can_auto_execute"):
             status = WorkflowStatus.APPROVED
@@ -65,8 +65,14 @@ class WorkflowEngine:
         self._persist(workflow)
         return workflow
 
+    def create_and_run(self, plan: dict, metadata: dict | None = None) -> Workflow:
+        """Create a workflow and immediately run it if auto-executable."""
+        workflow = self.create(plan, metadata)
+        if workflow.status == WorkflowStatus.APPROVED:
+            workflow = self.run(workflow.id)
+        return workflow
+
     def approve(self, workflow_id: str) -> Workflow:
-        """Approve a pending workflow."""
         workflow = self.get(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {workflow_id} not found")
@@ -79,7 +85,6 @@ class WorkflowEngine:
         return workflow
 
     def reject(self, workflow_id: str, reason: str = "") -> Workflow:
-        """Reject a pending workflow."""
         workflow = self.get(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {workflow_id} not found")
@@ -93,7 +98,6 @@ class WorkflowEngine:
         return workflow
 
     def run(self, workflow_id: str) -> Workflow:
-        """Execute an approved workflow."""
         workflow = self.get(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {workflow_id} not found")
@@ -124,7 +128,7 @@ class WorkflowEngine:
         return workflow
 
     def get(self, workflow_id: str) -> Workflow | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM workflows WHERE id = ?", (workflow_id,)
         ).fetchone()
         if not row:
@@ -133,21 +137,39 @@ class WorkflowEngine:
 
     def list(self, status: WorkflowStatus | None = None, limit: int = 100) -> list[Workflow]:
         if status:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 "SELECT * FROM workflows WHERE status = ? ORDER BY updated_at DESC LIMIT ?",
                 (status.value, limit),
             ).fetchall()
         else:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 "SELECT * FROM workflows ORDER BY updated_at DESC LIMIT ?",
                 (limit,),
             ).fetchall()
         return [self._row_to_workflow(row) for row in rows]
 
-    def _persist(self, workflow: Workflow):
-        import json
+    def recover(self) -> list[Workflow]:
+        """Mark running workflows as failed after unexpected shutdown.
 
-        self.db.conn.execute(
+        Called at server startup. Approved and pending workflows are left
+        for normal processing.
+        """
+        recovered: list[Workflow] = []
+        now = self._now()
+        rows = self.cm.connection.execute(
+            "SELECT * FROM workflows WHERE status = ?", (WorkflowStatus.RUNNING.value,)
+        ).fetchall()
+        for row in rows:
+            wf = self._row_to_workflow(row)
+            wf.status = WorkflowStatus.FAILED
+            wf.error = "Server restart interrupted execution"
+            wf.updated_at = now
+            self._persist(wf)
+            recovered.append(wf)
+        return recovered
+
+    def _persist(self, workflow: Workflow):
+        self.cm.execute(
             """
             INSERT INTO workflows (id, plan, status, result, error, metadata, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -170,11 +192,9 @@ class WorkflowEngine:
                 workflow.updated_at,
             ),
         )
-        self.db.conn.commit()
+        self.cm.commit()
 
     def _row_to_workflow(self, row) -> Workflow:
-        import json
-
         return Workflow(
             id=row["id"],
             plan=json.loads(row["plan"]),

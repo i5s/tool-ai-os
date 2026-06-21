@@ -24,3 +24,7 @@ FREE_AI_URLS = [
 
 # Website
 WEBSITE_PATH = Path.home() / "Claude" / "Projects" / "الموقع"
+
+# Artifacts
+ARTIFACTS_PATH = DATA / "artifacts"
+ARCHIVE_PATH = ARTIFACTS_PATH / "archive"

@@ -1,22 +1,18 @@
 import pytest
 from toll.context.engine import ContextEngine
-from toll.core.storage import Storage
-from toll.memory.graph import MemoryGraph
-from toll.workspace.manager import WorkspaceManager
+from toll.core.connection_manager import ConnectionManager
 
 
 @pytest.fixture
-def context_engine(storage: Storage):
-    return ContextEngine(storage=storage)
+def context_engine(cm: ConnectionManager):
+    return ContextEngine(cm=cm)
 
 
 def test_build_context_includes_workspace_and_memories(context_engine):
-    # Create workspace context
     ws = context_engine.workspace
     brand = ws.create_workspace("brand", "Test Brand")
     ws.set_active(brand_id=brand["id"])
 
-    # Store a memory
     context_engine.memory.store(
         "brand", "tone", "professional", entity_id=brand["id"], importance_score=8
     )

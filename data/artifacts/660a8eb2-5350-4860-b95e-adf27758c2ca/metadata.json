@@ -1,0 +1,18 @@
+{
+  "id": "660a8eb2-5350-4860-b95e-adf27758c2ca",
+  "type": "report",
+  "status": "draft",
+  "title": "Test Report",
+  "version": 1,
+  "parent_artifact_id": null,
+  "workflow_id": null,
+  "provider": null,
+  "model": null,
+  "intent": null,
+  "workspace_type": null,
+  "workspace_id": null,
+  "tags": [],
+  "created_at": "2026-06-21T13:39:51.156081+00:00",
+  "updated_at": "2026-06-21T13:39:51.156081+00:00",
+  "expires_at": null
+}

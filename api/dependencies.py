@@ -1,24 +1,32 @@
 """FastAPI dependency injection providers.
 
-Dependencies create fresh instances per request to avoid SQLite
-thread-safety issues in single-user local mode.
+Dependencies share a single ConnectionManager from app.state
+to avoid SQLite thread-safety issues in single-user local mode.
 """
 
+from fastapi import Request
+from toll.core.connection_manager import ConnectionManager
 from toll.core.settings import Settings
 from toll.core.registry import ProviderRegistry
 from toll.core.feature_flags import FeatureFlags
+from toll.core.storage import Storage
 
 
-def get_settings() -> Settings:
-    """Return a fresh Settings instance per request."""
-    return Settings()
+def get_connection_manager(request: Request) -> ConnectionManager:
+    return request.app.state.cm
 
 
-def get_registry() -> ProviderRegistry:
-    """Return a fresh ProviderRegistry instance per request."""
-    return ProviderRegistry(get_settings())
+def get_storage(request: Request) -> Storage:
+    return Storage(cm=request.app.state.cm)
 
 
-def get_feature_flags() -> FeatureFlags:
-    """Return a fresh FeatureFlags instance per request."""
-    return FeatureFlags()
+def get_settings(request: Request) -> Settings:
+    return Settings(cm=request.app.state.cm)
+
+
+def get_registry(request: Request) -> ProviderRegistry:
+    return ProviderRegistry(Settings(cm=request.app.state.cm))
+
+
+def get_feature_flags(request: Request) -> FeatureFlags:
+    return FeatureFlags(cm=request.app.state.cm)

@@ -1,23 +1,18 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 
 from toll.core.conversations import ConversationStore
+from toll.core.connection_manager import ConnectionManager
+from api.dependencies import get_connection_manager
 
 router = APIRouter()
 
 
 class ConversationCreate(BaseModel):
-    title: Optional[str] = "محادثة جديدة"
+    title: str = "محادثة جديدة"
     workspace_type: Optional[str] = None
     workspace_id: Optional[str] = None
-    metadata: Optional[dict] = None
-
-
-class MessageCreate(BaseModel):
-    role: str
-    content: str
-    metadata: Optional[dict] = None
 
 
 class TitleUpdate(BaseModel):
@@ -28,27 +23,28 @@ class TitleUpdate(BaseModel):
 def list_conversations(
     workspace_type: Optional[str] = None,
     workspace_id: Optional[str] = None,
-    limit: int = 100,
+    cm: ConnectionManager = Depends(get_connection_manager),
 ):
-    store = ConversationStore()
-    return {"conversations": store.list(workspace_type, workspace_id, limit)}
+    store = ConversationStore(cm=cm)
+    return {"conversations": store.list(workspace_type, workspace_id)}
 
 
 @router.post("/conversations")
-def create_conversation(req: ConversationCreate):
-    store = ConversationStore()
-    conv = store.create(
-        title=req.title,
-        workspace_type=req.workspace_type,
-        workspace_id=req.workspace_id,
-        metadata=req.metadata,
-    )
-    return {"conversation_id": conv["id"], **conv}
+def create_conversation(
+    req: ConversationCreate,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
+    store = ConversationStore(cm=cm)
+    conv = store.create(req.title, req.workspace_type, req.workspace_id)
+    return conv
 
 
 @router.get("/conversations/{id}")
-def get_conversation(id: str):
-    store = ConversationStore()
+def get_conversation(
+    id: str,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
+    store = ConversationStore(cm=cm)
     conv = store.get(id)
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -56,38 +52,22 @@ def get_conversation(id: str):
 
 
 @router.put("/conversations/{id}/title")
-def update_title(id: str, req: TitleUpdate):
-    store = ConversationStore()
-    conv = store.get(id)
-    if not conv:
-        raise HTTPException(status_code=404, detail="Conversation not found")
+def update_conversation_title(
+    id: str,
+    req: TitleUpdate,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
+    store = ConversationStore(cm=cm)
     store.update_title(id, req.title)
-    return store.get(id)
+    return {"status": "updated"}
 
 
 @router.delete("/conversations/{id}")
-def delete_conversation(id: str):
-    store = ConversationStore()
-    conv = store.get(id)
-    if not conv:
+def delete_conversation(
+    id: str,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
+    store = ConversationStore(cm=cm)
+    if not store.delete(id):
         raise HTTPException(status_code=404, detail="Conversation not found")
-    store.delete(id)
-    return {"deleted": True}
-
-
-@router.get("/conversations/{id}/messages")
-def list_messages(id: str):
-    store = ConversationStore()
-    conv = store.get(id)
-    if not conv:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    return {"messages": store.list_messages(id)}
-
-
-@router.post("/conversations/{id}/messages")
-def add_message(id: str, req: MessageCreate):
-    store = ConversationStore()
-    conv = store.get(id)
-    if not conv:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    return store.add_message(id, req.role, req.content, req.metadata)
+    return {"status": "deleted"}

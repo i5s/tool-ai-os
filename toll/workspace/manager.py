@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
 
 
 @dataclass
@@ -34,8 +34,8 @@ class WorkspaceState:
 
 
 class WorkspaceManager:
-    def __init__(self, storage: Storage | None = None, user_id: str = "default"):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager, user_id: str = "default"):
+        self.cm = cm
         self.user_id = user_id
 
     def _now(self) -> str:
@@ -55,15 +55,15 @@ class WorkspaceManager:
 
         ws_id = str(uuid.uuid4())
         now = self._now()
-        self.db.conn.execute(
+        self.cm.execute(
             "INSERT INTO workspaces (id, type, name, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
             (ws_id, type, name, json.dumps(metadata or {}, ensure_ascii=False), now, now),
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return self.get_workspace(ws_id)
 
     def get_workspace(self, id: str) -> dict | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM workspaces WHERE id = ?", (id,)
         ).fetchone()
         if not row:
@@ -79,12 +79,12 @@ class WorkspaceManager:
 
     def list_workspaces(self, type: str | None = None) -> list[dict]:
         if type:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 "SELECT * FROM workspaces WHERE type = ? ORDER BY name",
                 (type,),
             ).fetchall()
         else:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 "SELECT * FROM workspaces ORDER BY type, name"
             ).fetchall()
         return [self.get_workspace(row["id"]) for row in rows]
@@ -98,7 +98,7 @@ class WorkspaceManager:
 
         semester_id = str(uuid.uuid4())
         now = self._now()
-        self.db.conn.execute(
+        self.cm.execute(
             "INSERT INTO semesters (id, university_id, name, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
             (
                 semester_id,
@@ -109,11 +109,11 @@ class WorkspaceManager:
                 now,
             ),
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return self.get_semester(semester_id)
 
     def get_semester(self, id: str) -> dict | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM semesters WHERE id = ?", (id,)
         ).fetchone()
         if not row:
@@ -128,7 +128,7 @@ class WorkspaceManager:
         }
 
     def list_semesters(self, university_id: str) -> list[dict]:
-        rows = self.db.conn.execute(
+        rows = self.cm.connection.execute(
             "SELECT * FROM semesters WHERE university_id = ? ORDER BY created_at DESC",
             (university_id,),
         ).fetchall()
@@ -141,7 +141,6 @@ class WorkspaceManager:
         project_id: str | None = None,
         semester_id: str | None = None,
     ):
-        """Set active workspace components. None values leave existing state unchanged."""
         current = self.get_active()
 
         if brand_id is not None:
@@ -153,7 +152,7 @@ class WorkspaceManager:
         if semester_id is not None:
             current.active_semester_id = semester_id
 
-        self.db.conn.execute(
+        self.cm.execute(
             """
             INSERT INTO workspace_state (user_id, active_brand_id, active_university_id, active_project_id, active_semester_id, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -173,11 +172,11 @@ class WorkspaceManager:
                 self._now(),
             ),
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return current
 
     def get_active(self) -> WorkspaceState:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM workspace_state WHERE user_id = ?", (self.user_id,)
         ).fetchone()
         if not row:
@@ -190,11 +189,11 @@ class WorkspaceManager:
         )
 
     def clear_active(self):
-        self.db.conn.execute(
+        self.cm.execute(
             "DELETE FROM workspace_state WHERE user_id = ?",
             (self.user_id,),
         )
-        self.db.conn.commit()
+        self.cm.commit()
 
     def get_active_summary(self) -> dict:
         state = self.get_active()

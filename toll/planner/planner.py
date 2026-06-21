@@ -36,7 +36,6 @@ class Plan:
 
 
 class Planner:
-    # Default approval matrix (Balanced mode)
     MATRIX: dict[str, ApprovalLevel] = {
         # AUTO EXECUTE
         "question": ApprovalLevel.AUTO,
@@ -51,7 +50,7 @@ class Planner:
         "chat": ApprovalLevel.AUTO,
         "workspace_create": ApprovalLevel.AUTO,
         "memory_suggest": ApprovalLevel.AUTO,
-
+        "search": ApprovalLevel.AUTO,
         # PLAN ONLY
         "research_plan": ApprovalLevel.PLAN_ONLY,
         "study_plan": ApprovalLevel.PLAN_ONLY,
@@ -60,7 +59,6 @@ class Planner:
         "roadmap": ApprovalLevel.PLAN_ONLY,
         "swot": ApprovalLevel.PLAN_ONLY,
         "competitor_analysis": ApprovalLevel.PLAN_ONLY,
-
         # REQUIRES APPROVAL
         "report": ApprovalLevel.APPROVAL,
         "presentation": ApprovalLevel.APPROVAL,
@@ -95,7 +93,7 @@ class Planner:
         "image_analysis": ["analyze image", "describe image", "صورة"],
         "workspace_create": ["/brand", "/university", "/project", "/semester", "create workspace"],
         "memory_suggest": ["remember this", "suggest memory", "احفظ"],
-
+        "search": ["ابحث", "search", "find", "google", "قوقل", "بحث عن", "look for", "بحث"],
         "research_plan": ["research plan", "خطة بحث"],
         "study_plan": ["study plan", "خطة دراسة"],
         "marketing_plan": ["marketing plan", "خطة تسويق"],
@@ -103,7 +101,6 @@ class Planner:
         "roadmap": ["roadmap", "خطة"],
         "swot": ["swot", "سوات"],
         "competitor_analysis": ["competitor analysis plan", "خطة تحليل المنافسين"],
-
         "report": ["report", "تقرير"],
         "presentation": ["presentation", "present", "عرض تقديمي"],
         "carousel": ["carousel", "كروسيل"],
@@ -130,6 +127,11 @@ class Planner:
 
     @classmethod
     def from_flags(cls, strict: bool = False, fast: bool = False) -> "Planner":
+        if strict and fast:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Both planner_strict_mode and planner_fast_mode are enabled; strict takes precedence"
+            )
         if strict:
             return cls(PlannerMode.STRICT)
         if fast:
@@ -137,14 +139,12 @@ class Planner:
         return cls(PlannerMode.BALANCED)
 
     def plan(self, message: str, context: dict | None = None) -> Plan:
-        """Classify intent and produce a Plan."""
         intent = self._detect_intent(message)
         base_level = self.MATRIX.get(intent, ApprovalLevel.AUTO)
         level = self._apply_mode(base_level)
 
         title = self._title_for(intent)
         description = self._describe(intent, level)
-        steps = self._steps_for(intent)
 
         return Plan(
             intent=intent,
@@ -152,7 +152,7 @@ class Planner:
             mode=self.mode,
             title=title,
             description=description,
-            steps=steps,
+            steps=[],
             can_auto_execute=level == ApprovalLevel.AUTO,
             requires_approval=level == ApprovalLevel.APPROVAL,
             plan_only=level == ApprovalLevel.PLAN_ONLY,
@@ -162,21 +162,53 @@ class Planner:
     def _detect_intent(self, message: str) -> str:
         text = message.lower()
         scores: dict[str, int] = {}
+        max_keyword_len: dict[str, int] = {}
+
         for intent, keywords in self.KEYWORDS.items():
-            scores[intent] = sum(1 for kw in keywords if kw.lower() in text)
-        if not scores or max(scores.values()) == 0:
+            count = 0
+            longest = 0
+            for kw in keywords:
+                if kw.lower() in text:
+                    count += 1
+                    longest = max(longest, len(kw))
+            if count > 0:
+                scores[intent] = count
+                max_keyword_len[intent] = longest
+
+        if not scores:
             return "chat"
-        return max(scores, key=scores.get)
+
+        max_score = max(scores.values())
+        tied = [intent for intent, s in scores.items() if s == max_score]
+
+        if len(tied) == 1:
+            return tied[0]
+
+        # Tie-break: longest keyword match wins
+        tied.sort(key=lambda i: max_keyword_len.get(i, 0), reverse=True)
+        if len(tied) > 1 and max_keyword_len[tied[0]] > max_keyword_len[tied[1]]:
+            return tied[0]
+
+        # Tie-break: prefer Arabic keywords
+        arabic_patterns = set("ابتثجحخدذرزسشصضطظعغفقكلمنهوي")
+        def arabic_score(intent: str) -> int:
+            return sum(1 for kw in self.KEYWORDS[intent] if any(c in arabic_patterns for c in kw))
+        tied.sort(key=arabic_score, reverse=True)
+        if len(tied) > 1 and arabic_score(tied[0]) > arabic_score(tied[1]):
+            return tied[0]
+
+        # Final: first in matrix order (dict insertion order preserved)
+        for intent in self.MATRIX:
+            if intent in tied:
+                return intent
+        return tied[0]
 
     def _apply_mode(self, level: ApprovalLevel) -> ApprovalLevel:
         if self.mode == PlannerMode.STRICT:
-            # In strict mode, only AUTO stays AUTO; PLAN_ONLY and AUTO that
-            # touch state become APPROVAL. Keep pure read-only as AUTO.
             if level == ApprovalLevel.AUTO:
                 return ApprovalLevel.AUTO
             return ApprovalLevel.APPROVAL
         if self.mode == PlannerMode.FAST:
-            # In fast mode, PLAN_ONLY becomes AUTO; APPROVAL stays APPROVAL.
             if level == ApprovalLevel.PLAN_ONLY:
                 return ApprovalLevel.AUTO
             return level
@@ -191,6 +223,3 @@ class Planner:
         if level == ApprovalLevel.PLAN_ONLY:
             return f"'{intent}' will produce a plan for review before execution."
         return f"'{intent}' requires explicit user approval before execution."
-
-    def _steps_for(self, intent: str) -> list[str]:
-        return ["Analyze request", f"Execute {intent}", "Return result"]

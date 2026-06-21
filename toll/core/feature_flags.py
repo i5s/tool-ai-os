@@ -5,7 +5,7 @@ Core Layer components are enabled by default.
 Layer 2 dormant features are disabled by default.
 """
 
-from .storage import Storage
+from .connection_manager import ConnectionManager
 
 DEFAULT_FLAGS = {
     # Core Layer — always enabled in V1
@@ -22,63 +22,85 @@ DEFAULT_FLAGS = {
     "memory_graph": True,
     "workspace_manager": True,
     "context_engine": True,
+    "artifact_system": True,
+    "carousel_engine": True,
+    "report_engine": True,
+    "presentation_engine": True,
     "memory_auto_learning": False,
     "planner_strict_mode": False,
     "planner_fast_mode": False,
     # Layer 2 — dormant by default
     "preference_memory": False,
     "knowledge_vault": False,
-    "artifact_system": False,
     "google_drive_sync": False,
     "telegram_enabled": False,
     "task_journal": False,
     "health_dashboard": False,
     "self_improvement": False,
     "users_enabled": False,
+    "opendesign_integration": False,
+    # Image & Misc
+    "image_generation": False,
+    "provider_replicate": False,
 }
 
 _PREFIX = "feature_"
 
 
 class FeatureFlags:
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager):
+        self.cm = cm
         self._ensure_defaults()
 
     def _ensure_defaults(self):
-        """Persist any missing flags with their default values."""
         for name, default in DEFAULT_FLAGS.items():
             key = f"{_PREFIX}{name}"
-            if self.db.get_config(key) is None:
-                self.db.set_config(key, "true" if default else "false")
+            row = self.cm.execute("SELECT value FROM config WHERE key = ?", (key,)).fetchone()
+            if row is None:
+                self.cm.execute(
+                    "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                    (key, "true" if default else "false"),
+                )
+                self.cm.commit()
 
     def is_enabled(self, name: str, default: bool = False) -> bool:
-        """Check whether a feature flag is enabled.
-
-        Unknown flags fall back to `default` and are NOT persisted,
-        allowing callers to experiment without polluting config.
-        """
         if name in DEFAULT_FLAGS:
             default = DEFAULT_FLAGS[name]
-        value = self.db.get_config(f"{_PREFIX}{name}")
-        if value is None:
+        row = self.cm.execute(
+            "SELECT value FROM config WHERE key = ?", (f"{_PREFIX}{name}",)
+        ).fetchone()
+        if row is None:
             return default
-        return value.lower() in ("true", "1", "yes", "on")
+        return row["value"].lower() in ("true", "1", "yes", "on")
 
     def enable(self, name: str):
-        self.db.set_config(f"{_PREFIX}{name}", "true")
+        self.cm.execute(
+            "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+            (f"{_PREFIX}{name}", "true"),
+        )
+        self.cm.commit()
 
     def disable(self, name: str):
-        self.db.set_config(f"{_PREFIX}{name}", "false")
+        self.cm.execute(
+            "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+            (f"{_PREFIX}{name}", "false"),
+        )
+        self.cm.commit()
 
     def set(self, name: str, enabled: bool):
-        self.db.set_config(f"{_PREFIX}{name}", "true" if enabled else "false")
+        self.cm.execute(
+            "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+            (f"{_PREFIX}{name}", "true" if enabled else "false"),
+        )
+        self.cm.commit()
 
     def get_all(self) -> dict[str, bool]:
-        """Return the current state of all known flags."""
         return {name: self.is_enabled(name) for name in DEFAULT_FLAGS}
 
     def reset_to_defaults(self):
-        """Reset all known flags to their default values."""
         for name, default in DEFAULT_FLAGS.items():
-            self.db.set_config(f"{_PREFIX}{name}", "true" if default else "false")
+            self.cm.execute(
+                "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
+                (f"{_PREFIX}{name}", "true" if default else "false"),
+            )
+            self.cm.commit()

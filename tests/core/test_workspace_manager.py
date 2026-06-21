@@ -1,11 +1,11 @@
 import pytest
 from toll.workspace.manager import WorkspaceManager
-from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 
 
 @pytest.fixture
-def manager(storage: Storage):
-    return WorkspaceManager(storage=storage, user_id="test-user")
+def manager(cm: ConnectionManager):
+    return WorkspaceManager(cm=cm, user_id="test-user")
 
 
 def test_create_and_list_workspaces(manager):

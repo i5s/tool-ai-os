@@ -1,5 +1,6 @@
 from ..core.ai import AI
 from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
 
 TEMPLATES = {
     "تسويق": "اكتب لي {task} بأسلوب تسويقي مقنع يستهدف الجمهور المستهدف ويبرز القيمة الفريدة.",
@@ -9,10 +10,15 @@ TEMPLATES = {
     "تقرير": "أعد لي تقرير عن {task} يشمل: المقدمة، التحليل، النتائج، التوصيات.",
 }
 
+
 class PromptGenerator:
-    def __init__(self):
-        self.ai = AI()
-        self.db = Storage()
+    def __init__(self, cm: ConnectionManager | None = None):
+        if cm:
+            self.ai = AI(cm=cm)
+            self.db = Storage(cm=cm)
+        else:
+            self.ai = AI()
+            self.db = Storage(cm=self.ai.settings.db.cm)
 
     def generate(self, task: str, category: str = "") -> str:
         if category and category in TEMPLATES:

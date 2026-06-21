@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
 
 
 @dataclass
@@ -46,8 +46,8 @@ class Memory:
 
 
 class MemoryGraph:
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager):
+        self.cm = cm
 
     def _now(self) -> str:
         return datetime.now(timezone.utc).isoformat()
@@ -86,13 +86,12 @@ class MemoryGraph:
         importance_score: int = 5,
         source: str = "unknown",
     ) -> Memory:
-        """Store or update a memory."""
         existing = self.get(type, key, entity_id)
         mem_id = existing.id if existing else str(uuid.uuid4())
         now = self._now()
 
         if existing:
-            self.db.conn.execute(
+            self.cm.execute(
                 """
                 UPDATE memories
                 SET value = ?, importance_score = ?, source = ?, updated_at = ?, last_accessed_at = ?
@@ -108,7 +107,7 @@ class MemoryGraph:
                 ),
             )
         else:
-            self.db.conn.execute(
+            self.cm.execute(
                 """
                 INSERT INTO memories (id, type, entity_id, key, value, importance_score, source, created_at, updated_at, last_accessed_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -126,18 +125,18 @@ class MemoryGraph:
                     now,
                 ),
             )
-        self.db.conn.commit()
+        self.cm.commit()
         return self.get_by_id(mem_id)
 
     def get(self, type: str, key: str, entity_id: str | None = None) -> Memory | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM memories WHERE type = ? AND entity_id IS ? AND key = ?",
             (type, entity_id, key),
         ).fetchone()
         return self._row_to_memory(row) if row else None
 
     def get_by_id(self, id: str) -> Memory | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM memories WHERE id = ?", (id,)
         ).fetchone()
         return self._row_to_memory(row) if row else None
@@ -163,7 +162,7 @@ class MemoryGraph:
         sql += " ORDER BY updated_at DESC LIMIT ?"
         params.append(limit)
 
-        rows = self.db.conn.execute(sql, params).fetchall()
+        rows = self.cm.connection.execute(sql, params).fetchall()
         return [self._row_to_memory(row) for row in rows]
 
     def retrieve(
@@ -173,8 +172,7 @@ class MemoryGraph:
         project_id: str | None = None,
         limit: int = 20,
     ) -> list[Memory]:
-        """Retrieve relevant memories using workspace filter + recency + importance."""
-        rows = self.db.conn.execute(
+        rows = self.cm.connection.execute(
             """
             SELECT * FROM memories
             WHERE type = 'global'
@@ -198,24 +196,22 @@ class MemoryGraph:
         return memories[:limit]
 
     def touch(self, id: str):
-        """Update last_accessed_at for a memory."""
-        self.db.conn.execute(
+        self.cm.execute(
             "UPDATE memories SET last_accessed_at = ? WHERE id = ?",
             (self._now(), id),
         )
-        self.db.conn.commit()
+        self.cm.commit()
 
     def adjust_importance(self, id: str, delta: int):
-        """Upvote or downvote a memory."""
         memory = self.get_by_id(id)
         if not memory:
             raise ValueError(f"Memory {id} not found")
         new_score = max(1, min(10, memory.importance_score + delta))
-        self.db.conn.execute(
+        self.cm.execute(
             "UPDATE memories SET importance_score = ?, updated_at = ? WHERE id = ?",
             (new_score, self._now(), id),
         )
-        self.db.conn.commit()
+        self.cm.commit()
 
     def learn_from_feedback(
         self,
@@ -224,7 +220,6 @@ class MemoryGraph:
         entity_id: str | None,
         approved: bool,
     ):
-        """Adjust memory importance based on execution feedback."""
         memory = self.get(type, key, entity_id)
         if not memory:
             return
@@ -232,6 +227,6 @@ class MemoryGraph:
         self.adjust_importance(memory.id, delta)
 
     def delete(self, id: str) -> bool:
-        cursor = self.db.conn.execute("DELETE FROM memories WHERE id = ?", (id,))
-        self.db.conn.commit()
+        cursor = self.cm.execute("DELETE FROM memories WHERE id = ?", (id,))
+        self.cm.commit()
         return cursor.rowcount > 0

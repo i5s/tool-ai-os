@@ -1,8 +1,9 @@
 from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 
 
-def test_storage_uses_custom_db_path(temp_db_path):
-    storage = Storage(db_path=temp_db_path)
+def test_storage_uses_custom_db_path(temp_db_path, cm):
+    storage = Storage(cm=cm)
     storage.set_config("test_key", "test_value")
     assert temp_db_path.exists()
     assert storage.get_config("test_key") == "test_value"

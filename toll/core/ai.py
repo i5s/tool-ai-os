@@ -9,18 +9,20 @@ import asyncio
 from .limiter import Limiter
 from .registry import ProviderRegistry
 from .settings import Settings
+from .connection_manager import ConnectionManager
+from ..core.config import DB_PATH
 
 
 class AI:
     """Synchronous facade over the provider registry."""
 
-    def __init__(self):
-        self.settings = Settings()
+    def __init__(self, cm: ConnectionManager | None = None):
+        m = cm or ConnectionManager(DB_PATH)
+        self.settings = Settings(cm=m)
         self.registry = ProviderRegistry(self.settings)
-        self.limiter = Limiter()
+        self.limiter = Limiter(cm=m)
 
     def ask(self, prompt: str, system: str = "") -> str:
-        """Ask available LLM providers with fallback and rate limiting."""
         for name in self.registry.available_llm():
             if not self.limiter.can_use(name):
                 continue
@@ -34,7 +36,6 @@ class AI:
         raise RuntimeError("كل مزودي AI غير متاحين اليوم (تم استهلاك الـ limit)")
 
     def search(self, query: str, max_results: int = 5) -> list[dict]:
-        """Search using the configured search provider."""
         provider = self.registry.get_search()
         if hasattr(provider, "search_sync"):
             results = provider.search_sync(query, max_results)

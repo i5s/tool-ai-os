@@ -1,24 +1,32 @@
-from .storage import Storage
+from .connection_manager import ConnectionManager
 
 
 class Limiter:
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager):
+        self.cm = cm
+
+    def _limit(self, provider: str) -> int:
+        row = self.cm.execute(
+            "SELECT value FROM config WHERE key = ?", (f"daily_limit_{provider}",)
+        ).fetchone()
+        return int(row["value"]) if row else 20
+
+    def _used(self, provider: str) -> int:
+        row = self.cm.execute(
+            "SELECT COUNT(*) as c FROM usage WHERE provider = ? AND date(timestamp) = date('now')",
+            (provider,),
+        ).fetchone()
+        return row["c"] if row else 0
 
     def can_use(self, provider):
-        limit_key = f"daily_limit_{provider}"
-        limit = int(self.db.get_config(limit_key, "20"))
-        used = self.db.usage_today(provider)
-        return used < limit
+        return self._used(provider) < self._limit(provider)
 
     def remaining(self, provider):
-        limit_key = f"daily_limit_{provider}"
-        limit = int(self.db.get_config(limit_key, "20"))
-        used = self.db.usage_today(provider)
-        return max(0, limit - used)
+        return max(0, self._limit(provider) - self._used(provider))
 
     def log_usage(self, provider):
-        self.db.log_usage(provider)
+        self.cm.execute("INSERT INTO usage (provider, action) VALUES (?, ?)", (provider, "ask"))
+        self.cm.commit()
 
     def status(self):
         return {

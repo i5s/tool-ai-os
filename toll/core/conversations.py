@@ -9,12 +9,12 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, List
 
-from ..core.storage import Storage
+from .connection_manager import ConnectionManager
 
 
 class ConversationStore:
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager):
+        self.cm = cm
 
     def _now(self) -> str:
         return datetime.now(timezone.utc).isoformat()
@@ -28,7 +28,7 @@ class ConversationStore:
     ) -> dict:
         conv_id = str(uuid.uuid4())
         now = self._now()
-        self.db.conn.execute(
+        self.cm.execute(
             """
             INSERT INTO conversations (id, title, workspace_type, workspace_id, metadata, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -43,11 +43,11 @@ class ConversationStore:
                 now,
             ),
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return self.get(conv_id)
 
     def get(self, id: str) -> dict | None:
-        row = self.db.conn.execute(
+        row = self.cm.connection.execute(
             "SELECT * FROM conversations WHERE id = ?", (id,)
         ).fetchone()
         if not row:
@@ -70,7 +70,7 @@ class ConversationStore:
         limit: int = 100,
     ) -> List[dict]:
         if workspace_type and workspace_id:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 """
                 SELECT * FROM conversations
                 WHERE workspace_type = ? AND workspace_id = ?
@@ -79,7 +79,7 @@ class ConversationStore:
                 (workspace_type, workspace_id, limit),
             ).fetchall()
         else:
-            rows = self.db.conn.execute(
+            rows = self.cm.connection.execute(
                 """
                 SELECT * FROM conversations
                 ORDER BY updated_at DESC LIMIT ?
@@ -89,17 +89,17 @@ class ConversationStore:
         return [self.get(row["id"]) for row in rows]
 
     def update_title(self, id: str, title: str):
-        self.db.conn.execute(
+        self.cm.execute(
             "UPDATE conversations SET title = ?, updated_at = ? WHERE id = ?",
             (title, self._now(), id),
         )
-        self.db.conn.commit()
+        self.cm.commit()
 
     def delete(self, id: str) -> bool:
-        cursor = self.db.conn.execute(
+        cursor = self.cm.execute(
             "DELETE FROM conversations WHERE id = ?", (id,)
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return cursor.rowcount > 0
 
     def add_message(
@@ -112,7 +112,7 @@ class ConversationStore:
         if role not in ("user", "assistant", "system"):
             raise ValueError(f"Invalid role: {role}")
 
-        self.db.conn.execute(
+        self.cm.execute(
             """
             INSERT INTO messages (conversation_id, role, content, metadata, created_at)
             VALUES (?, ?, ?, ?, ?)
@@ -125,15 +125,15 @@ class ConversationStore:
                 self._now(),
             ),
         )
-        self.db.conn.execute(
+        self.cm.execute(
             "UPDATE conversations SET updated_at = ? WHERE id = ?",
             (self._now(), conversation_id),
         )
-        self.db.conn.commit()
+        self.cm.commit()
         return self.get(conversation_id)
 
     def list_messages(self, conversation_id: str) -> List[dict]:
-        rows = self.db.conn.execute(
+        rows = self.cm.connection.execute(
             """
             SELECT * FROM messages
             WHERE conversation_id = ?

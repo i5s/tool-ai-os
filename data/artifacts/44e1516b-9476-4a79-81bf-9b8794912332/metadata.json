@@ -1,0 +1,18 @@
+{
+  "id": "44e1516b-9476-4a79-81bf-9b8794912332",
+  "type": "research",
+  "status": "draft",
+  "title": "اختبار البحث",
+  "version": 1,
+  "parent_artifact_id": null,
+  "workflow_id": null,
+  "provider": "web",
+  "model": null,
+  "intent": "research",
+  "workspace_type": null,
+  "workspace_id": null,
+  "tags": [],
+  "created_at": "2026-06-21T13:58:33.591912+00:00",
+  "updated_at": "2026-06-21T13:58:33.591912+00:00",
+  "expires_at": null
+}

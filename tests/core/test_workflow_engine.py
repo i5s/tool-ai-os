@@ -1,11 +1,16 @@
 import pytest
 from toll.workflow.engine import WorkflowEngine, WorkflowStatus
-from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 
 
 @pytest.fixture
-def workflow_engine(storage: Storage):
-    return WorkflowEngine(storage=storage)
+def wf_cm(cm: ConnectionManager):
+    return cm
+
+
+@pytest.fixture
+def workflow_engine(wf_cm: ConnectionManager):
+    return WorkflowEngine(cm=wf_cm)
 
 
 def test_create_workflow_auto_execute(workflow_engine):
@@ -118,3 +123,65 @@ def test_list_workflows_by_status(workflow_engine):
 
     pending = workflow_engine.list(status=WorkflowStatus.PENDING)
     assert len(pending) == 0
+
+
+def test_create_and_run_auto_executes(workflow_engine):
+    plan = {
+        "intent": "question",
+        "level": "auto_execute",
+        "can_auto_execute": True,
+        "requires_approval": False,
+        "plan_only": False,
+        "title": "Question",
+        "description": "Safe to execute",
+        "steps": [],
+        "metadata": {},
+    }
+    workflow_engine.register_handler("question", lambda p, m: {"done": True})
+    workflow = workflow_engine.create_and_run(plan)
+    assert workflow.status == WorkflowStatus.COMPLETED
+    assert workflow.result == {"done": True}
+
+
+def test_create_and_run_pending_requires_approval(workflow_engine):
+    plan = {
+        "intent": "report",
+        "level": "requires_approval",
+        "can_auto_execute": False,
+        "requires_approval": True,
+        "plan_only": False,
+        "title": "Report",
+        "description": "Needs approval",
+        "steps": [],
+        "metadata": {},
+    }
+    workflow = workflow_engine.create_and_run(plan)
+    # Pending workflows are not auto-run by create_and_run
+    assert workflow.status == WorkflowStatus.PENDING
+
+
+def test_recover_marks_running_as_failed(workflow_engine):
+    plan = {
+        "intent": "question",
+        "level": "auto_execute",
+        "can_auto_execute": True,
+        "requires_approval": False,
+        "plan_only": False,
+        "title": "Question",
+        "description": "Safe",
+        "steps": [],
+        "metadata": {},
+    }
+    wf = workflow_engine.create(plan)
+    # Manually set to running to simulate interrupted execution
+    wf.status = WorkflowStatus.RUNNING
+    workflow_engine._persist(wf)
+
+    recovered = workflow_engine.recover()
+    assert len(recovered) == 1
+    assert recovered[0].status == WorkflowStatus.FAILED
+    assert "Server restart interrupted" in recovered[0].error
+
+    # Verify it stays failed after second recover
+    recovered2 = workflow_engine.recover()
+    assert len(recovered2) == 0

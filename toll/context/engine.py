@@ -11,7 +11,7 @@ Returns a prompt-ready context string plus structured metadata.
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
 from ..memory.graph import MemoryGraph
 from ..workspace.manager import WorkspaceManager
 
@@ -27,13 +27,13 @@ class ContextResult:
 class ContextEngine:
     def __init__(
         self,
-        storage: Storage | None = None,
+        cm: ConnectionManager,
         memory_graph: MemoryGraph | None = None,
         workspace_manager: WorkspaceManager | None = None,
     ):
-        self.db = storage or Storage()
-        self.memory = memory_graph or MemoryGraph(storage=self.db)
-        self.workspace = workspace_manager or WorkspaceManager(storage=self.db)
+        self.cm = cm
+        self.memory = memory_graph or MemoryGraph(cm=cm)
+        self.workspace = workspace_manager or WorkspaceManager(cm=cm)
 
     def build(
         self,
@@ -42,7 +42,6 @@ class ContextEngine:
         memory_limit: int = 10,
         message_history_limit: int = 6,
     ) -> ContextResult:
-        """Build prompt context for the current message."""
         active = self.workspace.get_active()
         summary = self.workspace.get_active_summary()
 
@@ -73,7 +72,6 @@ class ContextEngine:
     ) -> str:
         parts: list[str] = []
 
-        # Workspace context
         ws_parts = []
         for key in ["brand", "university", "project", "semester"]:
             item = workspace_summary.get(key)
@@ -82,7 +80,6 @@ class ContextEngine:
         if ws_parts:
             parts.append("[Workspace Context]\n" + "\n".join(ws_parts))
 
-        # Relevant memories
         if memories:
             parts.append("[Relevant Memories]")
             for m in memories:
@@ -92,13 +89,11 @@ class ContextEngine:
                     f"(importance: {m.importance_score})"
                 )
 
-        # Recent conversation
         if recent_messages:
             parts.append("[Recent Conversation]")
             for msg in recent_messages:
                 role = msg.get("role", "user")
                 content = msg.get("content", "")
-                # Truncate long assistant messages
                 if role == "assistant" and len(content) > 300:
                     content = content[:300] + "..."
                 parts.append(f"{role}: {content}")

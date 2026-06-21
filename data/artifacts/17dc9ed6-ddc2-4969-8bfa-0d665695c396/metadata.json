@@ -1,0 +1,18 @@
+{
+  "id": "17dc9ed6-ddc2-4969-8bfa-0d665695c396",
+  "type": "report",
+  "status": "draft",
+  "title": "Rendered",
+  "version": 1,
+  "parent_artifact_id": null,
+  "workflow_id": null,
+  "provider": null,
+  "model": null,
+  "intent": null,
+  "workspace_type": null,
+  "workspace_id": null,
+  "tags": [],
+  "created_at": "2026-06-21T14:01:29.926480+00:00",
+  "updated_at": "2026-06-21T14:01:29.926480+00:00",
+  "expires_at": null
+}

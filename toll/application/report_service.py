@@ -1,0 +1,108 @@
+from __future__ import annotations
+
+import logging
+
+from ..core.ai import AI
+from ..core.connection_manager import ConnectionManager
+from ..core.provider_selector import ProviderSelector
+from ..engine.renderers.preview_renderer import PreviewRenderer
+from ..engine.renderers.report_renderer import ReportRenderer
+from ..model.artifact import Artifact, ArtifactStatus, ArtifactType
+from .artifact_service import ArtifactService
+
+logger = logging.getLogger(__name__)
+
+
+class ReportService:
+    def __init__(self, artifact_service: ArtifactService, selector: ProviderSelector, cm: ConnectionManager):
+        self.artifact_service = artifact_service
+        self.selector = selector
+        self.cm = cm
+        self.ai = AI(cm=cm)
+        self.renderer = ReportRenderer()
+        self.preview = PreviewRenderer()
+
+    def execute(self, plan: dict, metadata: dict | None = None) -> dict:
+        title = plan.get("title", plan.get("intent", "report"))
+        style = plan.get("style", "academic")
+        sections_list = plan.get("sections", None)
+
+        provider_name = self.selector.select(ArtifactType.REPORT)
+        if not provider_name:
+            return {"error": "No available provider for report generation"}
+
+        prompt = self._build_prompt(title, style, sections_list)
+        try:
+            raw = self.ai.ask(prompt)
+        except RuntimeError as e:
+            return {"error": str(e)}
+
+        sections = self._parse_sections(raw) or self._fallback_sections(title, sections_list)
+
+        artifact = Artifact(
+            id="",
+            type=ArtifactType.REPORT,
+            status=ArtifactStatus.DRAFT,
+            title=title,
+            content={"sections": sections, "style": style},
+            provider=provider_name,
+            intent="report",
+            workflow_id=metadata.get("workflow_id") if metadata else None,
+            conversation_id=metadata.get("conversation_id") if metadata else None,
+        )
+
+        rendered = self.renderer.render(title, sections)
+        artifact = self.artifact_service.create(artifact, rendered)
+
+        preview_html = self.preview.report_preview(artifact)
+        preview_json = self.preview.json_preview(artifact)
+        self.artifact_service.write_preview(artifact, preview_html, preview_json)
+
+        return {
+            "artifact_id": artifact.id,
+            "type": "report",
+            "title": title,
+            "sections": len(sections),
+            "preview_url": artifact.preview_url,
+            "rendered_path": artifact.rendered_path,
+        }
+
+    def _build_prompt(self, title: str, style: str, sections: list[str] | None) -> str:
+        secs = ", ".join(sections) if sections else "Executive Summary, Introduction, Analysis, Recommendations, Conclusion"
+        return (
+            f"Write a {style} report titled '{title}' in Arabic.\n"
+            f"Sections: {secs}\n"
+            f"Return each section as exactly:\n"
+            f"SECTION | Heading | Body\n"
+            f"Then for subsections:\n"
+            f"SUB | Subheading | Body\n"
+        )
+
+    def _parse_sections(self, raw: str) -> list[dict] | None:
+        sections = []
+        current = None
+        for line in raw.strip().split("\n"):
+            line = line.strip()
+            if line.startswith("SECTION |"):
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    current = {
+                        "heading": parts[1].strip(),
+                        "body": "|".join(parts[2:]).strip(),
+                        "subsections": [],
+                    }
+                    sections.append(current)
+            elif line.startswith("SUB |") and current is not None:
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    current["subsections"].append({
+                        "subheading": parts[1].strip(),
+                        "body": "|".join(parts[2:]).strip(),
+                    })
+        return sections if sections else None
+
+    def _fallback_sections(self, title: str, sections: list[str] | None) -> list[dict]:
+        return [
+            {"heading": s, "body": f"محتوى {s}", "subsections": []}
+            for s in (sections or ["الملخص", "المقدمة", "التحليل", "التوصيات", "الخاتمة"])
+        ]

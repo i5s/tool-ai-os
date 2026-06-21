@@ -84,3 +84,66 @@ def test_from_flags_fast():
 def test_from_flags_balanced_default():
     planner = Planner.from_flags()
     assert planner.mode == PlannerMode.BALANCED
+
+
+def test_search_is_auto_execute():
+    planner = Planner()
+    plan = planner.plan("ابحث عن الذكاء الاصطناعي")
+    assert plan.intent == "search"
+    assert plan.level == ApprovalLevel.AUTO
+
+
+def test_search_english_keyword():
+    planner = Planner()
+    plan = planner.plan("search for AI news")
+    assert plan.intent == "search"
+    assert plan.level == ApprovalLevel.AUTO
+
+
+def test_search_google_keyword():
+    planner = Planner()
+    plan = planner.plan("google machine learning")
+    assert plan.intent == "search"
+    assert plan.level == ApprovalLevel.AUTO
+
+
+def test_search_arabic_bahth_an():
+    planner = Planner()
+    plan = planner.plan("بحث عن التغير المناخي")
+    assert plan.intent == "search"
+    assert plan.level == ApprovalLevel.AUTO
+
+
+def test_ambiguous_roadmap_vs_study_plan():
+    """خطة matches both roadmap and study_plan; roadmap has shorter keyword match.
+    Tie-break should prefer study_plan (longer keyword match: 'خطة دراسة' > 'خطة')."""
+    planner = Planner()
+    plan = planner.plan("خطة دراسة")
+    assert plan.intent == "study_plan"
+
+
+def test_disambiguation_longest_keyword_wins():
+    """When two intents match the same number of keywords, longest match wins."""
+    planner = Planner()
+    plan = planner.plan("research plan")
+    assert plan.intent == "research_plan"
+
+
+def test_ambiguous_arabic_keyword_preferred():
+    """When tie persists after longest-match, Arabic keyword count breaks it."""
+    planner = Planner()
+    plan = planner.plan("ترجمة بحث ترجمة")
+    assert plan.intent == "translation"
+
+
+def test_unknown_falls_back_to_chat():
+    planner = Planner()
+    plan = planner.plan("zzzxy_nonexistent")
+    assert plan.intent == "chat"
+    assert plan.level == ApprovalLevel.AUTO
+
+
+def test_steps_are_empty():
+    planner = Planner()
+    plan = planner.plan("What is AI?")
+    assert plan.steps == []

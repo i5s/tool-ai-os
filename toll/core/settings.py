@@ -9,7 +9,9 @@ Precedence (highest to lowest):
 import os
 from typing import Any
 from .storage import Storage
+from .connection_manager import ConnectionManager
 from ..ports.settings import SettingsPort
+from ..core.config import DB_PATH
 
 
 DEFAULTS = {
@@ -25,8 +27,12 @@ _ENV_PREFIX = "TOLL_"
 
 
 class Settings(SettingsPort):
-    def __init__(self, storage: Storage | None = None):
-        self.db = storage or Storage()
+    def __init__(self, cm: ConnectionManager | None = None, storage: Storage | None = None):
+        if storage:
+            self.db = storage
+        else:
+            m = cm or ConnectionManager(DB_PATH)
+            self.db = Storage(cm=m)
 
     def get(self, key: str, default=None) -> Any:
         env_key = f"{_ENV_PREFIX}{key.upper()}"
@@ -44,12 +50,10 @@ class Settings(SettingsPort):
 
     def all(self) -> dict:
         result = dict(DEFAULTS)
-        # Override with DB values
         for key in DEFAULTS:
             db_value = self.db.get_config(key)
             if db_value is not None:
                 result[key] = db_value
-        # Override with env values
         for key in DEFAULTS:
             env_key = f"{_ENV_PREFIX}{key.upper()}"
             if env_key in os.environ:

@@ -1,11 +1,11 @@
 import pytest
 from toll.core.conversations import ConversationStore
-from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 
 
 @pytest.fixture
-def store(storage: Storage):
-    return ConversationStore(storage=storage)
+def store(cm: ConnectionManager):
+    return ConversationStore(cm=cm)
 
 
 def test_create_conversation(store):

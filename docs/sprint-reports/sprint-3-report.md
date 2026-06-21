@@ -1,7 +1,7 @@
 # Sprint 3 Report — Context Engine + Planner + Workflow Engine
 
 **Status:** ✅ Complete  
-**Commit:** `36e32c2`  
+**Commit:** `cdc97d7`  
 **Date:** 2026-06-21  
 **Tests:** 70 passing
 

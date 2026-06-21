@@ -4,13 +4,15 @@ from toll.engine.content_machine import ContentMachine
 from toll.engine.prompt_gen import PromptGenerator
 from toll.engine.reports import Reports
 from toll.core.ai import AI
-from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 from toll.core.registry import ProviderRegistry
 from toll.core.conversations import ConversationStore
 from toll.context.engine import ContextEngine
 from toll.planner.planner import Planner, ApprovalLevel
 from toll.workflow.engine import WorkflowEngine
-from api.dependencies import get_registry
+from toll.application.handler_registry import register_handlers
+from toll.application.artifact_service import ArtifactService
+from api.dependencies import get_connection_manager
 
 router = APIRouter()
 
@@ -29,36 +31,24 @@ class TaskRequest(BaseModel):
     slides: int = 5
 
 
-def detect_type(msg: str, preferred: str) -> str:
-    if preferred != "auto":
-        return preferred
-    msg_lower = msg.lower()
-    keywords = {
-        "report": ["تقرير", "ملخص", "report", "summary"],
-        "research": ["بحث", "research", "دراسة", "تحليل", "study"],
-        "search": ["ابحث", "بحث", "search", "find", "google", "قوقل"],
-        "present": ["عرض", "presentation", "present", "برزنتيشن", "slides"],
-        "prompt": ["برومبت", "prompt", "برمبت"],
-        "carousel": ["carousel", "كروسيل", "عرض دوار"],
-        "code": ["كود", "code", "برمجة", "programming", "function", "api"],
-    }
-    for t, words in keywords.items():
-        if any(w in msg_lower for w in words):
-            return t
-    return "auto"
-
-
 @router.post("/chat")
-def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
+def chat(
+    req: ChatRequest,
+    cm: ConnectionManager = Depends(get_connection_manager),
+):
     try:
-        ai = AI()
-        cm = ContentMachine()
-        pg = PromptGenerator()
-        rp = Reports()
-        db = Storage()
-        conv_store = ConversationStore()
-        context_engine = ContextEngine(storage=db)
+        ai = AI(cm=cm)
+        cmachine = ContentMachine(cm=cm)
+        pg = PromptGenerator(cm=cm)
+        rp = Reports(cm=cm)
+        conv_store = ConversationStore(cm=cm)
+        context_engine = ContextEngine(cm=cm)
         planner = Planner()
+        wf_engine = WorkflowEngine(cm=cm)
+        artifact_svc = ArtifactService(cm)
+
+        # Register content handlers from application layer
+        register_handlers(wf_engine, cm)
 
         # Load or create conversation
         if req.conversation_id:
@@ -77,19 +67,31 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
         # Classify intent and approval level
         plan = planner.plan(req.message)
 
+        # PLAN ONLY — create workflow, auto-run, return plan result
         if plan.level == ApprovalLevel.PLAN_ONLY:
-            metadata = {"plan": plan.__dict__}
-            conv_store.add_message(conv_id, "assistant", plan.description, metadata)
+            workflow = wf_engine.create_and_run(
+                plan.__dict__,
+                metadata={"conversation_id": conv_id},
+            )
+            response_text = (
+                f"📋 **{plan.title}**\n\n"
+                f"{plan.description}\n\n"
+            )
+            conv_store.add_message(
+                conv_id, "assistant", response_text,
+                {"plan": plan.__dict__, "workflow_id": workflow.id},
+            )
             return {
-                "response": plan.description,
+                "response": response_text,
                 "type": "plan",
                 "plan": plan.__dict__,
                 "conversation_id": conv_id,
+                "workflow_id": workflow.id,
                 "html_files": [],
             }
 
+        # APPROVAL REQUIRED — create a pending workflow
         if plan.level == ApprovalLevel.APPROVAL:
-            wf_engine = WorkflowEngine(storage=db)
             workflow = wf_engine.create(plan.__dict__, metadata={"conversation_id": conv_id})
             approval_msg = (
                 f"⚠️ هذا الإجراء يتطلب موافقتك:\n\n"
@@ -106,21 +108,11 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
                 "html_files": [],
             }
 
-        # AUTO EXECUTE path
-        task_type = detect_type(req.message, req.type)
+        # AUTO EXECUTE — route by intent
         files = []
+        intent = plan.intent
 
-        if task_type == "report":
-            ai_prompt = f"اكتب تقريراً مفصلاً بالعربية عن: {req.message}\n\nالتقرير يجب أن يشمل مقدمة، نقاط رئيسية، تحليل، وتوصيات."
-            response_text = ai.ask(ai_prompt)
-            html_path = rp.report(req.message)
-            files.append(html_path)
-
-        elif task_type == "research":
-            ai_prompt = f"اكتب بحثاً علمياً بالعربية عن: {req.message}\n\nيجب أن يشمل: الملخص، المقدمة، المنهجية، النتائج، المناقشة، الخاتمة، المراجع."
-            response_text = ai.ask(ai_prompt)
-
-        elif task_type == "search":
+        if intent == "search":
             response_text = f"🔍 **بحث عن: {req.message}**\n\n---\n"
             try:
                 results = ai.search(req.message, max_results=5)
@@ -134,22 +126,72 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
             except Exception as e:
                 response_text += f"❌ فشل البحث: {e}"
 
-        elif task_type == "present":
-            ai_prompt = f"اكتب محتوى عرض تقديمي بالعربية عن: {req.message}\n\nوزع المحتوى على 5 شرائح."
-            response_text = ai.ask(ai_prompt)
-            html_path = rp.presentation(req.message)
-            files.append(html_path)
+        elif intent == "report":
+            wf = wf_engine.create_and_run(
+                plan.__dict__,
+                metadata={"conversation_id": conv_id},
+            )
+            result = wf.result or {}
+            artifact_id = result.get("artifact_id")
+            preview_url = result.get("preview_url")
+            if artifact_id:
+                files.append(preview_url or f"/api/artifacts/{artifact_id}/render")
+                response_text = (
+                    f"📄 **تم إنشاء التقرير**\n\n"
+                    f"معرف: `{artifact_id}`\n"
+                    f"{f'معاينة: {preview_url}' if preview_url else ''}"
+                )
+            else:
+                error = result.get("error", "Unknown error")
+                response_text = f"❌ فشل إنشاء التقرير: {error}"
 
-        elif task_type == "prompt":
+        elif intent == "research_plan":
+            ai_prompt = f"اكتب بحثاً علمياً بالعربية عن: {req.message}\n\nيجب أن يشمل: الملخص، المقدمة، المنهجية، النتائج، المناقشة، الخاتمة، المراجع."
+            response_text = ai.ask(ai_prompt)
+
+        elif intent == "presentation":
+            wf = wf_engine.create_and_run(
+                plan.__dict__,
+                metadata={"conversation_id": conv_id},
+            )
+            result = wf.result or {}
+            artifact_id = result.get("artifact_id")
+            preview_url = result.get("preview_url")
+            if artifact_id:
+                files.append(preview_url or f"/api/artifacts/{artifact_id}/render")
+                response_text = (
+                    f"📺 **تم إنشاء العرض التقديمي**\n\n"
+                    f"معرف: `{artifact_id}`\n"
+                    f"{f'معاينة: {preview_url}' if preview_url else ''}"
+                )
+            else:
+                error = result.get("error", "Unknown error")
+                response_text = f"❌ فشل إنشاء العرض: {error}"
+
+        elif intent == "prompt_generation":
             response_text = pg.generate(req.message)
 
-        elif task_type == "carousel":
-            result = cm.carousel(req.message)
-            response_text = f"🎠 **تم إنشاء Carousel**\n\nالملف: {result}"
-            if "http" in str(result) or ".html" in str(result):
-                files.append(str(result))
+        elif intent == "carousel":
+            wf = wf_engine.create_and_run(
+                plan.__dict__,
+                metadata={"conversation_id": conv_id},
+            )
+            result = wf.result or {}
+            artifact_id = result.get("artifact_id")
+            preview_url = result.get("preview_url")
+            if artifact_id:
+                files.append(preview_url or f"/api/artifacts/{artifact_id}/render")
+                response_text = (
+                    f"🎠 **تم إنشاء Carousel**\n\n"
+                    f"عدد الشرائح: {result.get('slides', 0)}\n"
+                    f"معرف: `{artifact_id}`\n"
+                    f"{f'معاينة: {preview_url}' if preview_url else ''}"
+                )
+            else:
+                error = result.get("error", "Unknown error")
+                response_text = f"❌ فشل إنشاء Carousel: {error}"
 
-        elif task_type == "code":
+        elif intent == "code_snippet":
             ai_prompt = f"اكتب كود لـ: {req.message}\n\nالرجاء تقديم الكود مع الشرح."
             response_text = ai.ask(ai_prompt)
 
@@ -168,16 +210,15 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
             response_text += "\n\n📎 تم استلام الصورة."
 
         # Store assistant message
-        metadata = {"type": task_type, "html_files": files, "intent": plan.intent}
+        metadata = {"type": intent, "html_files": files, "intent": intent}
         conv_store.add_message(conv_id, "assistant", response_text, metadata)
 
-        db.save_history("chat", req.message[:100], response_text[:200])
         return {
             "response": response_text,
-            "type": task_type,
+            "type": intent,
             "html_files": files,
             "conversation_id": conv_id,
-            "intent": plan.intent,
+            "intent": intent,
         }
 
     except RuntimeError as e:
@@ -191,9 +232,9 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
 @router.post("/content")
 def content(req: TaskRequest):
     try:
-        cm = ContentMachine()
-        carousel = cm.carousel(req.task)
-        post = cm.social_post(req.platform, req.task)
+        cmachine = ContentMachine()
+        carousel = cmachine.carousel(req.task)
+        post = cmachine.social_post(req.platform, req.task)
         return {"carousel": carousel, "post": post}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -230,9 +271,9 @@ def present(req: TaskRequest):
 
 
 @router.get("/status")
-def status(registry: ProviderRegistry = Depends(get_registry)):
-    ai = AI()
+def status(cm: ConnectionManager = Depends(get_connection_manager)):
+    ai = AI(cm=cm)
     return {
         "limits": ai.limit_status(),
-        "providers": registry.status(),
+        "providers": ai.provider_status(),
     }

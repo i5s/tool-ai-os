@@ -2,11 +2,17 @@ import json
 from pathlib import Path
 from ..core.ai import AI
 from ..core.storage import Storage
+from ..core.connection_manager import ConnectionManager
+
 
 class ContentMachine:
-    def __init__(self):
-        self.ai = AI()
-        self.db = Storage()
+    def __init__(self, cm: ConnectionManager | None = None):
+        if cm:
+            self.ai = AI(cm=cm)
+            self.db = Storage(cm=cm)
+        else:
+            self.ai = AI()
+            self.db = Storage(cm=self.ai.settings.db.cm)
 
     def carousel(self, topic: str) -> str:
         slides = [

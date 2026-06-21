@@ -1,11 +1,11 @@
 import pytest
 from toll.memory.graph import MemoryGraph
-from toll.core.storage import Storage
+from toll.core.connection_manager import ConnectionManager
 
 
 @pytest.fixture
-def graph(storage: Storage):
-    return MemoryGraph(storage=storage)
+def graph(cm: ConnectionManager):
+    return MemoryGraph(cm=cm)
 
 
 def test_store_and_retrieve_memory(graph):
