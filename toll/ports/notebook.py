@@ -11,6 +11,7 @@ class NotebookSource:
     notebook_id: str
     title: str
     file_name: str
+    content: str = ""
     file_path: str | None = None
     content_type: str = "text/plain"
     char_count: int = 0
@@ -36,7 +37,7 @@ class NotebookSnapshot:
     id: str
     notebook_id: str
     label: str
-    snapshot_data: dict
+    snapshot_data: dict = field(default_factory=dict)
     source_count: int = 0
     note_count: int = 0
     created_at: str = ""
@@ -67,61 +68,61 @@ class NotebookPort(ABC):
     name: str = "abstract_notebook"
 
     @abstractmethod
-    async def upload_source(
+    def upload_source(
         self, notebook_id: str, content: str, file_name: str, title: str = ""
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def create_notes(
+    def create_notes(
         self, notebook_id: str, source_ids: list[str] | None = None
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def query(
+    def query(
         self, notebook_id: str, question: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def list_sources(
+    def list_sources(
         self, notebook_id: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def delete_source(
+    def delete_source(
         self, notebook_id: str, source_id: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def create_snapshot(
+    def create_snapshot(
         self, notebook_id: str, label: str = ""
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def list_snapshots(
+    def list_snapshots(
         self, notebook_id: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def get_snapshot(
+    def get_snapshot(
         self, notebook_id: str, snapshot_id: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def delete_snapshot(
+    def delete_snapshot(
         self, notebook_id: str, snapshot_id: str
     ) -> NotebookResponse:
         ...
 
     @abstractmethod
-    async def generate_audio_overview(
+    def generate_audio_overview(
         self, notebook_id: str, source_ids: list[str] | None = None
     ) -> NotebookResponse:
         ...

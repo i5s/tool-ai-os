@@ -103,6 +103,21 @@ class ResearchService:
 
         self._store_sources(sources_data, artifact.id, style)
 
+        if self.flags.is_enabled("research_memory_auto_index"):
+            try:
+                from ..research.memory_service import ResearchMemoryService
+                rms = ResearchMemoryService(cm=self.cm)
+                ws_type = metadata.get("workspace_type") if metadata else None
+                ws_id = metadata.get("workspace_id") if metadata else None
+                rms.index_research(
+                    artifact=artifact,
+                    sources=[ResearchSource(**s) for s in sources_data],
+                    workspace_type=ws_type,
+                    workspace_id=ws_id,
+                )
+            except Exception as e:
+                logger.warning("Research memory indexing failed: %s", e)
+
         return {
             "artifact_id": artifact.id,
             "type": ArtifactType.RESEARCH.value,

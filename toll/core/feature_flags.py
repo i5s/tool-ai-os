@@ -62,6 +62,11 @@ DEFAULT_FLAGS = {
     "notebooklm_strict_local": False,
     "notebooklm_snapshots": True,
     "notebooklm_audio_overview": False,
+    # Research Memory — Sprint 5C
+    "research_memory_auto_index": True,
+    "research_memory_context": False,
+    "research_memory_importance_learn": True,
+    "research_memory_knowledge_vault": True,
 }
 
 _PREFIX = "feature_"

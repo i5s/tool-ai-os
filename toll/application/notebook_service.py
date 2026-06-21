@@ -150,10 +150,10 @@ class NotebookService:
                     logger.warning("Provider upload failed: %s", resp.error)
         self.cm.execute(
             """INSERT INTO notebook_sources (id, notebook_id, title, file_name, file_path,
-               content_type, char_count, metadata, created_at)
-               VALUES (?, ?, ?, ?, ?, 'text/plain', ?, '{}', ?)""",
+               content_type, char_count, content, metadata, created_at)
+               VALUES (?, ?, ?, ?, ?, 'text/plain', ?, ?, '{}', ?)""",
             (source.id, source.notebook_id, source.title, source.file_name,
-             source.file_path, source.char_count, source.created_at),
+             source.file_path, source.char_count, content, source.created_at),
         )
         self.cm.execute(
             "UPDATE notebooks SET source_count = source_count + 1, updated_at = ? WHERE id = ?",
@@ -172,10 +172,12 @@ class NotebookService:
     def delete_source(self, notebook_id: str, source_id: str) -> bool:
         if self.flags.is_enabled("notebooklm_snapshots"):
             self._auto_snapshot(notebook_id, f"before_delete_source_{source_id[:8]}")
-        self.cm.execute(
+        cur = self.cm.execute(
             "DELETE FROM notebook_sources WHERE id = ? AND notebook_id = ?",
             (source_id, notebook_id),
         )
+        if cur.rowcount == 0:
+            return False
         self.cm.execute(
             "UPDATE notebooks SET source_count = MAX(0, source_count - 1), updated_at = ? WHERE id = ?",
             (datetime.now(timezone.utc).isoformat(), notebook_id),
@@ -222,8 +224,6 @@ class NotebookService:
             (len(notes), now, notebook_id),
         )
         self.cm.commit()
-        if self.flags.is_enabled("notebooklm_memory_index"):
-            self._index_notes(notes)
         if self.flags.is_enabled("notebooklm_artifact_create"):
             self._create_artifact_from_notes(notebook, notes)
         return notes
@@ -260,10 +260,12 @@ class NotebookService:
         return [self._row_to_note(r) for r in rows]
 
     def delete_note(self, notebook_id: str, note_id: str) -> bool:
-        self.cm.execute(
+        cur = self.cm.execute(
             "DELETE FROM notebook_notes WHERE id = ? AND notebook_id = ?",
             (note_id, notebook_id),
         )
+        if cur.rowcount == 0:
+            return False
         self.cm.execute(
             "UPDATE notebooks SET note_count = MAX(0, note_count - 1), updated_at = ? WHERE id = ?",
             (datetime.now(timezone.utc).isoformat(), notebook_id),
@@ -346,10 +348,12 @@ class NotebookService:
         return self._row_to_snapshot(row)
 
     def delete_snapshot(self, notebook_id: str, snapshot_id: str) -> bool:
-        self.cm.execute(
+        cur = self.cm.execute(
             "DELETE FROM notebook_snapshots WHERE id = ? AND notebook_id = ?",
             (snapshot_id, notebook_id),
         )
+        if cur.rowcount == 0:
+            return False
         self.cm.commit()
         return True
 
@@ -379,23 +383,12 @@ class NotebookService:
 
     def _get_source_content(self, source_id: str) -> str:
         row = self.cm.connection.execute(
-            "SELECT title, file_name, metadata FROM notebook_sources WHERE id = ?",
+            "SELECT content FROM notebook_sources WHERE id = ?",
             (source_id,),
         ).fetchone()
         if not row:
             return ""
-        return f"{row['title']} ({row['file_name']})"
-
-    def _index_notes(self, notes: list[NotebookNote]):
-        try:
-            for note in notes:
-                self.cm.execute(
-                    "INSERT INTO notebook_notes_fts (title, content, tags) VALUES (?, ?, ?)",
-                    (note.title, note.content, json.dumps(note.tags)),
-                )
-            self.cm.commit()
-        except Exception as e:
-            logger.warning("Memory indexing failed: %s", e)
+        return row["content"] or ""
 
     def _create_artifact_from_notes(self, notebook: Notebook, notes: list[NotebookNote]):
         try:
@@ -540,6 +533,7 @@ h1 {{ font-size:1.6rem; border-bottom:3px solid #0f3460; padding-bottom:8px; }}
             notebook_id=row["notebook_id"],
             title=row["title"],
             file_name=row["file_name"],
+            content=row["content"] if row["content"] else "",
             file_path=row["file_path"],
             content_type=row["content_type"],
             char_count=row["char_count"],

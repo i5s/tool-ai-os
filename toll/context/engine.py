@@ -3,6 +3,7 @@
 Builds a summarized context window for the LLM by combining:
 - Active workspace state
 - Relevant memories from Memory Graph
+- Research memories (when flag enabled)
 - Recent conversation history
 
 Returns a prompt-ready context string plus structured metadata.
@@ -14,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ..core.connection_manager import ConnectionManager
+from ..core.feature_flags import FeatureFlags
 from ..memory.graph import MemoryGraph
 from ..workspace.manager import WorkspaceManager
 
@@ -32,10 +34,12 @@ class ContextEngine:
         cm: ConnectionManager,
         memory_graph: MemoryGraph | None = None,
         workspace_manager: WorkspaceManager | None = None,
+        flags: FeatureFlags | None = None,
     ):
         self.cm = cm
         self.memory = memory_graph or MemoryGraph(cm=cm)
         self.workspace = workspace_manager or WorkspaceManager(cm=cm)
+        self.flags = flags
 
     def build(
         self,
@@ -53,6 +57,21 @@ class ContextEngine:
             project_id=active.active_project_id,
             limit=memory_limit,
         )
+
+        if self.flags and self.flags.is_enabled("research_memory_context"):
+            try:
+                from ..research.memory_service import ResearchMemoryService
+                rms = ResearchMemoryService(cm=self.cm)
+                research_mems = rms.get_relevant_memories(
+                    message, limit=5, min_importance=4
+                )
+                existing_ids = {m.id for m in memories}
+                for rm in research_mems:
+                    if rm.id not in existing_ids:
+                        memories.append(rm)
+                        existing_ids.add(rm.id)
+            except Exception:
+                pass
 
         recent = (recent_messages or [])[-message_history_limit:]
 

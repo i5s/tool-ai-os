@@ -184,6 +184,8 @@ def list_sources(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
+    if not svc.get_notebook(notebook_id):
+        raise HTTPException(status_code=404, detail="Notebook not found")
     sources = svc.list_sources(notebook_id)
     return {
         "sources": [
@@ -206,7 +208,11 @@ def delete_source(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
-    svc.delete_source(notebook_id, source_id)
+    if not svc.get_notebook(notebook_id):
+        raise HTTPException(status_code=404, detail="Notebook not found")
+    deleted = svc.delete_source(notebook_id, source_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Source not found")
     return {"success": True}
 
 
@@ -238,6 +244,8 @@ def list_notes(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
+    if not svc.get_notebook(notebook_id):
+        raise HTTPException(status_code=404, detail="Notebook not found")
     notes = svc.list_notes(notebook_id)
     return {
         "notes": [
@@ -260,7 +268,9 @@ def delete_note(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
-    svc.delete_note(notebook_id, note_id)
+    deleted = svc.delete_note(notebook_id, note_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Note not found")
     return {"success": True}
 
 
@@ -302,6 +312,8 @@ def list_snapshots(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
+    if not svc.get_notebook(notebook_id):
+        raise HTTPException(status_code=404, detail="Notebook not found")
     snapshots = svc.list_snapshots(notebook_id)
     return {
         "snapshots": [
@@ -344,7 +356,9 @@ def delete_snapshot(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
-    svc.delete_snapshot(notebook_id, snapshot_id)
+    deleted = svc.delete_snapshot(notebook_id, snapshot_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
     return {"success": True}
 
 
@@ -355,8 +369,7 @@ def generate_audio_overview(
     cm: ConnectionManager = Depends(get_connection_manager),
 ):
     svc = _get_notebook_service(cm)
-    flags = FeatureFlags(cm=cm)
-    if not flags.is_enabled("notebooklm_audio_overview"):
+    if not svc.flags.is_enabled("notebooklm_audio_overview"):
         raise HTTPException(status_code=403, detail="Audio overview is not enabled")
     result = svc.generate_audio_overview(notebook_id, source_ids=req.source_ids)
     if "error" in result:

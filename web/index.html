@@ -1418,7 +1418,7 @@ async function queryNotebook() {
   container.style.display = '';
   try {
     const data = await apiPost(`/api/notebooks/${nbState.currentId}/query`, { question: q });
-    resultDiv.innerHTML = data.answer;
+    resultDiv.textContent = data.answer;
     resultDiv.classList.add('show');
   } catch (e) {
     resultDiv.textContent = '❌ ' + e.message;

@@ -51,6 +51,22 @@ def register_handlers(
         from toll.adapters.notebooks.notebooklm import NotebookLMProvider
         notebook_provider = NotebookLMProvider(cm=cm)
         svc = NotebookService(artifact_service, cm, flags, notebook_provider=notebook_provider)
-        wf_engine.register_handler("notebook_upload", svc.upload_source)
-        wf_engine.register_handler("notebook_notes", svc.create_notes)
-        wf_engine.register_handler("notebook_query", svc.query)
+        wf_engine.register_handler(
+            "notebook_upload",
+            lambda p, _m, _s=svc: _s.upload_source(
+                notebook_id=p["notebook_id"], content=p["content"],
+                file_name=p["file_name"], title=p.get("title", ""),
+            ),
+        )
+        wf_engine.register_handler(
+            "notebook_notes",
+            lambda p, _m, _s=svc: _s.create_notes(
+                notebook_id=p["notebook_id"], source_ids=p.get("source_ids"),
+            ),
+        )
+        wf_engine.register_handler(
+            "notebook_query",
+            lambda p, _m, _s=svc: _s.query(
+                notebook_id=p["notebook_id"], question=p["question"],
+            ),
+        )
