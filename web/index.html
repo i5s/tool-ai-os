@@ -431,6 +431,163 @@ body {
 }
 .toggle-switch.active::after { right: 22px; }
 
+/* ===== NOTEBOOK PANEL ===== */
+.notebook-panel {
+  display: none; flex: 1; flex-direction: column;
+  overflow: hidden; position: relative;
+}
+.notebook-panel.active { display: flex; }
+.notebook-panel .np-header {
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.notebook-panel .np-header h2 { font-size: 1.1rem; flex: 1; }
+.notebook-panel .np-header button {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  padding: 6px 12px; border-radius: 8px; font-size: .85rem;
+}
+.notebook-panel .np-header button:hover { background: var(--surface-hover); color: var(--text); }
+.np-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+.np-list { display: flex; flex-direction: column; gap: 8px; }
+.np-card {
+  padding: 14px 18px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; transition: .15s;
+}
+.np-card:hover { border-color: var(--primary); background: var(--surface-hover); }
+.np-card h3 { font-size: 1rem; margin-bottom: 4px; }
+.np-card .np-meta { font-size: .8rem; color: var(--text3); display: flex; gap: 12px; }
+
+.np-detail-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.np-detail-header h2 { font-size: 1.2rem; flex: 1; }
+.np-detail-header .np-back {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: 1.1rem; padding: 4px 8px; border-radius: 6px;
+}
+.np-detail-header .np-back:hover { background: var(--surface-hover); color: var(--text); }
+
+.np-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.np-tab {
+  padding: 8px 16px; border-radius: 8px 8px 0 0;
+  cursor: pointer; font-size: .85rem; color: var(--text3);
+  border: 1px solid transparent; border-bottom: none; transition: .15s;
+}
+.np-tab:hover { color: var(--text); background: var(--surface-hover); }
+.np-tab.active { color: var(--primary); border-color: var(--border); background: var(--surface); }
+
+.np-section { display: none; }
+.np-section.active { display: block; }
+
+.np-upload-area {
+  margin-bottom: 16px; padding: 16px;
+  background: var(--surface); border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+}
+.np-upload-area textarea {
+  width: 100%; min-height: 80px; padding: 10px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); font-size: .85rem; resize: vertical;
+  font-family: inherit; outline: none; margin-bottom: 8px;
+}
+.np-upload-area textarea:focus { border-color: var(--primary); }
+.np-upload-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.np-upload-row input {
+  flex: 1; padding: 8px 12px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); font-size: .85rem; outline: none;
+}
+.np-upload-row input:focus { border-color: var(--primary); }
+.np-btn {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  cursor: pointer; font-size: .85rem; transition: .15s;
+  white-space: nowrap;
+}
+.np-btn-primary { background: var(--primary); color: #fff; }
+.np-btn-primary:hover { opacity: .9; }
+.np-btn-secondary { background: var(--surface); color: var(--text2); border: 1px solid var(--border2); }
+.np-btn-secondary:hover { background: var(--surface-hover); color: var(--text); }
+.np-btn-danger { background: #ef4444; color: #fff; }
+.np-btn-danger:hover { opacity: .9; }
+.np-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.source-list, .note-list, .snapshot-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.source-item, .note-item, .snapshot-item {
+  padding: 12px 16px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.source-item .si-info, .note-item .ni-info, .snapshot-item .si-info { flex: 1; }
+.source-item .si-title, .note-item .ni-title, .snapshot-item .si-label {
+  font-weight: 500; margin-bottom: 2px;
+}
+.source-item .si-meta, .note-item .ni-meta, .snapshot-item .si-meta {
+  font-size: .8rem; color: var(--text3);
+}
+.source-item .si-actions, .note-item .ni-actions, .snapshot-item .si-actions {
+  display: flex; gap: 4px;
+}
+.source-item .si-actions button, .note-item .ni-actions button, .snapshot-item .si-actions button {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; font-size: .8rem;
+}
+.source-item .si-actions button:hover, .note-item .ni-actions button:hover,
+.snapshot-item .si-actions button:hover { background: var(--surface-hover); color: var(--text); }
+.source-item .si-actions button.danger:hover { color: #ef4444; }
+
+.note-item .ni-content {
+  font-size: .85rem; color: var(--text2); margin-top: 4px;
+  line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.np-query-bar {
+  border-top: 1px solid var(--border); padding: 12px 24px;
+  background: var(--bg); display: flex; gap: 8px; align-items: center;
+}
+.np-query-bar input {
+  flex: 1; padding: 10px 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); font-size: .9rem; outline: none;
+}
+.np-query-bar input:focus { border-color: var(--primary); }
+.np-query-bar button {
+  padding: 10px 20px; border-radius: var(--radius); border: none;
+  background: var(--send); color: #fff; cursor: pointer;
+}
+.np-query-bar button:hover { background: var(--send-hover); }
+.np-query-result {
+  padding: 12px 16px; margin-top: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); line-height: 1.6;
+  display: none;
+}
+.np-query-result.show { display: block; }
+
+.np-empty {
+  text-align: center; padding: 40px 20px; color: var(--text3);
+  font-size: .9rem;
+}
+
+.np-notebook-stats {
+  display: flex; gap: 16px; margin-bottom: 16px; padding: 12px 16px;
+  background: var(--surface); border-radius: var(--radius);
+}
+.np-stat { text-align: center; flex: 1; }
+.np-stat .num { font-size: 1.3rem; font-weight: 600; color: var(--primary); }
+.np-stat .label { font-size: .75rem; color: var(--text3); }
+
+@media (max-width: 768px) {
+  .np-body { padding: 16px; }
+  .np-notebook-stats { flex-wrap: wrap; gap: 8px; }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .sidebar {
@@ -483,6 +640,11 @@ body {
       <option value="">Project...</option>
     </select>
     <button class="workspace-btn" onclick="openWorkspaceModal()">+ إدارة Workspace</button>
+  </div>
+
+  <div class="workspace-section">
+    <h3>أدوات</h3>
+    <button class="workspace-btn" onclick="toggleNotebookMode()">📓 دفاتر الملاحظات</button>
   </div>
 
   <div class="conversations" id="conversations">
@@ -662,6 +824,89 @@ body {
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== NOTEBOOK PANEL ===== -->
+<div class="notebook-panel" id="notebookPanel">
+  <div class="np-header" id="npHeader">
+    <button onclick="toggleNotebookMode()" title="رجوع">← رجوع</button>
+    <h2>📓 دفاتر الملاحظات</h2>
+    <button class="np-btn np-btn-primary" onclick="showNewNotebookForm()">+ جديد</button>
+  </div>
+  <div class="np-body" id="npBody">
+    <!-- Notebook list -->
+    <div id="npListView">
+      <div class="np-empty" id="npEmpty">لم يتم العثور على دفاتر. أنشئ دفتراً جديداً للبدء.</div>
+      <div class="np-list" id="npList"></div>
+    </div>
+    <!-- New notebook form -->
+    <div id="npNewForm" style="display:none">
+      <div style="background:var(--surface);padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
+        <div style="margin-bottom:12px">
+          <label style="font-size:.85rem;color:var(--text2);display:block;margin-bottom:4px">العنوان</label>
+          <input type="text" id="newNbTitle" placeholder="اسم الدفتر" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:.85rem;color:var(--text2);display:block;margin-bottom:4px">الوصف (اختياري)</label>
+          <textarea id="newNbDesc" placeholder="وصف مختصر..." style="width:100%;min-height:60px;padding:10px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;resize:vertical;font-family:inherit;outline:none"></textarea>
+        </div>
+        <button class="np-btn np-btn-primary" onclick="createNotebook()">إنشاء الدفتر</button>
+        <button class="np-btn np-btn-secondary" onclick="cancelNewNotebook()" style="margin-right:8px">إلغاء</button>
+      </div>
+    </div>
+    <!-- Notebook detail -->
+    <div id="npDetailView" style="display:none">
+      <div class="np-detail-header">
+        <span class="np-back" onclick="showNotebookList()">←</span>
+        <h2 id="npDetailTitle"></h2>
+        <button class="np-btn np-btn-secondary" onclick="deleteCurrentNotebook()" style="color:#ef4444">حذف</button>
+      </div>
+      <div class="np-notebook-stats" id="npStats"></div>
+      <div class="np-tabs" id="npTabs">
+        <span class="np-tab active" data-tab="sources" onclick="switchNbTab('sources')">📄 المصادر</span>
+        <span class="np-tab" data-tab="notes" onclick="switchNbTab('notes')">📝 الملاحظات</span>
+        <span class="np-tab" data-tab="snapshots" onclick="switchNbTab('snapshots')">📸 اللقطات</span>
+      </div>
+      <!-- Sources tab -->
+      <div class="np-section active" id="npSectionSources">
+        <div class="np-upload-area">
+          <textarea id="npSourceContent" placeholder="الصق محتوى المصدر هنا..."></textarea>
+          <div class="np-upload-row">
+            <input type="text" id="npSourceName" placeholder="اسم الملف (مثال: مقال.txt)">
+            <button class="np-btn np-btn-primary" onclick="uploadSource()">رفع</button>
+          </div>
+        </div>
+        <div id="npSourcesList">
+          <div class="np-empty">لا توجد مصادر. ارفع مصدراً للبدء.</div>
+        </div>
+      </div>
+      <!-- Notes tab -->
+      <div class="np-section" id="npSectionNotes">
+        <button class="np-btn np-btn-primary" onclick="generateNotes()" style="margin-bottom:12px" id="npGenerateNotesBtn">🪄 إنشاء ملاحظات</button>
+        <div id="npNotesList">
+          <div class="np-empty">لا توجد ملاحظات. أنشئ ملاحظات من المصادر.</div>
+        </div>
+      </div>
+      <!-- Snapshots tab -->
+      <div class="np-section" id="npSectionSnapshots">
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="np-btn np-btn-primary" onclick="createSnapshot()">📸 إنشاء لقطة</button>
+          <button class="np-btn np-btn-secondary" onclick="generateAudioOverview()" style="opacity:.6">🔊 نظرة عامة صوتية (قريباً)</button>
+        </div>
+        <div id="npSnapshotsList">
+          <div class="np-empty">لا توجد لقطات.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Query bar (hidden until detail view) -->
+  <div class="np-query-bar" id="npQueryBar" style="display:none">
+    <input type="text" id="npQueryInput" placeholder="اسأل دفتر الملاحظات..." onkeydown="if(event.key==='Enter') queryNotebook()">
+    <button onclick="queryNotebook()">🔍</button>
+  </div>
+  <div class="np-body" id="npQueryResultContainer" style="display:none;padding:0 24px 16px">
+    <div class="np-query-result" id="npQueryResult"></div>
   </div>
 </div>
 
@@ -916,6 +1161,339 @@ function init() {
   loadStatus();
 }
 init();
+
+// ===== NOTEBOOK STATE =====
+let nbState = { notebooks: [], currentId: null, isActive: false };
+
+// ===== NOTEBOOK MODE =====
+function toggleNotebookMode() {
+  nbState.isActive = !nbState.isActive;
+  const panel = document.getElementById('notebookPanel');
+  const chat = document.getElementById('chatMessages');
+  const input = document.querySelector('.input-area');
+  const header = document.querySelector('.chat-header');
+  panel.classList.toggle('active', nbState.isActive);
+  chat.style.display = nbState.isActive ? 'none' : '';
+  input.style.display = nbState.isActive ? 'none' : '';
+  header.style.display = nbState.isActive ? 'none' : '';
+  if (nbState.isActive) {
+    document.getElementById('npDetailView').style.display = 'none';
+    document.getElementById('npNewForm').style.display = 'none';
+    document.getElementById('npListView').style.display = '';
+    document.getElementById('npQueryBar').style.display = 'none';
+    document.getElementById('npQueryResultContainer').style.display = 'none';
+    loadNotebooks();
+  }
+}
+
+// ===== NOTEBOOK API =====
+async function loadNotebooks() {
+  try {
+    const data = await apiGet('/api/notebooks');
+    nbState.notebooks = data.notebooks || [];
+    renderNotebookList();
+  } catch (e) {
+    console.error('Failed to load notebooks', e);
+    document.getElementById('npList').innerHTML = '<div class="np-empty" style="color:#ef4444">❌ فشل تحميل الدفاتر</div>';
+  }
+}
+
+function renderNotebookList() {
+  const list = document.getElementById('npList');
+  const empty = document.getElementById('npEmpty');
+  if (nbState.notebooks.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = nbState.notebooks.map(nb => `
+    <div class="np-card" onclick="openNotebook('${nb.id}')">
+      <h3>${escHtml(nb.title)}</h3>
+      ${nb.description ? `<p style="font-size:.85rem;color:var(--text2);margin-bottom:4px">${escHtml(nb.description)}</p>` : ''}
+      <div class="np-meta">
+        <span>📄 ${nb.source_count}</span>
+        <span>📝 ${nb.note_count}</span>
+        <span>🕐 ${new Date(nb.updated_at).toLocaleDateString('ar-SA')}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showNewNotebookForm() {
+  document.getElementById('npListView').style.display = 'none';
+  document.getElementById('npNewForm').style.display = '';
+  document.getElementById('newNbTitle').focus();
+}
+
+function cancelNewNotebook() {
+  document.getElementById('npNewForm').style.display = 'none';
+  document.getElementById('npListView').style.display = '';
+}
+
+async function createNotebook() {
+  const title = document.getElementById('newNbTitle').value.trim();
+  if (!title) return;
+  const desc = document.getElementById('newNbDesc').value.trim();
+  try {
+    await apiPost('/api/notebooks', { title, description: desc });
+    document.getElementById('newNbTitle').value = '';
+    document.getElementById('newNbDesc').value = '';
+    cancelNewNotebook();
+    await loadNotebooks();
+  } catch (e) {
+    alert('❌ فشل إنشاء الدفتر: ' + e.message);
+  }
+}
+
+function showNotebookList() {
+  nbState.currentId = null;
+  document.getElementById('npDetailView').style.display = 'none';
+  document.getElementById('npListView').style.display = '';
+  document.getElementById('npQueryBar').style.display = 'none';
+  document.getElementById('npQueryResultContainer').style.display = 'none';
+  document.querySelector('.np-header h2').textContent = '📓 دفاتر الملاحظات';
+  loadNotebooks();
+}
+
+// ===== NOTEBOOK DETAIL =====
+async function openNotebook(id) {
+  nbState.currentId = id;
+  document.getElementById('npListView').style.display = 'none';
+  document.getElementById('npNewForm').style.display = 'none';
+  document.getElementById('npDetailView').style.display = '';
+  document.getElementById('npQueryBar').style.display = 'flex';
+  document.getElementById('npQueryResultContainer').style.display = 'none';
+
+  try {
+    const nb = await apiGet(`/api/notebooks/${id}`);
+    document.getElementById('npDetailTitle').textContent = nb.title;
+    document.querySelector('.np-header h2').textContent = nb.title;
+    document.getElementById('npStats').innerHTML = `
+      <div class="np-stat"><div class="num">${nb.source_count}</div><div class="label">مصادر</div></div>
+      <div class="np-stat"><div class="num">${nb.note_count}</div><div class="label">ملاحظات</div></div>
+    `;
+    switchNbTab('sources');
+    await loadSources(id);
+  } catch (e) {
+    alert('❌ فشل تحميل الدفتر');
+  }
+}
+
+async function deleteCurrentNotebook() {
+  if (!nbState.currentId) return;
+  if (!confirm('هل أنت متأكد من حذف هذا الدفتر؟')) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}`);
+    showNotebookList();
+  } catch (e) {
+    alert('❌ فشل الحذف');
+  }
+}
+
+// ===== TABS =====
+function switchNbTab(tab) {
+  document.querySelectorAll('.np-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.np-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('npSection' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+}
+
+// ===== SOURCES =====
+async function loadSources(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/sources`);
+    const list = document.getElementById('npSourcesList');
+    if (!data.sources || data.sources.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد مصادر. ارفع مصدراً للبدء.</div>';
+      return;
+    }
+    list.innerHTML = data.sources.map(s => `
+      <div class="source-item">
+        <div class="si-info">
+          <div class="si-title">${escHtml(s.title)}</div>
+          <div class="si-meta">${escHtml(s.file_name)} • ${s.char_count.toLocaleString('ar-SA')} حرف • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="si-actions">
+          <button class="danger" onclick="deleteSource('${s.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load sources', e);
+  }
+}
+
+async function uploadSource() {
+  if (!nbState.currentId) return;
+  const content = document.getElementById('npSourceContent').value.trim();
+  const fileName = document.getElementById('npSourceName').value.trim();
+  if (!content || !fileName) { alert('يرجى إدخال المحتوى واسم الملف'); return; }
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/sources`, { content, file_name: fileName });
+    document.getElementById('npSourceContent').value = '';
+    document.getElementById('npSourceName').value = '';
+    await loadSources(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    alert('❌ فشل رفع المصدر: ' + e.message);
+  }
+}
+
+async function deleteSource(sourceId) {
+  if (!nbState.currentId) return;
+  if (!confirm('حذف هذا المصدر؟')) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/sources/${sourceId}`);
+    await loadSources(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    alert('❌ فشل الحذف');
+  }
+}
+
+// ===== NOTES =====
+async function generateNotes() {
+  if (!nbState.currentId) return;
+  const btn = document.getElementById('npGenerateNotesBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ الإنشاء...';
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/notes`, {});
+    await loadNotes(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    alert('❌ فشل إنشاء الملاحظات: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '🪄 إنشاء ملاحظات';
+}
+
+async function loadNotes(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/notes`);
+    const list = document.getElementById('npNotesList');
+    if (!data.notes || data.notes.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد ملاحظات. أنشئ ملاحظات من المصادر.</div>';
+      return;
+    }
+    list.innerHTML = data.notes.map(n => `
+      <div class="note-item">
+        <div class="ni-info">
+          <div class="ni-title">${escHtml(n.title)}</div>
+          <div class="ni-content">${escHtml(n.content)}</div>
+          <div class="ni-meta" style="margin-top:4px">${new Date(n.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="ni-actions">
+          <button class="danger" onclick="deleteNote('${n.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load notes', e);
+  }
+}
+
+async function deleteNote(noteId) {
+  if (!nbState.currentId) return;
+  if (!confirm('حذف هذه الملاحظة؟')) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/notes/${noteId}`);
+    await loadNotes(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    alert('❌ فشل الحذف');
+  }
+}
+
+// ===== QUERY =====
+async function queryNotebook() {
+  if (!nbState.currentId) return;
+  const input = document.getElementById('npQueryInput');
+  const q = input.value.trim();
+  if (!q) return;
+  const resultDiv = document.getElementById('npQueryResult');
+  const container = document.getElementById('npQueryResultContainer');
+  resultDiv.textContent = '⏳ جارٍ البحث...';
+  resultDiv.style.display = '';
+  container.style.display = '';
+  try {
+    const data = await apiPost(`/api/notebooks/${nbState.currentId}/query`, { question: q });
+    resultDiv.innerHTML = data.answer;
+    resultDiv.classList.add('show');
+  } catch (e) {
+    resultDiv.textContent = '❌ ' + e.message;
+    resultDiv.classList.add('show');
+  }
+}
+
+// ===== SNAPSHOTS =====
+async function createSnapshot() {
+  if (!nbState.currentId) return;
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/snapshots`, { label: '' });
+    await loadSnapshots(nbState.currentId);
+  } catch (e) {
+    alert('❌ فشل إنشاء اللقطة: ' + e.message);
+  }
+}
+
+async function loadSnapshots(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/snapshots`);
+    const list = document.getElementById('npSnapshotsList');
+    if (!data.snapshots || data.snapshots.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد لقطات.</div>';
+      return;
+    }
+    list.innerHTML = data.snapshots.map(s => `
+      <div class="snapshot-item">
+        <div class="si-info">
+          <div class="si-label">📸 ${escHtml(s.label || 'لقطة غير معنونة')}</div>
+          <div class="si-meta">${s.source_count} مصادر • ${s.note_count} ملاحظات • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="si-actions">
+          <button class="danger" onclick="deleteSnapshot('${s.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load snapshots', e);
+  }
+}
+
+async function generateAudioOverview() {
+  if (!nbState.currentId) return;
+  try {
+    const data = await apiPost(`/api/notebooks/${nbState.currentId}/audio`, {});
+    if (data.error) alert('⚠️ ' + data.error);
+    else alert('✅ تم إنشاء النظرة العامة الصوتية');
+  } catch (e) {
+    alert('🔇 النظرة العامة الصوتية غير متاحة حالياً');
+  }
+}
+
+async function deleteSnapshot(snapshotId) {
+  if (!nbState.currentId) return;
+  if (!confirm('حذف هذه اللقطة؟')) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/snapshots/${snapshotId}`);
+    await loadSnapshots(nbState.currentId);
+  } catch (e) {
+    alert('❌ فشل الحذف');
+  }
+}
+
+// ===== NOTEBOOK HELPERS =====
+async function updateNotebookStats() {
+  if (!nbState.currentId) return;
+  try {
+    const nb = await apiGet(`/api/notebooks/${nbState.currentId}`);
+    document.getElementById('npStats').innerHTML = `
+      <div class="np-stat"><div class="num">${nb.source_count}</div><div class="label">مصادر</div></div>
+      <div class="np-stat"><div class="num">${nb.note_count}</div><div class="label">ملاحظات</div></div>
+    `;
+  } catch (e) {}
+}
 
 // ===== THEME =====
 function toggleTheme() {

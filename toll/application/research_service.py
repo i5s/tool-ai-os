@@ -17,6 +17,7 @@ from ..research.citation_engine import CitationEngine
 from ..research.source_manager import SourceManager
 from ..research.web_researcher import WebResearcher
 from .artifact_service import ArtifactService
+from .notebook_service import NotebookService
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,8 @@ class ResearchService:
         )
 
         all_sources = self.source_manager.collect(query, providers)
+        notebook_sources = self._include_notebook_sources(metadata)
+        all_sources = notebook_sources + all_sources if notebook_sources else all_sources
         if not all_sources:
             synopsis = self._fallback_synthesis(topic)
             sources_data = []
@@ -65,6 +68,7 @@ class ResearchService:
             synopsis = self._synthesize(all_sources, topic)
 
         key_findings = self._extract_findings(synopsis)
+        has_notebook = bool(notebook_sources)
 
         artifact = Artifact(
             id="",
@@ -80,6 +84,7 @@ class ResearchService:
                 "synopsis": synopsis,
                 "key_findings": key_findings,
                 "style": style,
+                "notebook_sources": has_notebook,
             },
             provider=",".join(p.name for p in providers),
             intent=ArtifactType.RESEARCH,
@@ -134,6 +139,39 @@ class ResearchService:
         if self.flags.is_enabled("research_provider"):
             providers.append(WebResearcher())
         return providers
+
+    def _include_notebook_sources(self, metadata: dict | None) -> list[ResearchSource]:
+        if not metadata or "notebook_id" not in metadata:
+            return []
+        notebook_id = metadata["notebook_id"]
+        try:
+            svc = NotebookService(
+                artifact_service=self.artifact_service,
+                cm=self.cm,
+                flags=self.flags,
+                ai=self.ai,
+            )
+            sources = svc.list_sources(notebook_id)
+            if not sources:
+                return []
+            from ..adapters.notebooks.notebooklm import NotebookLMResearchAdapter
+            adapter = NotebookLMResearchAdapter(provider=None)
+            return [
+                ResearchSource(
+                    title=s.title,
+                    url=s.file_path,
+                    source_type="notebook",
+                    provider="notebooklm",
+                    relevance_score=0.8,
+                    confidence_score=1.0,
+                    citation=s.title,
+                    abstract="",
+                )
+                for s in sources
+            ]
+        except Exception as e:
+            logger.warning("Notebook source inclusion failed: %s", e)
+            return []
 
     def _synthesize(
         self, sources: list[ResearchSource], topic: str

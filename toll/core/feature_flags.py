@@ -54,6 +54,14 @@ DEFAULT_FLAGS = {
     # Image & Misc
     "image_generation": False,
     "provider_replicate": False,
+    # NotebookLM — Sprint 5B
+    "notebooklm_enabled": False,
+    "notebooklm_auto_sync": True,
+    "notebooklm_memory_index": True,
+    "notebooklm_artifact_create": True,
+    "notebooklm_strict_local": False,
+    "notebooklm_snapshots": True,
+    "notebooklm_audio_overview": False,
 }
 
 _PREFIX = "feature_"

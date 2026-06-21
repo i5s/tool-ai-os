@@ -12,6 +12,7 @@ from .report_service import ReportService
 from .presentation_service import PresentationService
 from .opendesign_service import OpenDesignService
 from .research_service import ResearchService
+from .notebook_service import NotebookService
 
 
 def register_handlers(
@@ -45,3 +46,11 @@ def register_handlers(
         wf_engine.register_handler("research", svc.execute)
         wf_engine.register_handler("research_quick", svc.execute_quick)
         wf_engine.register_handler("research_deep", svc.execute_deep)
+
+    if flags.is_enabled("notebooklm_enabled"):
+        from toll.adapters.notebooks.notebooklm import NotebookLMProvider
+        notebook_provider = NotebookLMProvider(cm=cm)
+        svc = NotebookService(artifact_service, cm, flags, notebook_provider=notebook_provider)
+        wf_engine.register_handler("notebook_upload", svc.upload_source)
+        wf_engine.register_handler("notebook_notes", svc.create_notes)
+        wf_engine.register_handler("notebook_query", svc.query)
