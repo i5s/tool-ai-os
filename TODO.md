@@ -1,6 +1,6 @@
 # TOOL Implementation Backlog
 
-## Sprint 0: Foundation — IN PROGRESS
+## Sprint 0: Foundation — ✅ COMPLETE
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
