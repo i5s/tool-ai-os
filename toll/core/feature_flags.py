@@ -22,6 +22,9 @@ DEFAULT_FLAGS = {
     "memory_graph": True,
     "workspace_manager": True,
     "context_engine": True,
+    "memory_auto_learning": False,
+    "planner_strict_mode": False,
+    "planner_fast_mode": False,
     # Layer 2 — dormant by default
     "preference_memory": False,
     "knowledge_vault": False,

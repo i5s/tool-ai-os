@@ -32,14 +32,15 @@
 | — | Conversation API endpoints | ✅ Done | `api/routers/conversations.py` |
 | — | Update /api/chat | ✅ Done | Persists messages via `ConversationStore` |
 
-## Sprint 3: Context Engine + Planner + Workflow Engine
+## Sprint 3: Context Engine + Planner + Workflow Engine — ✅ COMPLETE
 
 | ID | Task | Status | Notes |
 |----|------|--------|-------|
-| T36 | Context Engine | ⬜ Pending | Summarized context |
-| T7 | Planner v1 | ⬜ Pending | Approval rules |
-| T8 | Workflow Engine | ⬜ Pending | Approval checkpoints |
-| T37 | Plan/approval UI | ⬜ Pending | |
+| T36 | Context Engine | ✅ Done | `toll/context/engine.py`; summarized context from workspace + memories + history |
+| T7 | Planner v1 | ✅ Done | `toll/planner/planner.py`; approval matrix with Strict / Balanced / Fast modes |
+| T8 | Workflow Engine | ✅ Done | `toll/workflow/engine.py`; approval checkpoints with pending/approved/rejected/running/completed/failed |
+| T37 | Plan/approval API | ✅ Done | `api/routers/planner.py`; `/api/plan`, `/api/workflows/*`, planner mode endpoints |
+| — | Update /api/chat | ✅ Done | Uses Context Engine; Planner gates auto/plan/approval paths |
 
 ## Sprint 4: Application Services
 

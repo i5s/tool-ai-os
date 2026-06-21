@@ -7,6 +7,9 @@ from toll.core.ai import AI
 from toll.core.storage import Storage
 from toll.core.registry import ProviderRegistry
 from toll.core.conversations import ConversationStore
+from toll.context.engine import ContextEngine
+from toll.planner.planner import Planner, ApprovalLevel
+from toll.workflow.engine import WorkflowEngine
 from api.dependencies import get_registry
 
 router = APIRouter()
@@ -54,6 +57,8 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
         rp = Reports()
         db = Storage()
         conv_store = ConversationStore()
+        context_engine = ContextEngine(storage=db)
+        planner = Planner()
 
         # Load or create conversation
         if req.conversation_id:
@@ -69,6 +74,39 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
         # Store user message
         conv_store.add_message(conv_id, "user", req.message)
 
+        # Classify intent and approval level
+        plan = planner.plan(req.message)
+
+        if plan.level == ApprovalLevel.PLAN_ONLY:
+            metadata = {"plan": plan.__dict__}
+            conv_store.add_message(conv_id, "assistant", plan.description, metadata)
+            return {
+                "response": plan.description,
+                "type": "plan",
+                "plan": plan.__dict__,
+                "conversation_id": conv_id,
+                "html_files": [],
+            }
+
+        if plan.level == ApprovalLevel.APPROVAL:
+            wf_engine = WorkflowEngine(storage=db)
+            workflow = wf_engine.create(plan.__dict__, metadata={"conversation_id": conv_id})
+            approval_msg = (
+                f"⚠️ هذا الإجراء يتطلب موافقتك:\n\n"
+                f"**{plan.title}**\n{plan.description}\n\n"
+                f"معرف الموافقة: `{workflow.id}`"
+            )
+            conv_store.add_message(conv_id, "assistant", approval_msg, {"workflow_id": workflow.id})
+            return {
+                "response": approval_msg,
+                "type": "approval_required",
+                "workflow_id": workflow.id,
+                "plan": plan.__dict__,
+                "conversation_id": conv_id,
+                "html_files": [],
+            }
+
+        # AUTO EXECUTE path
         task_type = detect_type(req.message, req.type)
         files = []
 
@@ -116,14 +154,21 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
             response_text = ai.ask(ai_prompt)
 
         else:
-            ai_prompt = f"أجب بالعربية على السؤال التالي بشكل مفيد ودقيق:\n\n{req.message}"
+            context = context_engine.build(
+                message=req.message,
+                recent_messages=conversation.get("messages", []),
+            )
+            ai_prompt = (
+                f"أجب بالعربية على السؤال التالي بشكل مفيد ودقيق، مع مراعاة السياق أدناه:\n\n"
+                f"{context.prompt}"
+            )
             response_text = ai.ask(ai_prompt)
 
         if req.image:
             response_text += "\n\n📎 تم استلام الصورة."
 
         # Store assistant message
-        metadata = {"type": task_type, "html_files": files}
+        metadata = {"type": task_type, "html_files": files, "intent": plan.intent}
         conv_store.add_message(conv_id, "assistant", response_text, metadata)
 
         db.save_history("chat", req.message[:100], response_text[:200])
@@ -132,6 +177,7 @@ def chat(req: ChatRequest, registry: ProviderRegistry = Depends(get_registry)):
             "type": task_type,
             "html_files": files,
             "conversation_id": conv_id,
+            "intent": plan.intent,
         }
 
     except RuntimeError as e:
