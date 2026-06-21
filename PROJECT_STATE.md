@@ -4,7 +4,7 @@
 
 - **Mission**: توحيد — unified personal AI assistant for content creation, research, and workflow automation
 - **Current Version**: `1.0.0`
-- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B)
+- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B), `v0.6-media-foundation` (Sprint 6A), `v0.7a-prompt-intelligence-core` (Sprint 7A)
 
 ## Completed Sprints
 
@@ -161,6 +161,24 @@
 
 - **Status**: Complete (tagged `v0.6-media-foundation`)
 
+### Sprint 7A — Prompt Intelligence Engine
+
+- **Goal**: Automatically transform simple user requests into high-quality model-specific prompts using context, memory, profiles, and model awareness
+- **Key Deliverables**:
+  - **Execution Profiles** — 6 user-facing profiles (Research, Academic Report, Marketing, Product Advertisement, Presentation, Video Generation) that group related Prompt Profiles under a single label
+  - **Prompt Profiles** — 10 seed profiles with Jinja2-compatible templates (product_ad, food_photography, travel_poster, social_media, research_report, academic_report, presentation, video_ad, ui_design, logo_design)
+  - **PromptIntelligenceEngine** — Intent detection (Arabic + English, 20+ keywords), context assembly, profile matching, template rendering, model selection, fallback handling
+  - **PromptProfileRepository** — Full CRUD with version history
+  - **PromptMemory** — Success/failure recording, blacklisting, average scoring, consecutive failure tracking
+  - **ExecutionProfileRepository** — In-memory registry of 6 execution profiles
+  - **Migration 0012** — `prompt_profiles`, `prompt_profile_versions`, `prompt_scores`, `prompt_blacklist` (4 tables + 6 indexes)
+  - **API** — 9 endpoints: `/api/prompt/profiles` (5), `/api/prompt/execution-profiles` (2), `/api/prompt/resolve`
+  - **Feature flags**: `prompt_intelligence` (default False), `prompt_intelligence_seed` (default True)
+  - **Handler**: `prompt_intelligence` registered in WorkflowEngine
+  - 55 new tests, 407 total passing
+
+- **Status**: Complete (tagged `v0.7a-prompt-intelligence-core`)
+
 ## Current Architecture
 
 ### Core Layer
@@ -209,6 +227,12 @@
 - **toll/ports/benchmark.py** — BenchmarkRun, BenchmarkSuite dataclasses
 - **toll/benchmark/** — BenchmarkService, BenchmarkRepository, BenchmarkRunner, QualityScorer (weighted criteria)
 
+### Prompt Intelligence Layer
+- **toll/prompt/** — PromptIntelligenceEngine, PromptProfileService, PromptProfileRepository, PromptMemory, ExecutionProfileRepository, 10 seed profiles
+- **toll/ports/** (no new ports — PIE uses existing MediaPort, Model dataclass, BenchmarkRun dataclasses)
+- **toll/model/migrations/0012_prompt_intelligence.sql** — prompt_profiles, prompt_profile_versions, prompt_scores, prompt_blacklist
+- **api/routers/prompt.py** — 9 API endpoints
+
 ## Current Directory Structure
 
 ```
@@ -226,7 +250,8 @@
 │       ├── research.py        # Research, citation styles, modes
 │       ├── notebooks.py       # Notebook CRUD, sources, notes, snapshots
 │       ├── models.py          # Model Registry CRUD
-│       └── benchmark.py       # Benchmark suites, runs, scores
+│       ├── benchmark.py       # Benchmark suites, runs, scores
+│       └── prompt.py          # Prompt Intelligence profiles + resolve
 ├── bot/
 │   └── telegram.py
 ├── cli/
@@ -243,7 +268,9 @@
 │   ├── sprint-6-media-layer-design.md
 │   ├── sprint-6a-execution-plan.md
 │   ├── sprint-6a-model-registry-benchmark-design.md
-│   └── v0.6-architecture-audit.md
+│   ├── v0.6-architecture-audit.md
+│   ├── sprint-7-prompt-intelligence-design.md
+│   └── sprint-7a-report.md
 ├── tests/
 │   ├── adapters/
 │   │   ├── test_duckduckgo.py
@@ -279,6 +306,12 @@
 │   │   ├── test_benchmark.py
 │   │   ├── test_media.py
 │   │   └── test_model_registry.py
+│   ├── prompt/
+│   │   ├── test_engine.py
+│   │   ├── test_execution_profiles.py
+│   │   ├── test_memory.py
+│   │   ├── test_profile_repository.py
+│   │   └── test_profile_service.py
 │   └── research/
 │       ├── test_importance.py
 │       ├── test_memory_service.py
@@ -303,6 +336,7 @@
 │   ├── model_registry/        # ModelRegistryService, Repository, Seed
 │   ├── planner/               # Planner
 │   ├── ports/                 # ABCs (+ Media, MediaStorage, Benchmark, Model)
+│   ├── prompt/                # Prompt Intelligence Engine, Profiles, Memory
 │   ├── research/              # WebResearcher, SourceManager, DedupEngine, CitationEngine, ImportanceScorer, MemoryService
 │   ├── workflow/              # WorkflowEngine
 │   └── workspace/             # WorkspaceManager
@@ -399,6 +433,12 @@
 | `model_registry_seed` | `True` |
 | `benchmark_lab` | `False` |
 | `benchmark_auto_quality` | `False` |
+
+### Sprint 7A — Prompt Intelligence Engine
+| Flag | Default |
+|------|---------|
+| `prompt_intelligence` | `False` |
+| `prompt_intelligence_seed` | `True` |
 
 ## Providers
 
@@ -667,6 +707,21 @@ Each artifact supports: creation, rendering (HTML), preview, archive (tar.gz), s
   - ZUNO UI: sidebar navigation (Chat/Notebooks/Models/Lab), Models view, Lab view
   - 108 new tests, 352 total passing
 
+### v0.7a-prompt-intelligence-core
+
+- **Git Tag**: `v0.7a-prompt-intelligence-core`
+- **Commit**: `e141997`
+- **Summary**:
+  - Prompt Intelligence Engine — intent detection (Arabic + English), context assembly, profile matching, template rendering, model selection
+  - Execution Profiles — 6 user-facing profiles (Research, Academic Report, Marketing, Product Advertisement, Presentation, Video Generation)
+  - Prompt Profiles — 10 seed profiles with versioned templates
+  - PromptProfileRepository — full CRUD with version history
+  - PromptMemory — success/failure tracking, blacklisting, average scoring
+  - Migration 0012: prompt_profiles, prompt_profile_versions, prompt_scores, prompt_blacklist (4 tables + 6 indexes)
+  - API: `/api/prompt/profiles` (5), `/api/prompt/execution-profiles` (2), `/api/prompt/resolve`
+  - Feature flags: `prompt_intelligence` (default False), `prompt_intelligence_seed` (default True)
+  - 55 new tests, 407 total passing
+
 ## Backup Locations
 
 ### GitHub
@@ -680,6 +735,7 @@ Protected Releases:
 - `v0.5.1-research-memory`
 - `v0.6.0-notebooklm`
 - `v0.6-media-foundation`
+- `v0.7a-prompt-intelligence-core`
 
 ### Local Database
 
@@ -716,17 +772,18 @@ Protected Releases:
 
 ## Next Planned Sprint
 
-### Sprint 6B — Media Layer 2 (Video & Audio)
+### Sprint 7B — Model Awareness + Benchmark Integration
 
-- **Video adapter** — Veo, Runway, or MiniMax video generation via MediaPort (enable `media_video` flag)
-- **Audio adapter** — TTS and audio processing (ElevenLabs, Kokoro)
-- **Character consistency** — seed/face anchor preservation across generations
-- **Benchmark-driven model selection** — `ProviderSelector.select()` consumes benchmark aggregates
-- **Advanced benchmark dashboard** — trend charts, model comparison, automated quality gates
-- **ZUNO Lab view enhancements** — run history, score history, side-by-side model comparison
+- **Benchmark-driven model ranking** — `ProviderSelector.select()` consumes `BenchmarkRepository.avg_scores()` for dynamic quality scoring
+- **Model-aware prompt adaptation** — `ModelPromptRules` per model family (Flux, SDXL, DALL-E, Veo, Runway, Kling)
+- **Prompt memory integration** — `prompt_scores` and `prompt_blacklist` full integration in engine
+- **Model prompt rules table** + seed data
+- Estimated: 5-7 days, ~14 files, 25 tests
 
 ## Future Roadmap
 
-- **Sprint 6B** — Video & Audio adapters, character consistency, benchmark-driven selection
-- **Sprint 7** — Advanced memory & knowledge graph (RAG pipeline, hybrid search, knowledge base import)
-- **Sprint 8** — Production hardening (multi-user, PostgreSQL migration, proper auth)
+- **Sprint 7B** — Model awareness, benchmark-driven selection, prompt adaptation
+- **Sprint 7C** — UI polish (prompt visibility modes, profile management page, edit-and-regenerate)
+- **Sprint 8** — Video & Audio adapters (Veo, Runway, ElevenLabs, Kokoro), character consistency
+- **Sprint 9** — Advanced memory & knowledge graph (RAG pipeline, hybrid search, knowledge base import)
+- **Sprint 10** — Production hardening (multi-user, PostgreSQL migration, proper auth)
