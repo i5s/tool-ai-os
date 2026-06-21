@@ -3,8 +3,10 @@
 ## Project Overview
 
 - **Mission**: توحيد — unified personal AI assistant for content creation, research, and workflow automation
-- **Current Version**: `1.0.0`
-- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B), `v0.6-media-foundation` (Sprint 6A), `v0.7a-prompt-intelligence-core` (Sprint 7A)
+- **Current Version**: `0.7.0-beta`
+- **Current Status**: Prompt Intelligence Engine integrated into all production generation flows
+- **Test Count**: 422 passing
+- **Current Git Tags**: `v0.4-artifact-system` (Sprint 4), `v0.5-research-foundation` (Sprint 5A), `v0.5.1-research-memory` (Sprint 5C), `v0.6.0-notebooklm` (Sprint 5B), `v0.6-media-foundation` (Sprint 6A), `v0.7a-prompt-intelligence-core` (Sprint 7A), `v0.7b-prompt-intelligence-integration` (Sprint 7B)
 
 ## Completed Sprints
 
@@ -179,6 +181,22 @@
 
 - **Status**: Complete (tagged `v0.7a-prompt-intelligence-core`)
 
+### Sprint 7B — Prompt Intelligence Integration
+
+- **Goal**: Move Prompt Intelligence Engine from isolated infrastructure to production execution path across all service flows
+- **Key Deliverables**:
+  - **Planner** — `prompt_intelligence` intent added to MATRIX (AUTO level) + KEYWORDS (4 keywords, Arabic + English)
+  - **ResearchService** — PIE integration in `execute()`: resolves model_id via `PIE.resolve(topic, "text", "research")` when `prompt_intelligence` flag is enabled
+  - **ReportService** — PIE integration: model selection via PIE with `execution_profile_id="academic_report"`
+  - **PresentationService** — PIE integration: model selection via PIE with `execution_profile_id="presentation"`
+  - **MediaService** — PIE integration: prompt optimized through `PIE.resolve()` before generation
+  - **ProviderSelector** — benchmark-aware `_quality_score()`: queries `BenchmarkRepository.avg_scores()` when `benchmark_auto_quality` flag is enabled; falls back to static scores
+  - **PromptMemory blacklist** — `engine._select_model()` now filters blacklisted models from registry results (was a no-op `pass`)
+  - **HandlerRegistry** — single `PromptIntelligenceEngine` instance created and injected into all 4 services; `BenchmarkRepository` injected into `ProviderSelector`
+  - 15 new tests, 422 total passing
+
+- **Status**: Complete (tagged `v0.7b-prompt-intelligence-integration`)
+
 ## Current Architecture
 
 ### Core Layer
@@ -227,9 +245,14 @@
 - **toll/ports/benchmark.py** — BenchmarkRun, BenchmarkSuite dataclasses
 - **toll/benchmark/** — BenchmarkService, BenchmarkRepository, BenchmarkRunner, QualityScorer (weighted criteria)
 
-### Prompt Intelligence Layer
-- **toll/prompt/** — PromptIntelligenceEngine, PromptProfileService, PromptProfileRepository, PromptMemory, ExecutionProfileRepository, 10 seed profiles
-- **toll/ports/** (no new ports — PIE uses existing MediaPort, Model dataclass, BenchmarkRun dataclasses)
+### Prompt Intelligence Layer (Sprint 7B — Production Integrated)
+- **toll/prompt/** — PromptIntelligenceEngine, PromptProfileService, PromptProfileRepository, PromptMemory (blacklist active), ExecutionProfileRepository, 10 seed profiles
+- **toll/planner/planner.py** — `prompt_intelligence` intent in MATRIX (AUTO) + KEYWORDS
+- **toll/application/research_service.py** — PIE integration in `execute()` (model_id via PIE.resolve)
+- **toll/application/report_service.py** — PIE integration in `execute()` (model selection via PIE)
+- **toll/application/presentation_service.py** — PIE integration in `execute()` (model selection via PIE)
+- **toll/application/media_service.py** — PIE integration in `generate()` (prompt optimization via PIE)
+- **toll/core/provider_selector.py** — benchmark-aware `_quality_score()` with BenchmarkRepository fallback chain
 - **toll/model/migrations/0012_prompt_intelligence.sql** — prompt_profiles, prompt_profile_versions, prompt_scores, prompt_blacklist
 - **api/routers/prompt.py** — 9 API endpoints
 
@@ -722,6 +745,18 @@ Each artifact supports: creation, rendering (HTML), preview, archive (tar.gz), s
   - Feature flags: `prompt_intelligence` (default False), `prompt_intelligence_seed` (default True)
   - 55 new tests, 407 total passing
 
+### v0.7b-prompt-intelligence-integration
+
+- **Git Tag**: `v0.7b-prompt-intelligence-integration`
+- **Commit**: `a85dcf7`
+- **Summary**:
+  - Planner: `prompt_intelligence` intent (AUTO) added to MATRIX + KEYWORDS
+  - ResearchService, ReportService, PresentationService, MediaService all route through Prompt Intelligence Engine when enabled
+  - ProviderSelector: benchmark-aware `_quality_score()` with BenchmarkRepository fallback
+  - PromptMemory blacklist activated — engine filters blacklisted models during selection
+  - Single PIE instance created and injected into all services via HandlerRegistry
+  - 15 new tests, 422 total passing (9 of 10 Sprint 7A audit gaps closed)
+
 ## Backup Locations
 
 ### GitHub
@@ -736,6 +771,7 @@ Protected Releases:
 - `v0.6.0-notebooklm`
 - `v0.6-media-foundation`
 - `v0.7a-prompt-intelligence-core`
+- `v0.7b-prompt-intelligence-integration`
 
 ### Local Database
 
@@ -772,18 +808,18 @@ Protected Releases:
 
 ## Next Planned Sprint
 
-### Sprint 7B — Model Awareness + Benchmark Integration
+### Sprint 7C — Prompt Learning Loop
 
-- **Benchmark-driven model ranking** — `ProviderSelector.select()` consumes `BenchmarkRepository.avg_scores()` for dynamic quality scoring
-- **Model-aware prompt adaptation** — `ModelPromptRules` per model family (Flux, SDXL, DALL-E, Veo, Runway, Kling)
-- **Prompt memory integration** — `prompt_scores` and `prompt_blacklist` full integration in engine
-- **Model prompt rules table** + seed data
-- Estimated: 5-7 days, ~14 files, 25 tests
+- **Wire record_success() / record_failure()** into service flows after each generation
+- **Feedback scoring** — implicit (user keeps result) + explicit (ratings)
+- **Profile template tuning** — flag profiles with avg_score < 0.6 for review
+- **PromptMemory score integration** — use get_avg_score() as weight in engine._select_model()
+- Estimated: 4-6 days, ~6 files, 15 tests
 
 ## Future Roadmap
 
-- **Sprint 7B** — Model awareness, benchmark-driven selection, prompt adaptation
-- **Sprint 7C** — UI polish (prompt visibility modes, profile management page, edit-and-regenerate)
-- **Sprint 8** — Video & Audio adapters (Veo, Runway, ElevenLabs, Kokoro), character consistency
-- **Sprint 9** — Advanced memory & knowledge graph (RAG pipeline, hybrid search, knowledge base import)
-- **Sprint 10** — Production hardening (multi-user, PostgreSQL migration, proper auth)
+- **Sprint 7C** — Prompt learning loop, feedback scoring, profile tuning
+- **Sprint 8** — Operations Layer (Usage Center, Provider Dashboard, Cost Monitoring, Caching)
+- **Sprint 9** — Video & Audio adapters (Veo, Runway, ElevenLabs, Kokoro), character consistency
+- **Sprint 10** — Advanced memory & knowledge graph (RAG pipeline, hybrid search)
+- **Sprint 11** — Production hardening (multi-user, PostgreSQL migration, proper auth)
