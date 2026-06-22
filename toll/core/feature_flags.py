@@ -84,6 +84,10 @@ DEFAULT_FLAGS = {
     # Operations Layer — Sprint 8A
     "operations_layer": True,
     "cleanup_manual": True,
+    # Sprint X — Agent Registry
+    "agent_runtime": False,
+    "shared_memory": False,
+    "task_dispatcher": False,
 }
 
 _PREFIX = "feature_"

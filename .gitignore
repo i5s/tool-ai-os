@@ -7,6 +7,8 @@ __pycache__/
 .Python
 *.db
 *.sqlite3
+*.db-wal
+*.db-shm
 .DS_Store
 .env
 .env.local

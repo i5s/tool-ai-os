@@ -7,6 +7,9 @@ export const views = [
   { id: 'lab',         label: 'المختبر',          icon: 'biotech' },
   { id: 'brand',       label: 'العلامة التجارية', icon: 'palette' },
   { id: 'operations',  label: 'العمليات',         icon: 'monitoring' },
+  { id: 'agents',      label: 'فريق AI',          icon: 'groups' },
+  { id: 'shared-memory', label: 'الذاكرة المشتركة', icon: 'memory' },
+  { id: 'tasks',         label: 'المهام',           icon: 'task_alt' },
   { id: 'settings',    label: 'الإعدادات',        icon: 'settings' },
 ]
 

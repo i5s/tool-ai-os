@@ -243,12 +243,48 @@
 
 - **Status**: Complete (tagged `v0.8b-operations-ui`)
 
+### Sprint X-1 — Agent Registry MVP
+- **Goal**: First executable layer of future multi-agent runtime; register, promote, demote, and manage agents through API and UI
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/agents/` — models, repository, service with CRUD + promote/demote + auto-seed of 4 agents
+  - `api/routers/agents.py` — 7 endpoints under `/api/agents` (list, create, get, update, delete, promote, demote)
+  - `toll/model/migrations/0016_agent_registry.sql` — `agents` table + indexes
+  - Feature flag: `agent_runtime` (False by default)
+  - `web/src/components/AgentsPanel.svelte` — Agents page UI with name, role, rank, status, reputation, and actions
+  - `tests/agents/test_agents.py` — 16 passing tests covering CRUD, promotion/demotion, seed data, feature flag
+
+### Sprint X-2 — Shared Knowledge Memory MVP
+- **Goal**: First shared memory system used by all agents; durable, queryable, scope-aware knowledge blocks
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/shared_memory/` — models (MemoryBlock, MemoryLink, enums), repository (SQLite CRUD, search), service
+  - `api/routers/shared_memory.py` — 6 endpoints under `/api/memory` (list, create, get, update, delete, search)
+  - `toll/model/migrations/0017_shared_memory.sql` — `memory_blocks` and `memory_links` tables + 3 indexes
+  - Feature flag: `shared_memory` (False by default)
+  - `web/src/components/SharedMemoryPanel.svelte` — Shared Memory page with search, scope filter, and delete
+  - `tests/shared_memory/test_shared_memory.py` — 12 passing tests covering CRUD, search, scope filtering, feature flag
+
+### Sprint X-3 — Task Dispatcher MVP
+- **Goal**: Execution backbone between Agent Registry and Shared Knowledge Memory; assign work to agents via tasks
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/tasks/` — models (Task, TaskEvent, enums), repository (SQLite CRUD), service (create/assign/start/complete/fail)
+  - `api/routers/tasks.py` — 8 endpoints under `/api/tasks` (list, create, get, update, delete, assign, start, complete, fail, events)
+  - `toll/model/migrations/0018_task_dispatcher.sql` — `tasks` and `task_events` tables + indexes
+  - Feature flag: `task_dispatcher` (False by default)
+  - `web/src/components/TasksPanel.svelte` — Tasks page with lifecycle management and event log
+  - `tests/tasks/test_tasks.py` — 14 passing tests covering CRUD, lifecycle transitions, events, feature flag
+
 ## Current Architecture
 
 ### Core Layer
 - **toll/core/** — Config, Storage, Settings, FeatureFlags, ConnectionManager, RateLimiter, ConversationStore, ProviderRegistry, ProviderSelector
+- **toll/agents/** — Agent Registry (models, repository, service)
+- **toll/shared_memory/** — Shared Knowledge Memory (models, repository, service)
+- **toll/tasks/** — Task Dispatcher (models, repository, service)
 - **toll/ports/** — ABCs for LLM, Search, Research, Settings, Repository
-- **api/** — FastAPI application with 7 routers
+- **api/** — FastAPI application with 16 routers
 - **cli/** — CLI entry point
 - **bot/** — Telegram bot
 

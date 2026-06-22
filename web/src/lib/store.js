@@ -15,6 +15,11 @@ export const api = {
     if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`)
     return res.json()
   },
+  async delete(path) {
+    const res = await fetch(`/api${path}`, { method: 'DELETE' })
+    if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
+    return res.json()
+  },
 }
 
 export const conversations = writable([])

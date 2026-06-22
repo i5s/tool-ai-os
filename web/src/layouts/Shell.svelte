@@ -1,6 +1,9 @@
 <script>
 import { theme } from '../lib/theme.js'
 import { activeView, views } from '../lib/view.js'
+import AgentsPanel from '../components/AgentsPanel.svelte'
+import SharedMemoryPanel from '../components/SharedMemoryPanel.svelte'
+import TasksPanel from '../components/TasksPanel.svelte'
 
 let sidebarOpen = $state(true)
 
@@ -92,6 +95,12 @@ function handleNavClick(viewId) {
           <p class="body-lg" style="color:var(--text2);margin-top:16px">مرحبًا بك في تول</p>
           <p class="body-md" style="color:var(--text3)">اختر محادثة أو ابدأ محادثة جديدة</p>
         </div>
+      {:else if $activeView === 'agents'}
+        <AgentsPanel />
+      {:else if $activeView === 'shared-memory'}
+        <SharedMemoryPanel />
+      {:else if $activeView === 'tasks'}
+        <TasksPanel />
       {:else}
         <div class="placeholder-panel">
           <span class="material-symbols-outlined" style="font-size:48px;color:var(--text3)">{views.find(v => v.id === $activeView)?.icon || 'dashboard'}</span>
