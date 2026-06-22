@@ -16,3 +16,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 data/artifacts/
+
+# Node / Frontend
+web/node_modules/
+web/dist/

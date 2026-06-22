@@ -1,0 +1,151 @@
+/*
+ * Global Styles — ZUNO AI OS
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text2); }
+
+/* ── Focus ── */
+*:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* ── Glass Panel ── */
+.glass-panel {
+  background: rgba(17, 17, 37, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+:root.light .glass-panel {
+  background: rgba(246, 250, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* ── Glass Card ── */
+.glass-card {
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--stitch-radius-md);
+  transition: all 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, var(--md-sys-color-surface-container) 0%, rgba(40, 40, 61, 0.8) 100%);
+}
+:root.light .glass-card:hover {
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+/* ── Card Shimmer ── */
+.card-shimmer {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+.card-shimmer:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(30, 30, 50, 1) 0%, rgba(40, 40, 61, 0.8) 100%);
+}
+:root.light .card-shimmer:hover {
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+/* ── Icon Containers ── */
+.icon-container {
+  width: 48px; height: 48px;
+  border-radius: var(--stitch-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-container-sm {
+  width: 32px; height: 32px;
+  border-radius: var(--stitch-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-container-lg {
+  width: 40px; height: 40px;
+  border-radius: var(--stitch-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Material Symbols Base ── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  vertical-align: middle;
+  line-height: 1;
+}
+.material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+.material-symbols-outlined.icon-sm { font-size: 16px; }
+.material-symbols-outlined.icon-lg { font-size: 24px; }
+.material-symbols-outlined.icon-xl { font-size: 32px; }
+
+/* ── Status Dot ── */
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.draft    { background: var(--md-sys-color-outline); }
+.status-dot.planned  { background: var(--md-sys-color-secondary); }
+.status-dot.running  { background: var(--md-sys-color-primary); }
+.status-dot.completed { background: #22c55e; }
+.status-dot.error    { background: var(--md-sys-color-error); }
+
+/* ── Status Animations ── */
+.status-ping {
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%, 100% { transform: scale(1.75); opacity: 0; }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

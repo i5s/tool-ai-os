@@ -1,0 +1,3945 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<title>تول — AI Assistant</title>
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DIN+Next+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/font/geist-sans/style.css" rel="stylesheet">
+<style>
+/* ===== Stitch M3 Design Tokens — Cognitive OS (Dark) ===== */
+:root {
+  /* Surface tones */
+  --md-sys-color-background: #111125;
+  --md-sys-color-surface-dim: #111125;
+  --md-sys-color-surface-bright: #37374d;
+  --md-sys-color-surface-container-lowest: #0c0c1f;
+  --md-sys-color-surface-container-low: #1a1a2e;
+  --md-sys-color-surface-container: #1e1e32;
+  --md-sys-color-surface-container-high: #28283d;
+  --md-sys-color-surface-container-highest: #333348;
+  --md-sys-color-surface-variant: #333348;
+  --md-sys-color-on-surface: #e2e0fc;
+  --md-sys-color-on-surface-variant: #bdc8d1;
+
+  /* Primary (Sky Blue) */
+  --md-sys-color-primary: #8ed5ff;
+  --md-sys-color-on-primary: #00354a;
+  --md-sys-color-primary-container: #38bdf8;
+  --md-sys-color-on-primary-container: #004965;
+  --md-sys-color-primary-fixed: #c4e7ff;
+  --md-sys-color-primary-fixed-dim: #7bd0ff;
+  --md-sys-color-on-primary-fixed: #001e2c;
+  --md-sys-color-on-primary-fixed-variant: #004c69;
+
+  /* Secondary (Purple) */
+  --md-sys-color-secondary: #cebdff;
+  --md-sys-color-on-secondary: #381385;
+  --md-sys-color-secondary-container: #4f319c;
+  --md-sys-color-on-secondary-container: #bea8ff;
+  --md-sys-color-secondary-fixed: #e8ddff;
+  --md-sys-color-secondary-fixed-dim: #cebdff;
+  --md-sys-color-on-secondary-fixed: #21005e;
+  --md-sys-color-on-secondary-fixed-variant: #4f319c;
+
+  /* Tertiary (Blue-Grey) */
+  --md-sys-color-tertiary: #c2cde5;
+  --md-sys-color-on-tertiary: #263143;
+  --md-sys-color-tertiary-container: #a7b2c9;
+  --md-sys-color-on-tertiary-container: #394458;
+  --md-sys-color-tertiary-fixed: #d8e3fb;
+  --md-sys-color-tertiary-fixed-dim: #bcc7de;
+  --md-sys-color-on-tertiary-fixed: #111c2d;
+  --md-sys-color-on-tertiary-fixed-variant: #3c475a;
+
+  /* Error */
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+
+  /* Outline */
+  --md-sys-color-outline: #87929a;
+  --md-sys-color-outline-variant: #3e484f;
+
+  /* Inverse */
+  --md-sys-color-inverse-surface: #e2e0fc;
+  --md-sys-color-inverse-on-surface: #2f2e43;
+  --md-sys-color-inverse-primary: #00668a;
+
+  /* ===== Legacy Semantic Aliases (point to M3 tokens) ===== */
+  --bg: var(--md-sys-color-background);
+  --bg2: var(--md-sys-color-surface-container-low);
+  --bg3: var(--md-sys-color-surface-container-high);
+  --sidebar: var(--md-sys-color-surface-container-lowest);
+  --sidebar-hover: var(--md-sys-color-surface-container-low);
+  --surface: var(--md-sys-color-surface-container);
+  --surface-hover: var(--md-sys-color-surface-container-high);
+  --primary: var(--md-sys-color-primary-container);
+  --primary-dim: var(--md-sys-color-primary-fixed-dim);
+  --accent: var(--md-sys-color-secondary);
+  --accent2: var(--md-sys-color-tertiary);
+  --text: var(--md-sys-color-on-surface);
+  --text2: var(--md-sys-color-on-surface-variant);
+  --text3: var(--md-sys-color-outline-variant);
+  --border: var(--md-sys-color-outline-variant);
+  --border2: var(--md-sys-color-outline);
+  --send: #3b82f6;
+  --send-hover: #2563eb;
+  --chat-w: min(760px, 100%);
+  --radius: 12px;
+  --radius-lg: 20px;
+
+  /* ===== Stitch Layout Tokens ===== */
+  --stitch-sidebar-w: 280px;
+  --stitch-context-panel-w: 340px;
+  --stitch-gutter: 24px;
+  --stitch-radius-sm: 4px;
+  --stitch-radius: 8px;
+  --stitch-radius-md: 12px;
+  --stitch-radius-lg: 16px;
+  --stitch-radius-xl: 24px;
+  --stitch-radius-full: 9999px;
+}
+
+/* ===== Stitch M3 Design Tokens — Zuno Light ===== */
+:root.light {
+  --md-sys-color-background: #f6faff;
+  --md-sys-color-surface-dim: #d6dae0;
+  --md-sys-color-surface-bright: #f6faff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f0f4fa;
+  --md-sys-color-surface-container: #eaeef4;
+  --md-sys-color-surface-container-high: #e4e8ee;
+  --md-sys-color-surface-container-highest: #dee3e9;
+  --md-sys-color-surface-variant: #dee3e9;
+  --md-sys-color-on-surface: #171c20;
+  --md-sys-color-on-surface-variant: #3e4850;
+
+  --md-sys-color-primary: #006591;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #0ea5e9;
+  --md-sys-color-on-primary-container: #003751;
+  --md-sys-color-primary-fixed: #c9e6ff;
+  --md-sys-color-primary-fixed-dim: #89ceff;
+  --md-sys-color-on-primary-fixed: #001e2f;
+  --md-sys-color-on-primary-fixed-variant: #004c6e;
+
+  --md-sys-color-secondary: #505f76;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #d0e1fb;
+  --md-sys-color-on-secondary-container: #54647a;
+  --md-sys-color-secondary-fixed: #d3e4fe;
+  --md-sys-color-secondary-fixed-dim: #b7c8e1;
+  --md-sys-color-on-secondary-fixed: #0b1c30;
+  --md-sys-color-on-secondary-fixed-variant: #38485d;
+
+  --md-sys-color-tertiary: #8a5100;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #de8712;
+  --md-sys-color-on-tertiary-container: #4d2b00;
+  --md-sys-color-tertiary-fixed: #ffdcbd;
+  --md-sys-color-tertiary-fixed-dim: #ffb86e;
+  --md-sys-color-on-tertiary-fixed: #2c1600;
+  --md-sys-color-on-tertiary-fixed-variant: #693c00;
+
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #93000a;
+
+  --md-sys-color-outline: #6e7881;
+  --md-sys-color-outline-variant: #bec8d2;
+
+  --md-sys-color-inverse-surface: #2c3135;
+  --md-sys-color-inverse-on-surface: #edf1f7;
+  --md-sys-color-inverse-primary: #89ceff;
+
+  /* Legacy aliases (light overrides) */
+  --bg: var(--md-sys-color-background);
+  --bg2: var(--md-sys-color-surface-container-low);
+  --bg3: var(--md-sys-color-surface-container-high);
+  --sidebar: var(--md-sys-color-surface-container-lowest);
+  --sidebar-hover: var(--md-sys-color-surface-container-low);
+  --surface: var(--md-sys-color-surface-container);
+  --surface-hover: var(--md-sys-color-surface-container-high);
+  --primary: var(--md-sys-color-primary-container);
+  --primary-dim: var(--md-sys-color-primary-fixed-dim);
+  --accent: var(--md-sys-color-secondary);
+  --accent2: var(--md-sys-color-tertiary);
+  --text: var(--md-sys-color-on-surface);
+  --text2: var(--md-sys-color-on-surface-variant);
+  --text3: var(--md-sys-color-outline-variant);
+  --border: var(--md-sys-color-outline-variant);
+  --border2: var(--md-sys-color-outline);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg); color: var(--text);
+  height: 100vh; display: flex; overflow: hidden;
+  transition: background .3s, color .3s;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 280px; min-width: 280px;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transition: transform .3s ease, background .3s;
+  z-index: 100;
+  position: relative;
+}
+
+.sidebar-header {
+  padding: 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-header .logo {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem; color: #fff;
+}
+.sidebar-header h1 { font-size: 1.15rem; font-weight: 600; flex: 1; }
+.sidebar-header .close-sidebar {
+  background: none; border: none; color: var(--text2);
+  cursor: pointer; font-size: 1.2rem; display: none; padding: 4px;
+}
+
+.new-chat-btn {
+  margin: 12px 16px; padding: 10px; border-radius: var(--radius);
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border2); cursor: pointer;
+  font-size: .9rem; font-weight: 500; display: flex; align-items: center; gap: 8px;
+  justify-content: center; transition: .2s;
+}
+.new-chat-btn:hover { background: var(--surface-hover); }
+
+.sidebar-search {
+  margin: 0 16px 8px; padding: 8px 12px; border-radius: 8px;
+  background: var(--bg); border: 1px solid transparent;
+  color: var(--text2); font-size: .85rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar-search:focus-within { border-color: var(--primary); }
+.sidebar-search input {
+  background: none; border: none; color: var(--text);
+  font-size: .85rem; flex: 1; outline: none;
+}
+.sidebar-search input::placeholder { color: var(--text3); }
+
+.conversations {
+  flex: 1; overflow-y: auto; padding: 8px;
+}
+
+.conv-group-label {
+  font-size: .75rem; color: var(--text3); text-transform: uppercase;
+  letter-spacing: .05em; padding: 12px 16px 4px; font-weight: 600;
+}
+
+.conv-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 8px; cursor: pointer;
+  font-size: .85rem; color: var(--text2); transition: .15s;
+  margin: 1px 0; position: relative;
+}
+.conv-item:hover { background: var(--sidebar-hover); color: var(--text); }
+.conv-item.active { background: var(--surface-hover); color: var(--text); }
+.conv-item .pin-icon {
+  position: absolute; left: 4px; opacity: 0; font-size: .6rem; color: var(--accent);
+}
+.conv-item.pinned .pin-icon { opacity: 1; }
+.conv-item.pinned { padding-right: 20px; }
+.conv-item .conv-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conv-item .conv-actions { display: none; gap: 4px; }
+.conv-item:hover .conv-actions { display: flex; }
+.conv-actions button {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: .75rem; padding: 2px 4px; border-radius: 4px;
+}
+.conv-actions button:hover { color: var(--text); background: var(--bg); }
+
+/* ===== NAVIGATION ===== */
+.sidebar-nav {
+  padding: 4px 12px; display: flex; flex-direction: column; gap: 1px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 8px;
+  cursor: pointer; font-size: .88rem; font-weight: 500;
+  color: var(--text2); transition: .15s; border: none; background: none; width: 100%; text-align: right;
+}
+.sidebar-nav-item:hover { background: var(--sidebar-hover); color: var(--text); }
+.sidebar-nav-item.active { background: var(--sidebar-hover); color: var(--primary); }
+
+/* ===== VIEW PANELS ===== */
+.view-panel { display: none; height: 100%; flex-direction: column; }
+.view-panel.active { display: flex; }
+
+.models-header, .lab-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.models-header h2, .lab-header h2 { font-size: 1.1rem; flex: 1; }
+.models-body, .lab-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+.model-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); transition: .15s;
+}
+.model-card:hover { border-color: var(--primary-dim); }
+.model-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.model-card .model-meta { font-size: .8rem; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; }
+.model-card .model-status {
+  display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem;
+}
+.model-status.active { background: rgba(34,197,94,.15); color: #22c55e; }
+.model-status.disabled { background: rgba(239,68,68,.15); color: #ef4444; }
+.model-status.coming_soon { background: rgba(250,204,21,.15); color: #eab308; }
+
+.lab-suite-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.lab-suite-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.lab-suite-meta { font-size: .8rem; color: var(--text2); }
+.lab-suite-prompts { margin-top: 8px; font-size: .82rem; color: var(--text3); }
+.lab-run-btn { margin-top: 8px; padding: 6px 14px; border-radius: 6px; background: var(--primary-dim); color: #fff; border: none; cursor: pointer; font-size: .8rem; }
+
+.lab-score-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); text-align: center;
+}
+.lab-score-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+.lab-score-label { font-size: .8rem; color: var(--text2); }
+
+/* ===== OPERATIONS ===== */
+.op-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.op-header h2 { font-size: 1.1rem; flex: 1; }
+.op-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.op-tabs {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.op-tab {
+  flex: 1; padding: 10px 12px; text-align: center;
+  cursor: pointer; font-size: .82rem; font-weight: 500;
+  color: var(--text2); transition: .15s;
+  background: none; border: none; border-bottom: 2px solid transparent;
+}
+.op-tab:hover { color: var(--text); background: var(--sidebar-hover); }
+.op-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.op-section { display: none; }
+.op-section.active { display: block; }
+.op-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.op-stat-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px; border: 1px solid var(--border); text-align: center;
+}
+.op-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+.op-stat-label { font-size: .75rem; color: var(--text3); margin-top: 2px; }
+.op-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.op-table th { text-align: right; padding: 8px 10px; color: var(--text3); font-weight: 500; border-bottom: 1px solid var(--border); }
+.op-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.op-table tr:hover { background: var(--sidebar-hover); }
+.op-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: .75rem; font-weight: 500;
+}
+.op-badge.ok { background: rgba(34,197,94,.15); color: #22c55e; }
+.op-badge.warn { background: rgba(250,204,21,.15); color: #eab308; }
+.op-badge.err { background: rgba(239,68,68,.15); color: #ef4444; }
+.op-mini-chart { height: 60px; display: flex; align-items: flex-end; gap: 2px; margin: 8px 0; }
+.op-mini-chart .bar { width: 8px; background: var(--primary-dim); border-radius: 2px 2px 0 0; min-height: 2px; transition: height .3s; }
+.op-btn {
+  padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+  font-size: .8rem; font-weight: 500;
+}
+.op-btn-primary { background: var(--primary-dim); color: #fff; }
+.op-btn-danger { background: rgba(239,68,68,.8); color: #fff; }
+.op-btn-secondary { background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+
+/* ===== WORKFLOWS ===== */
+.wf-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); transition: .15s;
+}
+.wf-card:hover { border-color: var(--primary-dim); }
+.wf-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.wf-meta { font-size: .8rem; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; }
+.wf-status {
+  display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 500;
+}
+.wf-status.completed { background: rgba(34,197,94,.15); color: #22c55e; }
+.wf-status.pending { background: rgba(250,204,21,.15); color: #eab308; }
+.wf-status.approved { background: rgba(59,130,246,.15); color: #3b82f6; }
+.wf-status.running { background: rgba(168,85,247,.15); color: #a855f7; }
+.wf-status.failed { background: rgba(239,68,68,.15); color: #ef4444; }
+.wf-status.rejected { background: rgba(239,68,68,.15); color: #ef4444; }
+.wf-detail-plan { background: var(--bg); border-radius: 6px; padding: 10px; margin-top: 8px; font-size: .82rem; line-height: 1.6; white-space: pre-wrap; }
+
+/* ===== ARTIFACTS ===== */
+.art-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); transition: .15s; cursor: pointer;
+}
+.art-card:hover { border-color: var(--primary-dim); }
+.art-card h3 { font-size: .95rem; margin-bottom: 4px; }
+.art-meta { font-size: .8rem; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; }
+.art-type-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 500;
+}
+.art-type-badge.carousel { background: rgba(168,85,247,.15); color: #a855f7; }
+.art-type-badge.report { background: rgba(59,130,246,.15); color: #3b82f6; }
+.art-type-badge.presentation { background: rgba(34,197,94,.15); color: #22c55e; }
+.art-type-badge.research { background: rgba(250,204,21,.15); color: #eab308; }
+
+/* ===== RESEARCH ===== */
+.research-form-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px; border: 1px solid var(--border); margin-bottom: 16px;
+}
+.research-form-card label { display: block; font-size: .85rem; color: var(--text2); margin-bottom: 6px; }
+.research-result-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.research-result-card h3 { font-size: .95rem; margin-bottom: 6px; }
+.research-synopsis { font-size: .85rem; line-height: 1.6; color: var(--text2); margin-bottom: 8px; }
+.research-source { font-size: .8rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.research-source:last-child { border-bottom: none; }
+
+.sidebar-footer {
+  border-top: 1px solid var(--border); padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar-footer button {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: .85rem; padding: 8px 12px; border-radius: 8px;
+  display: flex; align-items: center; gap: 10px; transition: .15s;
+  width: 100; text-align: right;
+}
+.sidebar-footer button:hover { background: var(--sidebar-hover); color: var(--text); }
+
+.workspace-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace-section h3 {
+  font-size: .75rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+}
+.workspace-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: .85rem;
+  margin-bottom: 8px;
+  outline: none;
+}
+.workspace-select:focus { border-color: var(--primary); }
+.workspace-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: .8rem;
+  cursor: pointer;
+  transition: .2s;
+}
+.workspace-btn:hover { background: var(--surface-hover); color: var(--text); }
+
+/* ===== MAIN ===== */
+.main {
+  flex: 1; display: flex; flex-direction: column;
+  min-width: 0; position: relative;
+}
+
+.chat-header {
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg); z-index: 10;
+}
+.chat-header .menu-btn {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: 1.2rem; padding: 4px; display: none;
+}
+.chat-header .model-selector {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); font-size: .85rem; cursor: pointer;
+}
+.chat-header .model-selector select {
+  background: none; border: none; color: var(--text);
+  font-size: .85rem; outline: none;
+}
+.chat-header .header-actions {
+  margin-right: auto; display: flex; align-items: center; gap: 8px;
+}
+.header-actions button {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; transition: .15s;
+}
+.header-actions button:hover { background: var(--surface-hover); color: var(--text); }
+
+/* ===== CHAT MESSAGES ===== */
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 0;
+  display: flex; flex-direction: column;
+}
+
+.welcome {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 20px; text-align: center;
+}
+.welcome .logo-big {
+  width: 72px; height: 72px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 2rem; color: #fff; margin-bottom: 20px;
+}
+.welcome h2 { font-size: 1.5rem; margin-bottom: 8px; }
+.welcome p { color: var(--text2); max-width: 400px; line-height: 1.6; margin-bottom: 24px; }
+.welcome .suggestions {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  max-width: 500px;
+}
+.welcome .suggestions button {
+  padding: 8px 16px; border-radius: 20px;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text2); cursor: pointer; font-size: .85rem; transition: .2s;
+}
+.welcome .suggestions button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.message {
+  max-width: var(--chat-w); width: 100%; margin: 0 auto;
+  padding: 20px 24px; display: flex; gap: 14px;
+  animation: fadeIn .3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.message.user { flex-direction: row-reverse; }
+.message.user .avatar {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+}
+.message.assistant .avatar {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+}
+.avatar {
+  width: 34px; height: 34px; min-width: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 600; color: #fff;
+}
+.message .bubble {
+  max-width: calc(100% - 50px); padding: 12px 16px;
+  border-radius: var(--radius); line-height: 1.6;
+  font-size: .95rem; position: relative;
+}
+.message.user .bubble {
+  background: var(--primary-dim); color: #fff;
+  border-bottom-left-radius: 4px;
+}
+.message.assistant .bubble {
+  background: var(--surface); color: var(--text);
+  border-bottom-right-radius: 4px;
+  border: 1px solid var(--border);
+}
+.message .bubble p { margin-bottom: 8px; }
+.message .bubble p:last-child { margin-bottom: 0; }
+.message .bubble pre {
+  background: var(--bg); border-radius: 8px; padding: 12px;
+  overflow-x: auto; direction: ltr; text-align: left;
+  margin: 8px 0; font-size: .85rem;
+}
+.message .bubble code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.message .bubble ul, .message .bubble ol { padding-right: 20px; }
+.message .bubble li { margin-bottom: 4px; }
+.message .bubble .file-preview {
+  display: inline-block; margin-top: 8px; padding: 8px 12px;
+  background: var(--bg); border-radius: 8px; font-size: .85rem;
+}
+
+.typing-indicator {
+  display: flex; align-items: center; gap: 4px; padding: 4px 0;
+}
+.typing-indicator span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); display: inline-block;
+  animation: typing 1.4s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: .2s; }
+.typing-indicator span:nth-child(3) { animation-delay: .4s; }
+@keyframes typing {
+  0%, 60%, 100% { opacity: .3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* ===== INPUT AREA ===== */
+.input-area {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px 24px;
+  background: var(--bg);
+}
+
+.input-container {
+  max-width: var(--chat-w); margin: 0 auto;
+  position: relative;
+}
+
+.task-type-bar {
+  display: flex; gap: 6px; margin-bottom: 10px;
+  overflow-x: auto; padding: 2px 0;
+}
+.task-type-bar::-webkit-scrollbar { height: 0; }
+.task-type {
+  white-space: nowrap; padding: 6px 14px; border-radius: 20px;
+  font-size: .8rem; cursor: pointer; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2); transition: .2s;
+  display: flex; align-items: center; gap: 5px;
+}
+.task-type:hover { border-color: var(--primary); color: var(--text); }
+.task-type.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.input-box {
+  display: flex; align-items: flex-end; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 8px;
+  transition: .2s; position: relative;
+}
+.input-box:focus-within { border-color: var(--primary); }
+
+.input-box textarea {
+  flex: 1; background: none; border: none; color: var(--text);
+  font-size: .95rem; font-family: inherit; outline: none;
+  resize: none; padding: 4px 8px; min-height: 24px; max-height: 150px;
+  line-height: 1.5;
+}
+.input-box textarea::placeholder { color: var(--text3); }
+
+.input-actions {
+  display: flex; align-items: center; gap: 4px;
+}
+
+.input-actions button, .input-actions label {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; transition: .15s;
+}
+.input-actions button:hover, .input-actions label:hover {
+  background: var(--surface-hover); color: var(--text);
+}
+
+.send-btn {
+  width: 40px !important; height: 40px !important;
+  background: var(--send) !important; color: #fff !important;
+  border-radius: 50% !important; font-size: 1rem !important;
+}
+.send-btn:hover { background: var(--send-hover) !important; }
+.send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+#imageInput { display: none; }
+.image-preview {
+  display: none; align-items: center; gap: 8px;
+  padding: 8px 12px; margin-top: 8px;
+  background: var(--bg); border-radius: 8px; font-size: .85rem;
+}
+.image-preview img {
+  width: 40px; height: 40px; border-radius: 6px; object-fit: cover;
+}
+.image-preview .remove-img {
+  color: #ef4444; cursor: pointer; font-size: 1rem; margin-right: auto;
+}
+
+/* ===== TOAST ===== */
+.toast-container {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  padding: 12px 20px; border-radius: var(--radius);
+  font-size: .88rem; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  animation: toastIn .3s ease;
+  display: flex; align-items: center; gap: 10px;
+  max-width: 420px;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(20px); }
+}
+.toast.success { background: #065f46; border: 1px solid #059669; color: #d1fae5; }
+.toast.warning { background: #78350f; border: 1px solid #d97706; color: #fef3c7; }
+.toast.error { background: #7f1d1d; border: 1px solid #dc2626; color: #fee2e2; }
+.toast.info { background: #1e3a5f; border: 1px solid #3b82f6; color: #dbeafe; }
+
+/* ===== CONFIRM DIALOG ===== */
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 300; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--surface); border-radius: var(--radius-lg);
+  width: min(380px, 85vw); padding: 24px;
+  box-shadow: 0 25px 60px rgba(0,0,0,.4);
+  text-align: center;
+}
+.confirm-box h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.confirm-box p { font-size: .88rem; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.confirm-actions button {
+  padding: 10px 24px; border-radius: 8px; border: none;
+  cursor: pointer; font-size: .88rem; font-weight: 500; transition: .15s;
+  min-width: 90px;
+}
+.confirm-actions .btn-cancel { background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+.confirm-actions .btn-cancel:hover { background: var(--surface-hover); color: var(--text); }
+.confirm-actions .btn-danger { background: #dc2626; color: #fff; }
+.confirm-actions .btn-danger:hover { background: #b91c1c; }
+.confirm-actions .btn-primary { background: var(--primary-dim); color: #fff; }
+.confirm-actions .btn-primary:hover { background: var(--primary); }
+
+/* ===== SETTINGS MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 200; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  width: min(500px, 90vw); max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,.4);
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+}
+.modal-header h2 { font-size: 1.1rem; }
+.modal-header .close-modal {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: 1.2rem; padding: 4px;
+}
+.modal-body { padding: 24px; }
+.setting-group { margin-bottom: 20px; }
+.setting-group:last-child { margin-bottom: 0; }
+.setting-group label {
+  display: block; font-size: .85rem; color: var(--text2); margin-bottom: 8px;
+}
+.setting-group select, .setting-group input[type="text"] {
+  width: 100%; padding: 10px 14px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); font-size: .9rem; outline: none;
+}
+.setting-group select:focus, .setting-group input:focus {
+  border-color: var(--primary);
+}
+.setting-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+}
+.setting-toggle label { margin-bottom: 0; cursor: pointer; }
+.toggle-switch {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--border2); cursor: pointer; position: relative;
+  transition: .2s;
+}
+.toggle-switch.active { background: var(--primary); }
+.toggle-switch::after {
+  content: ''; position: absolute; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; top: 2px; right: 2px;
+  transition: .2s;
+}
+.toggle-switch.active::after { right: 22px; }
+
+/* ===== NOTEBOOK PANEL ===== */
+.notebook-panel {
+  display: none; flex: 1; flex-direction: column;
+  overflow: hidden; position: relative;
+}
+.notebook-panel.active { display: flex; }
+.notebook-panel .np-header {
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.notebook-panel .np-header h2 { font-size: 1.1rem; flex: 1; }
+.notebook-panel .np-header button {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  padding: 6px 12px; border-radius: 8px; font-size: .85rem;
+}
+.notebook-panel .np-header button:hover { background: var(--surface-hover); color: var(--text); }
+.np-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+.np-list { display: flex; flex-direction: column; gap: 8px; }
+.np-card {
+  padding: 14px 18px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; transition: .15s;
+}
+.np-card:hover { border-color: var(--primary); background: var(--surface-hover); }
+.np-card h3 { font-size: 1rem; margin-bottom: 4px; }
+.np-card .np-meta { font-size: .8rem; color: var(--text3); display: flex; gap: 12px; }
+
+.np-detail-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+}
+.np-detail-header h2 { font-size: 1.2rem; flex: 1; }
+.np-detail-header .np-back {
+  background: none; border: none; color: var(--text2); cursor: pointer;
+  font-size: 1.1rem; padding: 4px 8px; border-radius: 6px;
+}
+.np-detail-header .np-back:hover { background: var(--surface-hover); color: var(--text); }
+
+.np-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.np-tab {
+  padding: 8px 16px; border-radius: 8px 8px 0 0;
+  cursor: pointer; font-size: .85rem; color: var(--text3);
+  border: 1px solid transparent; border-bottom: none; transition: .15s;
+}
+.np-tab:hover { color: var(--text); background: var(--surface-hover); }
+.np-tab.active { color: var(--primary); border-color: var(--border); background: var(--surface); }
+
+.np-section { display: none; }
+.np-section.active { display: block; }
+
+.np-upload-area {
+  margin-bottom: 16px; padding: 16px;
+  background: var(--surface); border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+}
+.np-upload-area textarea {
+  width: 100%; min-height: 80px; padding: 10px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); font-size: .85rem; resize: vertical;
+  font-family: inherit; outline: none; margin-bottom: 8px;
+}
+.np-upload-area textarea:focus { border-color: var(--primary); }
+.np-upload-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.np-upload-row input {
+  flex: 1; padding: 8px 12px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border2);
+  color: var(--text); font-size: .85rem; outline: none;
+}
+.np-upload-row input:focus { border-color: var(--primary); }
+.np-btn {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  cursor: pointer; font-size: .85rem; transition: .15s;
+  white-space: nowrap;
+}
+.np-btn-primary { background: var(--primary); color: #fff; }
+.np-btn-primary:hover { opacity: .9; }
+.np-btn-secondary { background: var(--surface); color: var(--text2); border: 1px solid var(--border2); }
+.np-btn-secondary:hover { background: var(--surface-hover); color: var(--text); }
+.np-btn-danger { background: #ef4444; color: #fff; }
+.np-btn-danger:hover { opacity: .9; }
+.np-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.source-list, .note-list, .snapshot-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.source-item, .note-item, .snapshot-item {
+  padding: 12px 16px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.source-item .si-info, .note-item .ni-info, .snapshot-item .si-info { flex: 1; }
+.source-item .si-title, .note-item .ni-title, .snapshot-item .si-label {
+  font-weight: 500; margin-bottom: 2px;
+}
+.source-item .si-meta, .note-item .ni-meta, .snapshot-item .si-meta {
+  font-size: .8rem; color: var(--text3);
+}
+.source-item .si-actions, .note-item .ni-actions, .snapshot-item .si-actions {
+  display: flex; gap: 4px;
+}
+.source-item .si-actions button, .note-item .ni-actions button, .snapshot-item .si-actions button {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; font-size: .8rem;
+}
+.source-item .si-actions button:hover, .note-item .ni-actions button:hover,
+.snapshot-item .si-actions button:hover { background: var(--surface-hover); color: var(--text); }
+.source-item .si-actions button.danger:hover { color: #ef4444; }
+
+.note-item .ni-content {
+  font-size: .85rem; color: var(--text2); margin-top: 4px;
+  line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.np-query-bar {
+  border-top: 1px solid var(--border); padding: 12px 24px;
+  background: var(--bg); display: flex; gap: 8px; align-items: center;
+}
+.np-query-bar input {
+  flex: 1; padding: 10px 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); font-size: .9rem; outline: none;
+}
+.np-query-bar input:focus { border-color: var(--primary); }
+.np-query-bar button {
+  padding: 10px 20px; border-radius: var(--radius); border: none;
+  background: var(--send); color: #fff; cursor: pointer;
+}
+.np-query-bar button:hover { background: var(--send-hover); }
+.np-query-result {
+  padding: 12px 16px; margin-top: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); line-height: 1.6;
+  display: none;
+}
+.np-query-result.show { display: block; }
+
+.np-empty {
+  text-align: center; padding: 40px 20px; color: var(--text3);
+  font-size: .9rem;
+}
+
+.np-notebook-stats {
+  display: flex; gap: 16px; margin-bottom: 16px; padding: 12px 16px;
+  background: var(--surface); border-radius: var(--radius);
+}
+.np-stat { text-align: center; flex: 1; }
+.np-stat .num { font-size: 1.3rem; font-weight: 600; color: var(--primary); }
+.np-stat .label { font-size: .75rem; color: var(--text3); }
+
+@media (max-width: 768px) {
+  .np-body { padding: 16px; }
+  .np-notebook-stats { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ===== BRAND BADGE ===== */
+#brandBadge { transition: opacity .3s, border-color .2s; cursor: default; }
+#brandBadge:hover { border-color: var(--primary) !important; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; right: 0; top: 0; bottom: 0;
+    transform: translateX(100%); width: 300px;
+    box-shadow: 0 0 40px rgba(0,0,0,.3);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-header .close-sidebar { display: block; }
+  .chat-header .menu-btn { display: block; }
+  .chat-header .model-selector { display: none; }
+  .message { padding: 16px; }
+  .task-type-bar .task-type { font-size: .75rem; padding: 4px 12px; }
+  .welcome .suggestions button { font-size: .8rem; }
+}
+
+/* ===== Stitch Design System — Phase 0 Additions ===== */
+
+/* --- KO Ghorab (Headings / Display) --- */
+@font-face {
+  font-family: 'KO Ghorab';
+  src: local('KO Ghorab'), local('KOGhorab');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'KO Ghorab';
+  src: local('KO Ghorab Bold'), local('KOGhorab-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Dast Nevis (Decorative) --- */
+@font-face {
+  font-family: 'Dast Nevis';
+  src: local('Dast Nevis'), local('DastNevis');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Typography System --- */
+:root {
+  --font-display: 'KO Ghorab', 'DIN Next Arabic', 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  --font-heading: 'KO Ghorab', 'DIN Next Arabic', 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  --font-body: 'DIN Next Arabic', 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  --font-label: 'Geist', 'DIN Next Arabic', system-ui, sans-serif;
+  --font-decorative: 'Dast Nevis', 'KO Ghorab', serif;
+}
+
+/* Display */
+.display-xl { font-family: var(--font-display); font-size: 64px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; }
+.display-lg { font-family: var(--font-display); font-size: 48px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+.display-md { font-family: var(--font-display); font-size: 36px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+
+/* Headline */
+.headline-xl { font-family: var(--font-heading); font-size: 48px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.headline-lg { font-family: var(--font-heading); font-size: 32px; font-weight: 600; line-height: 1.3; }
+.headline-md { font-family: var(--font-heading); font-size: 24px; font-weight: 600; line-height: 1.4; }
+.headline-sm { font-family: var(--font-heading); font-size: 20px; font-weight: 500; line-height: 1.5; }
+
+/* Body */
+.body-xl { font-family: var(--font-body); font-size: 18px; font-weight: 400; line-height: 1.6; }
+.body-lg { font-family: var(--font-body); font-size: 16px; font-weight: 400; line-height: 1.6; }
+.body-md { font-family: var(--font-body); font-size: 14px; font-weight: 400; line-height: 1.5; }
+.body-sm { font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.5; }
+
+/* Label */
+.label-lg { font-family: var(--font-label); font-size: 14px; font-weight: 500; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.02em; }
+.label-md { font-family: var(--font-label); font-size: 12px; font-weight: 500; line-height: 1.2; }
+.label-sm { font-family: var(--font-label); font-size: 11px; font-weight: 500; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Decorative */
+.decorative { font-family: var(--font-decorative); }
+
+/* --- Material Symbols Base --- */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  vertical-align: middle;
+  line-height: 1;
+}
+.material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+.material-symbols-outlined.icon-sm { font-size: 16px; }
+.material-symbols-outlined.icon-lg { font-size: 24px; }
+.material-symbols-outlined.icon-xl { font-size: 32px; }
+
+/* --- Glass Components --- */
+.glass-panel {
+  background: rgba(17, 17, 37, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+:root.light .glass-panel {
+  background: rgba(246, 250, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.glass-card {
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--stitch-radius-md);
+  transition: all 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, var(--md-sys-color-surface-container) 0%, rgba(40, 40, 61, 0.8) 100%);
+}
+
+.card-shimmer {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+.card-shimmer:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(30, 30, 50, 1) 0%, rgba(40, 40, 61, 0.8) 100%);
+}
+:root.light .card-shimmer:hover {
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--stitch-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-container-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--stitch-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-container-lg {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--stitch-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Status & Animation Utilities --- */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.draft { background: var(--md-sys-color-outline); }
+.status-dot.planned { background: var(--md-sys-color-secondary); }
+.status-dot.running { background: var(--md-sys-color-primary); }
+.status-dot.completed { background: #22c55e; }
+.status-dot.error { background: var(--md-sys-color-error); }
+
+.status-ping {
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%, 100% { transform: scale(1.75); opacity: 0; }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* --- Selection Styling --- */
+::selection {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+/* --- Focus Ring --- */
+*:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary-container);
+  outline-offset: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">ت</div>
+    <h1>تول</h1>
+    <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+  </div>
+
+  <button class="new-chat-btn" onclick="newChat()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    محادثة جديدة
+  </button>
+
+  <div class="sidebar-search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="بحث في المحادثات..." oninput="searchConversations(this.value)">
+  </div>
+
+  <div class="workspace-section">
+    <h3>Workspace</h3>
+    <select id="brandSelect" class="workspace-select" onchange="activateWorkspace('brand', this.value)">
+      <option value="">Brand...</option>
+    </select>
+    <select id="universitySelect" class="workspace-select" onchange="activateWorkspace('university', this.value)">
+      <option value="">University...</option>
+    </select>
+    <select id="semesterSelect" class="workspace-select" onchange="activateWorkspace('semester', this.value)">
+      <option value="">Semester...</option>
+    </select>
+    <select id="projectSelect" class="workspace-select" onchange="activateWorkspace('project', this.value)">
+      <option value="">Project...</option>
+    </select>
+    <button class="workspace-btn" onclick="openWorkspaceModal()">+ إدارة Workspace</button>
+  </div>
+
+  <div class="sidebar-nav">
+    <button class="sidebar-nav-item active" data-view="chat" onclick="switchView('chat')">💬 الدردشة</button>
+    <button class="sidebar-nav-item" data-view="notebook" onclick="switchView('notebook')">📓 دفاتر الملاحظات</button>
+    <button class="sidebar-nav-item" data-view="models" onclick="switchView('models')">🤖 الموديلات</button>
+    <button class="sidebar-nav-item" data-view="lab" onclick="switchView('lab')">🧪 مختبر القياس</button>
+    <button class="sidebar-nav-item" data-view="workflows" onclick="switchView('workflows')">🔧 سير العمل</button>
+    <button class="sidebar-nav-item" data-view="artifacts" onclick="switchView('artifacts')">📦 القطع الأثرية</button>
+    <button class="sidebar-nav-item" data-view="research" onclick="switchView('research')">🔬 البحث</button>
+    <button class="sidebar-nav-item" data-view="operations" onclick="switchView('operations')">⚙️ العمليات</button>
+    <button class="sidebar-nav-item" data-view="brand" onclick="switchView('brand')">🎨 الهوية البصرية</button>
+  </div>
+
+  <div class="conversations" id="conversations">
+    <div class="conv-group-label">📌 مثبتة</div>
+    <div id="pinnedList"></div>
+    <div class="conv-group-label">💬 المحادثات</div>
+    <div id="convList"></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button onclick="openSettings()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      الإعدادات
+    </button>
+    <button onclick="clearConversations()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      حذف الكل
+    </button>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <!-- Header -->
+  <div class="chat-header">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <div class="model-selector">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <select id="modelSelect">
+        <option value="auto">تلقائي</option>
+        <option value="opencode">Big Pickle</option>
+        <option value="ollama">Ollama</option>
+        <option value="browser">متصفح</option>
+      </select>
+    </div>
+    <div id="brandBadge" style="display:none;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border2);font-size:.8rem" title="الهوية البصرية النشطة">
+      <div id="brandBadgeLogo" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.6rem;color:#fff;flex-shrink:0"></div>
+      <span id="brandBadgeName" style="color:var(--text2)"></span>
+    </div>
+    <div class="header-actions">
+      <button onclick="toggleTheme()" title="الوضع المظلم/الفاتح">☀️</button>
+      <button id="statusBtn" onclick="checkStatus()" title="حالة AI">📊</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chatMessages">
+    <div class="welcome" id="welcome">
+      <div class="logo-big">ت</div>
+      <h2>مرحباً بك في تول</h2>
+      <p>مساعدك الشخصي الموحد — تقارير، أبحاث، Carousels، برومبتات، وأكثر</p>
+      <div class="suggestions">
+        <button onclick="sendSuggestion('اكتب تقرير عن الذكاء الاصطناعي')">📄 تقرير</button>
+        <button onclick="sendSuggestion('أبحث عن آخر أخبار التكنولوجيا')">🔍 بحث</button>
+        <button onclick="sendSuggestion('اعمل عرض تقديمي عن منتج جديد')">📺 عرض</button>
+        <button onclick="sendSuggestion('ولد برومبت تسويق لتطبيق')">🧠 برومبت</button>
+        <button onclick="sendSuggestion('Carousel عن موضوع flexbox')">🎠 Carousel</button>
+        <button onclick="sendSuggestion('اكتب بحث علمي عن تغير المناخ')">🔬 بحث علمي</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <div class="input-container">
+      <div class="task-type-bar" id="taskTypeBar">
+        <span class="task-type active" data-type="auto" onclick="selectTaskType(this)">⚡ تلقائي</span>
+        <span class="task-type" data-type="report" onclick="selectTaskType(this)">📄 تقرير</span>
+        <span class="task-type" data-type="research" onclick="selectTaskType(this)">🔬 بحث علمي</span>
+        <span class="task-type" data-type="search" onclick="selectTaskType(this)">🔍 بحث Google</span>
+        <span class="task-type" data-type="present" onclick="selectTaskType(this)">📺 عرض</span>
+        <span class="task-type" data-type="prompt" onclick="selectTaskType(this)">🧠 برومبت</span>
+        <span class="task-type" data-type="carousel" onclick="selectTaskType(this)">🎠 Carousel</span>
+        <span class="task-type" data-type="code" onclick="selectTaskType(this)">💻 كود</span>
+      </div>
+
+      <div class="input-box">
+        <div class="input-actions">
+          <label for="imageInput" title="إرفاق صورة">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </label>
+          <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+        </div>
+        <textarea id="chatInput" rows="1" placeholder="اكتب رسالتك هنا..." oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        <div class="input-actions">
+          <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="image-preview" id="imagePreview">
+        <img id="previewImg" src="" alt="">
+        <span id="previewName"></span>
+        <span class="remove-img" onclick="removeImage()">✕</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WORKSPACE MODAL ===== -->
+<div class="modal-overlay" id="workspaceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🗂️ Workspace</h2>
+      <button class="close-modal" onclick="closeWorkspaceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <label>النوع</label>
+        <select id="newWorkspaceType">
+          <option value="brand">Brand</option>
+          <option value="university">University</option>
+          <option value="project">Project</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label>الاسم</label>
+        <input type="text" id="newWorkspaceName" placeholder="اسم Workspace">
+      </div>
+      <div class="setting-group" id="semesterGroup" style="display:none">
+        <label>الجامعة</label>
+        <select id="newSemesterUniversity"></select>
+      </div>
+      <button class="workspace-btn" onclick="createWorkspaceFromModal()" style="margin-top:8px">إنشاء</button>
+      <hr style="border:0;border-top:1px solid var(--border);margin:16px 0">
+      <div class="setting-group">
+        <label>إضافة Semester</label>
+        <select id="semesterUniversitySelect"></select>
+        <input type="text" id="newSemesterName" placeholder="اسم Semester" style="margin-top:8px">
+        <button class="workspace-btn" onclick="createSemesterFromModal()" style="margin-top:8px">إضافة Semester</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ الإعدادات</h2>
+      <button class="close-modal" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <div class="setting-toggle">
+          <label>الوضع المظلم</label>
+          <div class="toggle-switch active" id="themeToggle" onclick="toggleThemeSwitch(this)"></div>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label>مزود AI الأساسي</label>
+        <select id="settingsAiProvider" onchange="saveSetting('provider', this.value)">
+          <option value="auto">تلقائي</option>
+          <option value="opencode">Big Pickle (opencode)</option>
+          <option value="ollama">Ollama (qwen2.5)</option>
+          <option value="browser">متصفح (Playwright)</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label>نوع المهمة الافتراضي</label>
+        <select id="settingsDefaultType" onchange="saveSetting('defaultType', this.value)">
+          <option value="auto">تلقائي</option>
+          <option value="report">تقرير</option>
+          <option value="research">بحث علمي</option>
+          <option value="search">بحث Google</option>
+          <option value="present">عرض</option>
+          <option value="prompt">برومبت</option>
+          <option value="carousel">Carousel</option>
+          <option value="code">كود</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label>مسار حفظ الملفات</label>
+        <input type="text" id="settingsOutputPath" placeholder="~/Claude/Projects/الموقع" onchange="saveSetting('outputPath', this.value)">
+      </div>
+      <div class="setting-group">
+        <div class="setting-toggle">
+          <label>الردود المنسقة (HTML)</label>
+          <div class="toggle-switch active" id="htmlToggle" onclick="toggleSwitch(this)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NOTEBOOK PANEL ===== -->
+<div class="notebook-panel" id="notebookPanel">
+  <div class="np-header" id="npHeader">
+    <button onclick="switchView('chat')" title="رجوع">← رجوع</button>
+    <h2>📓 دفاتر الملاحظات</h2>
+    <button class="np-btn np-btn-primary" onclick="showNewNotebookForm()">+ جديد</button>
+  </div>
+  <div class="np-body" id="npBody">
+    <!-- Notebook list -->
+    <div id="npListView">
+      <div class="np-empty" id="npEmpty">لم يتم العثور على دفاتر. أنشئ دفتراً جديداً للبدء.</div>
+      <div class="np-list" id="npList"></div>
+    </div>
+    <!-- New notebook form -->
+    <div id="npNewForm" style="display:none">
+      <div style="background:var(--surface);padding:20px;border-radius:var(--radius);border:1px solid var(--border)">
+        <div style="margin-bottom:12px">
+          <label style="font-size:.85rem;color:var(--text2);display:block;margin-bottom:4px">العنوان</label>
+          <input type="text" id="newNbTitle" placeholder="اسم الدفتر" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:.85rem;color:var(--text2);display:block;margin-bottom:4px">الوصف (اختياري)</label>
+          <textarea id="newNbDesc" placeholder="وصف مختصر..." style="width:100%;min-height:60px;padding:10px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;resize:vertical;font-family:inherit;outline:none"></textarea>
+        </div>
+        <button class="np-btn np-btn-primary" onclick="createNotebook()">إنشاء الدفتر</button>
+        <button class="np-btn np-btn-secondary" onclick="cancelNewNotebook()" style="margin-right:8px">إلغاء</button>
+      </div>
+    </div>
+    <!-- Notebook detail -->
+    <div id="npDetailView" style="display:none">
+      <div class="np-detail-header">
+        <span class="np-back" onclick="showNotebookList()">←</span>
+        <h2 id="npDetailTitle"></h2>
+        <button class="np-btn np-btn-secondary" onclick="deleteCurrentNotebook()" style="color:#ef4444">حذف</button>
+      </div>
+      <div class="np-notebook-stats" id="npStats"></div>
+      <div class="np-tabs" id="npTabs">
+        <span class="np-tab active" data-tab="sources" onclick="switchNbTab('sources')">📄 المصادر</span>
+        <span class="np-tab" data-tab="notes" onclick="switchNbTab('notes')">📝 الملاحظات</span>
+        <span class="np-tab" data-tab="snapshots" onclick="switchNbTab('snapshots')">📸 اللقطات</span>
+      </div>
+      <!-- Sources tab -->
+      <div class="np-section active" id="npSectionSources">
+        <div class="np-upload-area">
+          <textarea id="npSourceContent" placeholder="الصق محتوى المصدر هنا..."></textarea>
+          <div class="np-upload-row">
+            <input type="text" id="npSourceName" placeholder="اسم الملف (مثال: مقال.txt)">
+            <button class="np-btn np-btn-primary" onclick="uploadSource()">رفع</button>
+          </div>
+        </div>
+        <div id="npSourcesList">
+          <div class="np-empty">لا توجد مصادر. ارفع مصدراً للبدء.</div>
+        </div>
+      </div>
+      <!-- Notes tab -->
+      <div class="np-section" id="npSectionNotes">
+        <button class="np-btn np-btn-primary" onclick="generateNotes()" style="margin-bottom:12px" id="npGenerateNotesBtn">🪄 إنشاء ملاحظات</button>
+        <div id="npNotesList">
+          <div class="np-empty">لا توجد ملاحظات. أنشئ ملاحظات من المصادر.</div>
+        </div>
+      </div>
+      <!-- Snapshots tab -->
+      <div class="np-section" id="npSectionSnapshots">
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="np-btn np-btn-primary" onclick="createSnapshot()">📸 إنشاء لقطة</button>
+          <button class="np-btn np-btn-secondary" onclick="generateAudioOverview()" style="opacity:.6">🔊 نظرة عامة صوتية (قريباً)</button>
+        </div>
+        <div id="npSnapshotsList">
+          <div class="np-empty">لا توجد لقطات.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Query bar (hidden until detail view) -->
+  <div class="np-query-bar" id="npQueryBar" style="display:none">
+    <input type="text" id="npQueryInput" placeholder="اسأل دفتر الملاحظات..." onkeydown="if(event.key==='Enter') queryNotebook()">
+    <button onclick="queryNotebook()">🔍</button>
+  </div>
+  <div class="np-body" id="npQueryResultContainer" style="display:none;padding:0 24px 16px">
+    <div class="np-query-result" id="npQueryResult"></div>
+  </div>
+</div>
+
+<!-- ===== MODELS PANEL ===== -->
+<div class="view-panel" id="modelsPanel">
+  <div class="models-header">
+    <h2>🤖 الموديلات</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="models-body" id="modelsBody">
+    <div id="modelsList"></div>
+  </div>
+</div>
+
+<!-- ===== LAB PANEL ===== -->
+<div class="view-panel" id="labPanel">
+  <div class="lab-header">
+    <h2>🧪 مختبر القياس</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="lab-body" id="labBody">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
+        <h3 style="font-size:.95rem;margin-bottom:8px">إنشاء مجموعة قياس جديدة</h3>
+        <input type="text" id="newLabSuiteName" placeholder="اسم المجموعة" style="width:100%;padding:8px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;margin-bottom:8px;outline:none">
+        <textarea id="newLabSuitePrompts" placeholder="أدخل prompts، كل سؤال في سطر جديد" style="width:100%;min-height:60px;padding:8px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.85rem;resize:vertical;font-family:inherit;outline:none;margin-bottom:8px"></textarea>
+        <button class="lab-run-btn" onclick="createLabSuite()">إنشاء المجموعة</button>
+      </div>
+      <div id="labSuitesList"></div>
+      <div id="labResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== OPERATIONS PANEL ===== -->
+<div class="view-panel" id="operationsPanel">
+  <div class="op-header">
+    <h2>⚙️ العمليات</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="opBody">
+    <div class="op-tabs">
+      <button class="op-tab active" data-optab="usage" onclick="switchOpTab('usage')">📊 الاستخدام</button>
+      <button class="op-tab" data-optab="providers" onclick="switchOpTab('providers')">🔌 المزودون</button>
+      <button class="op-tab" data-optab="costs" onclick="switchOpTab('costs')">💰 التكاليف</button>
+      <button class="op-tab" data-optab="storage" onclick="switchOpTab('storage')">💾 التخزين</button>
+      <button class="op-tab" data-optab="cleanup" onclick="switchOpTab('cleanup')">🗑 التنظيف</button>
+    </div>
+
+    <!-- Usage Tab -->
+    <div class="op-section active" id="opSectionUsage">
+      <div id="opsUsageSummary"></div>
+      <div id="opsUsageByProvider"></div>
+      <div id="opsUsageChart"></div>
+    </div>
+
+    <!-- Providers Tab -->
+    <div class="op-section" id="opSectionProviders">
+      <div id="opsProvidersTable"></div>
+    </div>
+
+    <!-- Costs Tab -->
+    <div class="op-section" id="opSectionCosts">
+      <div id="opsCostSummary"></div>
+      <div id="opsCostChart"></div>
+      <div id="opsCostByModel"></div>
+    </div>
+
+    <!-- Storage Tab -->
+    <div class="op-section" id="opSectionStorage">
+      <div id="opsStorageSummary"></div>
+      <div id="opsStoragePublished"></div>
+      <div id="opsStorageRetention"></div>
+    </div>
+
+    <!-- Cleanup Tab -->
+    <div class="op-section" id="opSectionCleanup">
+      <div id="opsCleanupPreview"></div>
+      <div id="opsCleanupActions"></div>
+      <div id="opsCleanupLog"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BRAND DNA PANEL ===== -->
+<div class="view-panel" id="brandPanel">
+  <div class="op-header">
+    <h2>🎨 الهوية البصرية</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="brandBody">
+    <div class="op-tabs">
+      <button class="op-tab active" data-brtab="profiles" onclick="switchBrandTab('profiles')">📋 الملفات</button>
+      <button class="op-tab" data-brtab="typography" onclick="switchBrandTab('typography')">🔤 الخطوط</button>
+      <button class="op-tab" data-brtab="colors" onclick="switchBrandTab('colors')">🎨 الألوان</button>
+      <button class="op-tab" data-brtab="voice" onclick="switchBrandTab('voice')">🗣️ الصوت</button>
+      <button class="op-tab" data-brtab="preview" onclick="switchBrandTab('preview')">👁️ المعاينة</button>
+    </div>
+
+    <!-- Profiles Tab -->
+    <div class="op-section active" id="brandSectionProfiles">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="op-btn op-btn-primary" onclick="showNewBrandForm()">+ ملف جديد</button>
+      </div>
+      <div id="brandProfileList"></div>
+      <div id="brandNewForm" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:12px">
+        <div class="setting-group">
+          <label>اسم الملف</label>
+          <input type="text" id="newBrandName" placeholder="اسم الهوية" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="op-btn op-btn-primary" onclick="createBrandProfile()">إنشاء</button>
+          <button class="op-btn op-btn-secondary" onclick="cancelNewBrandForm()">إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typography Tab -->
+    <div class="op-section" id="brandSectionTypography">
+      <div class="setting-group">
+        <label>الملف الحالي</label>
+        <select id="brandTypeProfileSelect" class="workspace-select" onchange="loadBrandTypography(this.value)"></select>
+      </div>
+      <div id="brandTypographyForm" style="display:none">
+        <div class="setting-group">
+          <label>خط العناوين (Display)</label>
+          <select id="brandFontDisplay" class="workspace-select" onchange="markBrandDirty()">
+            <option value="KO Ghorab">KO Ghorab</option>
+            <option value="DIN Next Arabic">DIN Next Arabic</option>
+            <option value="system-ui">System UI</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>خط النصوص (Body)</label>
+          <select id="brandFontBody" class="workspace-select" onchange="markBrandDirty()">
+            <option value="DIN Next Arabic">DIN Next Arabic</option>
+            <option value="KO Ghorab">KO Ghorab</option>
+            <option value="system-ui">System UI</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>خط الزخرفة (Accent)</label>
+          <select id="brandFontAccent" class="workspace-select" onchange="markBrandDirty()">
+            <option value="Dast Nevis">Dast Nevis</option>
+            <option value="KO Ghorab">KO Ghorab</option>
+            <option value="none">بدون</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>أدنى حجم للعناوين (px)</label>
+          <input type="number" id="brandFontDisplaySize" value="24" min="16" max="72" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none" onchange="markBrandDirty()">
+        </div>
+        <div class="setting-group">
+          <label>الخط الاحتياطي</label>
+          <input type="text" id="brandFontFallback" value="system-ui, sans-serif" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none" onchange="markBrandDirty()">
+        </div>
+        <button class="op-btn op-btn-primary" id="brandTypeSaveBtn" onclick="saveBrandTypography()" disabled>💾 حفظ التغييرات</button>
+      </div>
+    </div>
+
+    <!-- Colors Tab -->
+    <div class="op-section" id="brandSectionColors">
+      <div class="setting-group">
+        <label>الملف الحالي</label>
+        <select id="brandColorProfileSelect" class="workspace-select" onchange="loadBrandColors(this.value)"></select>
+      </div>
+      <div id="brandColorsForm" style="display:none">
+        <div id="brandColorInputs"></div>
+        <button class="op-btn op-btn-primary" id="brandColorSaveBtn" onclick="saveBrandColors()" style="margin-top:8px">💾 حفظ الألوان</button>
+      </div>
+    </div>
+
+    <!-- Voice Tab -->
+    <div class="op-section" id="brandSectionVoice">
+      <div class="setting-group">
+        <label>الملف الحالي</label>
+        <select id="brandVoiceProfileSelect" class="workspace-select" onchange="loadBrandVoice(this.value)"></select>
+      </div>
+      <div id="brandVoiceForm" style="display:none">
+        <div class="setting-group">
+          <label>النبرة</label>
+          <select id="brandVoiceTone" class="workspace-select" onchange="markVoiceDirty()">
+            <option value="professional">احترافية</option>
+            <option value="academic">أكاديمية</option>
+            <option value="casual">غير رسمية</option>
+            <option value="luxury">فاخرة</option>
+            <option value="playful">مرحة</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>اللغة الأساسية</label>
+          <select id="brandVoiceLang" class="workspace-select" onchange="markVoiceDirty()">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+            <option value="ar,en">العربية + English</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>الاتجاه</label>
+          <select id="brandVoiceDir" class="workspace-select" onchange="markVoiceDirty()">
+            <option value="rtl">RTL (يمين→يسار)</option>
+            <option value="ltr">LTR (يسار→يمين)</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label>الشخصية (مفصولة بفواصل)</label>
+          <input type="text" id="brandVoicePersonality" value="professional, academic, design-conscious" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none" onchange="markVoiceDirty()">
+        </div>
+        <button class="op-btn op-btn-primary" id="brandVoiceSaveBtn" onclick="saveBrandVoice()" disabled>💾 حفظ الصوت</button>
+      </div>
+    </div>
+
+    <!-- Preview Tab -->
+    <div class="op-section" id="brandSectionPreview">
+      <div class="setting-group">
+        <label>الملف الحالي</label>
+        <select id="brandPreviewProfileSelect" class="workspace-select" onchange="loadBrandPreview(this.value)"></select>
+      </div>
+      <div id="brandPreviewContent" style="display:none">
+        <div id="brandPreviewLogo" style="display:flex;align-items:center;gap:10px;margin-bottom:16px"></div>
+        <div id="brandPreviewColors" style="margin-bottom:16px"></div>
+        <div id="brandPreviewTypography" style="margin-bottom:16px"></div>
+        <div id="brandPreviewVoice" style="margin-bottom:16px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WORKFLOWS PANEL ===== -->
+<div class="view-panel" id="workflowsPanel">
+  <div class="op-header">
+    <h2>🔧 سير العمل</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="workflowsBody">
+    <div class="op-tabs">
+      <button class="op-tab active" data-wftab="list" onclick="switchWfTab('list')">📋 قائمة سير العمل</button>
+      <button class="op-tab" data-wftab="create" onclick="switchWfTab('create')">➕ جديد</button>
+    </div>
+    <div class="op-section active" id="wfSectionList">
+      <div id="wfListView"></div>
+    </div>
+    <div class="op-section" id="wfSectionCreate">
+      <div class="research-form-card">
+        <label>إنشاء سير عمل</label>
+        <textarea id="wfNewRequest" placeholder="اكتب ما تريد إنشاءه… تقرير، عرض، Carousel، بحث" style="width:100%;min-height:80px;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;resize:vertical;font-family:inherit;outline:none;margin-bottom:8px"></textarea>
+        <button class="op-btn op-btn-primary" onclick="createWorkflow()">🚀 إنشاء وتشغيل</button>
+      </div>
+      <div id="wfCreateResult"></div>
+    </div>
+    <div class="op-section" id="wfSectionDetail">
+      <div id="wfDetailView"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ARTIFACTS PANEL ===== -->
+<div class="view-panel" id="artifactsPanel">
+  <div class="op-header">
+    <h2>📦 القطع الأثرية</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="artifactsBody">
+    <div class="op-tabs">
+      <button class="op-tab active" data-artab="list" onclick="switchArtTab('list')">📋 جميع القطع</button>
+      <button class="op-tab" data-artab="preview" onclick="switchArtTab('preview')">👁️ المعاينة</button>
+    </div>
+    <div class="op-section active" id="artSectionList">
+      <div id="artListView"></div>
+    </div>
+    <div class="op-section" id="artSectionPreview">
+      <div class="research-form-card">
+        <label>اختر قطعة أثرية</label>
+        <select id="artPreviewSelect" class="workspace-select" onchange="loadArtifactPreview(this.value)">
+          <option value="">اختر قطعة…</option>
+        </select>
+      </div>
+      <div id="artPreviewContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESEARCH PANEL ===== -->
+<div class="view-panel" id="researchPanel">
+  <div class="op-header">
+    <h2>🔬 البحث</h2>
+    <button style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem" onclick="switchView('chat')">✕</button>
+  </div>
+  <div class="op-body" id="researchBody">
+    <div class="research-form-card">
+      <label>موضوع البحث</label>
+      <input type="text" id="researchTopic" placeholder="أدخل موضوع البحث…" style="width:100%;padding:10px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.9rem;outline:none;margin-bottom:12px">
+      <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <label style="font-size:.8rem;color:var(--text3);margin-bottom:4px;display:block">نوع البحث</label>
+          <select id="researchMode" class="workspace-select">
+            <option value="standard">قياسي</option>
+            <option value="quick">سريع</option>
+            <option value="deep">عميق</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:120px">
+          <label style="font-size:.8rem;color:var(--text3);margin-bottom:4px;display:block">نظام التوثيق</label>
+          <select id="researchStyle" class="workspace-select"></select>
+        </div>
+      </div>
+      <button class="op-btn op-btn-primary" onclick="executeResearch()">🔬 بدء البحث</button>
+    </div>
+    <div id="researchResults"></div>
+  </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== CONFIRM DIALOG ===== -->
+<div class="confirm-overlay" id="confirmDialog">
+  <div class="confirm-box">
+    <h3 id="confirmTitle"></h3>
+    <p id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" id="confirmCancelBtn" onclick="closeConfirm()">إلغاء</button>
+      <button class="btn-danger" id="confirmActionBtn" onclick="confirmResolve()">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const state = {
+  conversations: [],
+  currentId: null,
+  settings: JSON.parse(localStorage.getItem('toll_settings') || '{}'),
+  darkMode: localStorage.getItem('toll_theme') !== 'light',
+  imageData: null,
+  isDark: true,
+  workspaces: [],
+  activeWorkspace: {},
+};
+
+// ===== INIT =====
+// ===== API HELPERS =====
+async function apiGet(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiPost(path, body) {
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiPut(path, body) {
+  const r = await fetch(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiDelete(path) {
+  const r = await fetch(path, { method: 'DELETE' });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ===== WORKSPACE =====
+async function loadWorkspaces() {
+  try {
+    const data = await apiGet('/api/workspaces');
+    const active = await apiGet('/api/workspace/active');
+    state.workspaces = data.workspaces || [];
+    state.activeWorkspace = active.state || {};
+    populateWorkspaceSelects();
+  } catch (e) {
+    console.error('Failed to load workspaces', e);
+  }
+}
+
+function populateWorkspaceSelects() {
+  const byType = (type) => state.workspaces.filter(w => w.type === type);
+  fillSelect('brandSelect', byType('brand'), state.activeWorkspace.active_brand_id, 'Brand');
+  fillSelect('universitySelect', byType('university'), state.activeWorkspace.active_university_id, 'University');
+  fillSelect('projectSelect', byType('project'), state.activeWorkspace.active_project_id, 'Project');
+
+  const uniId = state.activeWorkspace.active_university_id;
+  if (uniId) loadSemesters(uniId);
+  else fillSelect('semesterSelect', [], '', 'Semester');
+
+  // Modal selects
+  fillSelect('newSemesterUniversity', byType('university'), '', 'اختر جامعة');
+  fillSelect('semesterUniversitySelect', byType('university'), '', 'اختر جامعة');
+}
+
+function fillSelect(id, items, selected, defaultLabel) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${defaultLabel}...</option>`;
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.name;
+    if (item.id === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadSemesters(universityId) {
+  try {
+    const data = await apiGet(`/api/semesters/${universityId}`);
+    fillSelect('semesterSelect', data.semesters || [], state.activeWorkspace.active_semester_id, 'Semester');
+  } catch (e) {
+    console.error('Failed to load semesters', e);
+  }
+}
+
+async function activateWorkspace(kind, id) {
+  const body = {};
+  if (kind === 'brand') body.brand_id = id || null;
+  if (kind === 'university') {
+    body.university_id = id || null;
+    body.semester_id = null;
+    if (id) await loadSemesters(id);
+    else fillSelect('semesterSelect', [], '', 'Semester');
+  }
+  if (kind === 'project') body.project_id = id || null;
+  if (kind === 'semester') body.semester_id = id || null;
+
+  try {
+    const result = await apiPost('/api/workspace/active', body);
+    state.activeWorkspace = result.state;
+    await applyBrandContext();
+  } catch (e) {
+    console.error('Failed to activate workspace', e);
+  }
+}
+
+function openWorkspaceModal() {
+  document.getElementById('workspaceModal').classList.add('open');
+  populateWorkspaceSelects();
+}
+
+function closeWorkspaceModal() {
+  document.getElementById('workspaceModal').classList.remove('open');
+}
+
+async function createWorkspaceFromModal() {
+  const type = document.getElementById('newWorkspaceType').value;
+  const name = document.getElementById('newWorkspaceName').value.trim();
+  if (!name) return;
+  try {
+    await apiPost('/api/workspaces', { type, name });
+    await loadWorkspaces();
+    document.getElementById('newWorkspaceName').value = '';
+  } catch (e) {
+    showToast('فشل إنشاء Workspace: ' + e.message, 'error');
+  }
+  }
+}
+async function createSemesterFromModal() {
+  const universityId = document.getElementById('semesterUniversitySelect').value;
+  const name = document.getElementById('newSemesterName').value.trim();
+  if (!universityId || !name) { showToast('الرجاء اختيار جامعة وإدخال اسم', 'warning'); return; }
+  try {
+    await apiPost('/api/semesters', { university_id: universityId, name });
+    document.getElementById('newSemesterName').value = '';
+    if (state.activeWorkspace.active_university_id === universityId) {
+      await loadSemesters(universityId);
+    }
+  } catch (e) {
+    showToast('فشل إنشاء Semester: ' + e.message, 'error');
+  }
+}
+
+// ===== CHAT COMMANDS =====
+function parseChatCommand(text) {
+  const cmd = text.trim();
+  if (cmd.startsWith('/brand ')) {
+    const name = cmd.slice(7).trim();
+    return { type: 'create_workspace', workspace_type: 'brand', name };
+  }
+  if (cmd.startsWith('/university ')) {
+    const name = cmd.slice(12).trim();
+    return { type: 'create_workspace', workspace_type: 'university', name };
+  }
+  if (cmd.startsWith('/project ')) {
+    const name = cmd.slice(9).trim();
+    return { type: 'create_workspace', workspace_type: 'project', name };
+  }
+  if (cmd.startsWith('/semester ')) {
+    const name = cmd.slice(10).trim();
+    return { type: 'create_semester', name };
+  }
+  return null;
+}
+
+async function handleChatCommand(cmd) {
+  if (cmd.type === 'create_workspace') {
+    await apiPost('/api/workspaces', { type: cmd.workspace_type, name: cmd.name });
+    await loadWorkspaces();
+    return `✅ تم إنشاء ${cmd.workspace_type}: ${cmd.name}`;
+  }
+  if (cmd.type === 'create_semester') {
+    const uniId = state.activeWorkspace.active_university_id;
+    if (!uniId) return '❌ اختر جامعة أولاً';
+    await apiPost('/api/semesters', { university_id: uniId, name: cmd.name });
+    await loadSemesters(uniId);
+    return `✅ تم إنشاء Semester: ${cmd.name}`;
+  }
+  return null;
+}
+
+// ===== SERVER-SIDE CONVERSATIONS =====
+async function loadServerConversations() {
+  try {
+    const data = await apiGet('/api/conversations');
+    state.conversations = (data.conversations || []).map(c => ({
+      id: String(c.id),
+      title: c.title,
+      pinned: false,
+      createdAt: c.created_at,
+      messages: []
+    }));
+    renderConversations();
+    if (state.conversations.length > 0) {
+      await loadConversation(state.conversations[0].id);
+    }
+  } catch (e) {
+    console.error('Failed to load conversations', e);
+  }
+}
+
+async function loadServerMessages(conversationId) {
+  try {
+    const data = await apiGet(`/api/conversations/${conversationId}`);
+    return (data.messages || []).map(m => ({ role: m.role, content: m.content }));
+  } catch (e) {
+    console.error('Failed to load messages', e);
+    return [];
+  }
+}
+
+async function createServerConversation(title) {
+  try {
+    const result = await apiPost('/api/conversations', { title });
+    return String(result.conversation_id);
+  } catch (e) {
+    console.error('Failed to create conversation', e);
+    return Date.now().toString();
+  }
+}
+
+async function addServerMessage(conversationId, role, content) {
+  try {
+    await apiPost(`/api/conversations/${conversationId}/messages`, { role, content });
+  } catch (e) {
+    console.error('Failed to add message', e);
+  }
+}
+
+async function init() {
+  applyTheme();
+  await loadWorkspaces();
+  applyBrandContext();
+  loadServerConversations();
+  const saved = state.settings.defaultType || 'auto';
+  document.querySelectorAll('.task-type').forEach(el => {
+    el.classList.toggle('active', el.dataset.type === saved);
+  });
+  loadStatus();
+}
+init();
+
+// ===== VIEW SWITCHING =====
+function switchView(view) {
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+  const chat = document.getElementById('chatMessages');
+  const input = document.querySelector('.input-area');
+  const header = document.querySelector('.chat-header');
+  const notebook = document.getElementById('notebookPanel');
+
+  if (view === 'chat') {
+    chat.style.display = ''; input.style.display = ''; header.style.display = '';
+    notebook.style.display = '';
+    if (nbState.isActive) { nbState.isActive = false; notebook.classList.remove('active'); }
+    return;
+  }
+  chat.style.display = 'none'; input.style.display = 'none'; header.style.display = 'none';
+  notebook.style.display = 'none';
+
+  if (view === 'models') {
+    document.getElementById('modelsPanel').classList.add('active');
+    loadModels();
+  } else if (view === 'lab') {
+    document.getElementById('labPanel').classList.add('active');
+    loadLabSuites();
+  } else if (view === 'notebook') {
+    notebook.style.display = '';
+    nbState.isActive = true;
+    notebook.classList.add('active');
+    loadNotebooks();
+  } else if (view === 'operations') {
+    document.getElementById('operationsPanel').classList.add('active');
+    loadOpsSummary();
+  } else if (view === 'brand') {
+    document.getElementById('brandPanel').classList.add('active');
+    loadBrandProfiles();
+  } else if (view === 'workflows') {
+    document.getElementById('workflowsPanel').classList.add('active');
+    loadWorkflows();
+  } else if (view === 'artifacts') {
+    document.getElementById('artifactsPanel').classList.add('active');
+    loadArtifacts();
+  } else if (view === 'research') {
+    document.getElementById('researchPanel').classList.add('active');
+    loadResearchModes();
+  }
+}
+
+// ===== OPERATIONS API =====
+let opState = { tab: 'usage' };
+
+function switchOpTab(tab) {
+  opState.tab = tab;
+  document.querySelectorAll('.op-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.optab === tab);
+  });
+  document.querySelectorAll('.op-section').forEach(el => el.classList.remove('active'));
+  const section = document.getElementById('opSection' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (section) section.classList.add('active');
+
+  if (tab === 'usage') loadOpsSummary();
+  else if (tab === 'providers') loadOpsProviders();
+  else if (tab === 'costs') loadOpsCosts();
+  else if (tab === 'storage') loadOpsStorage();
+  else if (tab === 'cleanup') loadOpsCleanup();
+}
+
+async function loadOpsSummary() {
+  try {
+    const [usage, cost, storage] = await Promise.all([
+      apiGet('/api/operations/usage/summary?days=30'),
+      apiGet('/api/operations/cost?days=30'),
+      apiGet('/api/operations/storage'),
+    ]);
+    const t = usage.today || {};
+    const w = usage.this_week || {};
+    const m = usage.this_month || {};
+    document.getElementById('opsUsageSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${t.requests || 0}</div>
+          <div class="op-stat-label">طلبات اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((t.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">تكلفة اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${m.requests || 0}</div>
+          <div class="op-stat-label">طلبات الشهر</div>
+        </div>
+      </div>
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((m.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">تكلفة الشهر</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${t.errors || 0}</div>
+          <div class="op-stat-label">أخطاء اليوم</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${storage.total_size_mb || 0} MB</div>
+          <div class="op-stat-label">المساحة المستخدمة</div>
+        </div>
+      </div>`;
+
+    const byProvider = await apiGet('/api/operations/usage/by-provider?days=30');
+    const provs = byProvider.providers || [];
+    document.getElementById('opsUsageByProvider').innerHTML = provs.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2)">حسب المزود</h3>
+      <table class="op-table">
+        <tr><th>المزود</th><th>الطلبات</th><th>الأخطاء</th><th>متوسط الزمن</th><th>التكلفة</th></tr>
+        ${provs.map(p => `<tr>
+          <td>${escHtml(p.provider)}</td>
+          <td>${p.requests}</td>
+          <td>${p.errors}</td>
+          <td>${p.avg_latency_ms ? p.avg_latency_ms + 'ms' : '—'}</td>
+          <td>$${((p.total_cost_cents || 0) / 100).toFixed(2)}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد بيانات استخدام بعد</div>';
+  } catch (e) {
+    document.getElementById('opsUsageSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsProviders() {
+  try {
+    const data = await apiGet('/api/operations/providers?hours=24');
+    const provs = data.providers || [];
+    document.getElementById('opsProvidersTable').innerHTML = provs.length ? `
+      <table class="op-table">
+        <tr><th>المزود</th><th>الحالة</th><th>نسبة الخطأ</th><th>متوسط الزمن</th><th>الطلبات</th><th>الموديلات</th></tr>
+        ${provs.map(p => `<tr>
+          <td>${escHtml(p.name)}</td>
+          <td><span class="op-badge ${p.available ? 'ok' : 'err'}">${p.available ? 'متاح' : 'غير متاح'}</span></td>
+          <td>${(p.error_rate * 100).toFixed(1)}%</td>
+          <td>${p.avg_latency_ms ? p.avg_latency_ms + 'ms' : '—'}</td>
+          <td>${p.requests}</td>
+          <td style="font-size:.75rem">${(p.models || []).map(m => escHtml(m.name)).join(', ')}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد بيانات</div>';
+  } catch (e) {
+    document.getElementById('opsProvidersTable').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsCosts() {
+  try {
+    const [total, daily, byModel] = await Promise.all([
+      apiGet('/api/operations/cost?days=30'),
+      apiGet('/api/operations/cost/daily?days=30'),
+      apiGet('/api/operations/usage/by-model?days=30'),
+    ]);
+    document.getElementById('opsCostSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">$${((total.total_cost_cents || 0) / 100).toFixed(2)}</div>
+          <div class="op-stat-label">التكلفة الإجمالية (30 يوم)</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${total.total_requests || 0}</div>
+          <div class="op-stat-label">إجمالي الطلبات</div>
+        </div>
+      </div>`;
+
+    const days = daily.daily || [];
+    if (days.length) {
+      const maxVal = Math.max(...days.map(d => d.total_cost_cents || 0), 1);
+      document.getElementById('opsCostChart').innerHTML = `
+        <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2)">التكلفة اليومية</h3>
+        <div class="op-mini-chart">${days.map(d => {
+          const h = Math.max(2, ((d.total_cost_cents || 0) / maxVal) * 56);
+          return `<div class="bar" style="height:${h}px" title="${d.day}: $${((d.total_cost_cents || 0)/100).toFixed(2)}"></div>`;
+        }).join('')}</div>`;
+    }
+
+    const models = byModel.models || [];
+    document.getElementById('opsCostByModel').innerHTML = models.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">حسب الموديل</h3>
+      <table class="op-table">
+        <tr><th>الموديل</th><th>المزود</th><th>الطلبات</th><th>التكلفة</th></tr>
+        ${models.map(m => `<tr>
+          <td>${escHtml(m.model_id || '—')}</td>
+          <td>${escHtml(m.provider)}</td>
+          <td>${m.requests}</td>
+          <td>$${((m.total_cost_cents || 0) / 100).toFixed(2)}</td>
+        </tr>`).join('')}
+      </table>` : '';
+  } catch (e) {
+    document.getElementById('opsCostSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsStorage() {
+  try {
+    const [storage, published] = await Promise.all([
+      apiGet('/api/operations/storage'),
+      apiGet('/api/operations/storage/published?limit=10'),
+    ]);
+    const s = storage.summary || {};
+    document.getElementById('opsStorageSummary').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${s.total_artifacts || 0}</div>
+          <div class="op-stat-label">إجمالي القطع</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${storage.total_size_mb || 0} MB</div>
+          <div class="op-stat-label">المساحة</div>
+        </div>
+      </div>`;
+
+    const types = s.by_type || {};
+    const typeKeys = Object.keys(types);
+    document.getElementById('opsStorageSummary').innerHTML += typeKeys.length ? `
+      <table class="op-table">
+        <tr><th>النوع</th><th>العدد</th></tr>
+        ${typeKeys.map(k => `<tr><td>${escHtml(k)}</td><td>${types[k].count || 0}</td></tr>`).join('')}
+      </table>` : '';
+
+    const assets = published.assets || [];
+    document.getElementById('opsStoragePublished').innerHTML = assets.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">أحدث المنشورات</h3>
+      <table class="op-table">
+        <tr><th>العنوان</th><th>النوع</th><th>التاريخ</th></tr>
+        ${assets.map(a => `<tr>
+          <td>${escHtml(a.title || '—')}</td>
+          <td>${escHtml(a.type)}</td>
+          <td>${(a.created_at || '').slice(0, 10)}</td>
+        </tr>`).join('')}
+      </table>` : '';
+
+    const ret = await apiGet('/api/operations/storage/retention');
+    const policies = ret.policies || [];
+    document.getElementById('opsStorageRetention').innerHTML = policies.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">سياسات الاحتفاظ</h3>
+      <table class="op-table">
+        <tr><th>الاسم</th><th>الأيام</th><th>الاحتفاظ بالبيانات</th><th>مفعلة</th></tr>
+        ${policies.map(p => `<tr>
+          <td>${escHtml(p.name)}</td>
+          <td>${p.retention_days}</td>
+          <td>${p.keep_metadata ? '✅' : '❌'}</td>
+          <td>${p.enabled ? '✅' : '❌'}</td>
+        </tr>`).join('')}
+      </table>` : '';
+  } catch (e) {
+    document.getElementById('opsStorageSummary').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadOpsCleanup() {
+  try {
+    const [sim, logData] = await Promise.all([
+      apiGet('/api/operations/cleanup/simulate'),
+      apiGet('/api/operations/cleanup/log?limit=10'),
+    ]);
+    document.getElementById('opsCleanupPreview').innerHTML = `
+      <div class="op-stat-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-value">${sim.total_artifacts || 0}</div>
+          <div class="op-stat-label">قطع للحذف</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-value">${sim.total_mb || 0} MB</div>
+          <div class="op-stat-label">مساحة قابلة للتحرير</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <button class="op-btn op-btn-danger" onclick="executeOpsCleanup()">🗑 تنفيذ التنظيف</button>
+      </div>`;
+
+    const policies = sim.by_policy || [];
+    document.getElementById('opsCleanupPreview').innerHTML += policies.length ? `
+      <table class="op-table">
+        <tr><th>السياسة</th><th>المدة</th><th>العدد</th><th>الحجم</th><th>الاحتفاظ بالبيانات</th></tr>
+        ${policies.map(p => `<tr>
+          <td>${escHtml(p.policy_name)}</td>
+          <td>${p.retention_days} يوم</td>
+          <td>${p.artifact_count}</td>
+          <td>${(p.total_bytes / (1024*1024)).toFixed(1)} MB</td>
+          <td>${p.keep_metadata ? '✅' : '❌'}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:8px">لا توجد قطع للحذف</div>';
+
+    const entries = logData.entries || [];
+    document.getElementById('opsCleanupLog').innerHTML = entries.length ? `
+      <h3 style="font-size:.9rem;margin-bottom:8px;color:var(--text2);margin-top:16px">سجل التنظيف</h3>
+      <table class="op-table">
+        <tr><th>الإجراء</th><th>التفاصيل</th><th>التاريخ</th></tr>
+        ${entries.map(e => `<tr>
+          <td>${escHtml(e.action || '—')}</td>
+          <td>${escHtml(e.details || '')}</td>
+          <td>${(e.created_at || '').slice(0, 16)}</td>
+        </tr>`).join('')}
+      </table>` : '<div style="color:var(--text3);font-size:.85rem;padding:20px;text-align:center">لا توجد عمليات تنظيف سابقة</div>';
+  } catch (e) {
+    document.getElementById('opsCleanupPreview').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function executeOpsCleanup() {
+  if (!(await showConfirm('تنظيف التخزين', 'سيتم حذف جميع القطع الأقدم من مدة الاحتفاظ.', { type: 'danger', dangerLabel: 'تنظيف' }))) return;
+  try {
+    const result = await apiPost('/api/operations/cleanup/execute', {});
+    document.getElementById('opsCleanupActions').innerHTML = `
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:var(--radius);padding:12px;margin-top:8px">
+        ✅ تم التنظيف: ${result.total_cleaned || 0} قطعة، ${result.total_freed_mb || 0} MB محررة
+      </div>`;
+    loadOpsCleanup();
+  } catch (e) {
+    document.getElementById('opsCleanupActions').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+// ===== MODELS API =====
+async function loadModels() {
+  const list = document.getElementById('modelsList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/models');
+    const models = data.models || [];
+    if (models.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">لا توجد موديلات مسجلة</div>';
+      return;
+    }
+    list.innerHTML = models.map(m => `
+      <div class="model-card">
+        <h3>${escHtml(m.name)}</h3>
+        <div class="model-meta">
+          <span>${escHtml(m.provider)}:${escHtml(m.provider_model_id)}</span>
+          <span class="model-status ${m.status}">${m.status}</span>
+          ${m.family ? `<span>${escHtml(m.family)}</span>` : ''}
+          ${m.cost_per_unit != null ? `<span>💰 ${m.cost_per_unit}/${m.cost_unit || 'unit'}</span>` : ''}
+        </div>
+        <div class="model-meta" style="margin-top:4px">
+          <span>📋 ${(m.media_types || []).join(', ')}</span>
+          ${m.tags && m.tags.length ? `<span>🏷️ ${m.tags.join(', ')}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:40px">❌ فشل تحميل الموديلات: ${e.message}</div>`;
+  }
+}
+
+// ===== LAB API =====
+async function loadLabSuites() {
+  const list = document.getElementById('labSuitesList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/benchmark/suites');
+    const suites = data.suites || [];
+    if (suites.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">لا توجد مجموعات قياس. أنشئ واحدة أعلاه.</div>';
+      return;
+    }
+    list.innerHTML = suites.map(s => `
+      <div class="lab-suite-card">
+        <h3>${escHtml(s.name)}</h3>
+        <div class="lab-suite-meta">${s.prompts} prompts • ${s.media_type} • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        <button class="lab-run-btn" onclick="runLabSuite('${s.id}')">تشغيل القياس</button>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ فشل التحميل: ${e.message}</div>`;
+  }
+}
+
+async function createLabSuite() {
+  const name = document.getElementById('newLabSuiteName').value.trim();
+  const promptsText = document.getElementById('newLabSuitePrompts').value.trim();
+  if (!name) { showToast('الرجاء إدخال اسم المجموعة', 'warning'); return; }
+  const prompts = promptsText.split('\n').filter(p => p.trim());
+  if (prompts.length === 0) { showToast('الرجاء إدخال prompt واحد على الأقل', 'warning'); return; }
+  try {
+    const result = await apiPost('/api/benchmark/suites', { name, prompts, media_type: 'image' });
+    if (result.success) {
+      document.getElementById('newLabSuiteName').value = '';
+      document.getElementById('newLabSuitePrompts').value = '';
+      loadLabSuites();
+    } else {
+      showToast('فشل الإنشاء: ' + (result.error || 'خطأ غير معروف'), 'error');
+    }
+  } catch (e) {
+    showToast('خطأ: ' + e.message, 'error');
+  }
+}
+
+async function runLabSuite(suiteId) {
+  const resultsDiv = document.getElementById('labResults');
+  resultsDiv.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">⏳ جاري تشغيل القياس...</div>';
+  try {
+    const modelsData = await apiGet('/api/models');
+    const models = modelsData.models || [];
+    if (models.length === 0) {
+      resultsDiv.innerHTML = '<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ لا توجد موديلات للتقييم</div>';
+      return;
+    }
+    const scores = [];
+    for (const m of models.slice(0, 3)) {
+      try {
+        const runResult = await apiPost('/api/benchmark/run', { suite_id: suiteId, model_id: m.id });
+        const scoreData = await apiGet(`/api/benchmark/models/${m.id}/scores`);
+        scores.push({
+          name: m.name,
+          id: m.id,
+          avg_quality: scoreData.avg_quality_auto,
+          avg_latency: scoreData.avg_latency_ms,
+          run_count: scoreData.run_count,
+          error: runResult.error,
+        });
+      } catch (e) {
+        scores.push({ name: m.name, id: m.id, error: e.message });
+      }
+    }
+    resultsDiv.innerHTML = '<h3 style="font-size:.95rem;margin-bottom:12px">نتائج القياس</h3>' +
+      scores.map(s => `
+        <div class="lab-score-card">
+          <div class="lab-score-value">${s.error ? '❌' : (s.avg_quality != null ? s.avg_quality.toFixed(2) : '—')}</div>
+          <div class="lab-score-label">${escHtml(s.name)}</div>
+          ${s.avg_latency != null ? `<div style="font-size:.75rem;color:var(--text3)">⚡ ${s.avg_latency}ms • ${s.run_count} تشغيلات</div>` : ''}
+          ${s.error ? `<div style="font-size:.75rem;color:#ef4444">${escHtml(s.error)}</div>` : ''}
+        </div>
+      `).join('');
+  } catch (e) {
+    resultsDiv.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ خطأ: ${e.message}</div>`;
+  }
+}
+
+// ===== NOTEBOOK STATE =====
+let nbState = { notebooks: [], currentId: null, isActive: false };
+
+// ===== NOTEBOOK MODE =====
+function toggleNotebookMode() {
+  nbState.isActive = !nbState.isActive;
+  const panel = document.getElementById('notebookPanel');
+  const chat = document.getElementById('chatMessages');
+  const input = document.querySelector('.input-area');
+  const header = document.querySelector('.chat-header');
+  panel.classList.toggle('active', nbState.isActive);
+  chat.style.display = nbState.isActive ? 'none' : '';
+  input.style.display = nbState.isActive ? 'none' : '';
+  header.style.display = nbState.isActive ? 'none' : '';
+  if (nbState.isActive) {
+    document.getElementById('npDetailView').style.display = 'none';
+    document.getElementById('npNewForm').style.display = 'none';
+    document.getElementById('npListView').style.display = '';
+    document.getElementById('npQueryBar').style.display = 'none';
+    document.getElementById('npQueryResultContainer').style.display = 'none';
+    loadNotebooks();
+  }
+}
+
+// ===== NOTEBOOK API =====
+async function loadNotebooks() {
+  try {
+    const data = await apiGet('/api/notebooks');
+    nbState.notebooks = data.notebooks || [];
+    renderNotebookList();
+  } catch (e) {
+    console.error('Failed to load notebooks', e);
+    document.getElementById('npList').innerHTML = '<div class="np-empty" style="color:#ef4444">❌ فشل تحميل الدفاتر</div>';
+  }
+}
+
+function renderNotebookList() {
+  const list = document.getElementById('npList');
+  const empty = document.getElementById('npEmpty');
+  if (nbState.notebooks.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = nbState.notebooks.map(nb => `
+    <div class="np-card" onclick="openNotebook('${nb.id}')">
+      <h3>${escHtml(nb.title)}</h3>
+      ${nb.description ? `<p style="font-size:.85rem;color:var(--text2);margin-bottom:4px">${escHtml(nb.description)}</p>` : ''}
+      <div class="np-meta">
+        <span>📄 ${nb.source_count}</span>
+        <span>📝 ${nb.note_count}</span>
+        <span>🕐 ${new Date(nb.updated_at).toLocaleDateString('ar-SA')}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showNewNotebookForm() {
+  document.getElementById('npListView').style.display = 'none';
+  document.getElementById('npNewForm').style.display = '';
+  document.getElementById('newNbTitle').focus();
+}
+
+function cancelNewNotebook() {
+  document.getElementById('npNewForm').style.display = 'none';
+  document.getElementById('npListView').style.display = '';
+}
+
+async function createNotebook() {
+  const title = document.getElementById('newNbTitle').value.trim();
+  if (!title) return;
+  const desc = document.getElementById('newNbDesc').value.trim();
+  try {
+    await apiPost('/api/notebooks', { title, description: desc });
+    document.getElementById('newNbTitle').value = '';
+    document.getElementById('newNbDesc').value = '';
+    cancelNewNotebook();
+    await loadNotebooks();
+  } catch (e) {
+    showToast('فشل إنشاء الدفتر: ' + e.message, 'error');
+  }
+}
+
+async function openNotebook(id) {
+  nbState.currentId = id;
+  document.getElementById('npListView').style.display = 'none';
+  document.getElementById('npNewForm').style.display = 'none';
+  document.getElementById('npDetailView').style.display = '';
+  document.getElementById('npQueryBar').style.display = 'flex';
+  document.getElementById('npQueryResultContainer').style.display = 'none';
+
+  try {
+    const nb = await apiGet(`/api/notebooks/${id}`);
+    document.getElementById('npDetailTitle').textContent = nb.title;
+    document.querySelector('.np-header h2').textContent = nb.title;
+    document.getElementById('npStats').innerHTML = `
+      <div class="np-stat"><div class="num">${nb.source_count}</div><div class="label">مصادر</div></div>
+      <div class="np-stat"><div class="num">${nb.note_count}</div><div class="label">ملاحظات</div></div>
+    `;
+    switchNbTab('sources');
+    await loadSources(id);
+  } catch (e) {
+    showToast('فشل تحميل الدفتر', 'error');
+  }
+}
+
+async function deleteCurrentNotebook() {
+  if (!nbState.currentId) return;
+  if (!(await showConfirm('حذف الدفتر', 'هل أنت متأكد من حذف هذا الدفتر؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}`);
+    showNotebookList();
+  } catch (e) {
+    showToast('فشل الحذف', 'error');
+  }
+}
+
+// ===== NOTEBOOK TABS =====
+function switchNbTab(tab) {
+  document.querySelectorAll('.np-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.np-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('npSection' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+}
+
+// ===== SOURCES =====
+async function loadSources(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/sources`);
+    const list = document.getElementById('npSourcesList');
+    if (!data.sources || data.sources.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد مصادر. ارفع مصدراً للبدء.</div>';
+      return;
+    }
+    list.innerHTML = data.sources.map(s => `
+      <div class="source-item">
+        <div class="si-info">
+          <div class="si-title">${escHtml(s.title)}</div>
+          <div class="si-meta">${escHtml(s.file_name)} • ${s.char_count.toLocaleString('ar-SA')} حرف • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="si-actions">
+          <button class="danger" onclick="deleteSource('${s.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load sources', e);
+  }
+}
+
+async function uploadSource() {
+  if (!nbState.currentId) return;
+  const content = document.getElementById('npSourceContent').value.trim();
+  const fileName = document.getElementById('npSourceName').value.trim();
+  if (!content || !fileName) { showToast('يرجى إدخال المحتوى واسم الملف', 'warning'); return; }
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/sources`, { content, file_name: fileName });
+    document.getElementById('npSourceContent').value = '';
+    document.getElementById('npSourceName').value = '';
+    await loadSources(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    showToast('فشل رفع المصدر: ' + e.message, 'error');
+  }
+}
+
+async function deleteSource(sourceId) {
+  if (!nbState.currentId) return;
+  if (!(await showConfirm('حذف المصدر', 'حذف هذا المصدر؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/sources/${sourceId}`);
+    await loadSources(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    showToast('فشل حذف المصدر', 'error');
+  }
+}
+}
+
+// ===== NOTES =====
+async function generateNotes() {
+  if (!nbState.currentId) return;
+  const btn = document.getElementById('npGenerateNotesBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ الإنشاء...';
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/notes`, {});
+    await loadNotes(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    showToast('فشل إنشاء الملاحظات: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = '🪄 إنشاء ملاحظات';
+}
+
+async function loadNotes(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/notes`);
+    const list = document.getElementById('npNotesList');
+    if (!data.notes || data.notes.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد ملاحظات. أنشئ ملاحظات من المصادر.</div>';
+      return;
+    }
+    list.innerHTML = data.notes.map(n => `
+      <div class="note-item">
+        <div class="ni-info">
+          <div class="ni-title">${escHtml(n.title)}</div>
+          <div class="ni-content">${escHtml(n.content)}</div>
+          <div class="ni-meta" style="margin-top:4px">${new Date(n.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="ni-actions">
+          <button class="danger" onclick="deleteNote('${n.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load notes', e);
+  }
+}
+
+async function deleteNote(noteId) {
+  if (!nbState.currentId) return;
+  if (!(await showConfirm('حذف الملاحظة', 'حذف هذه الملاحظة؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/notes/${noteId}`);
+    await loadNotes(nbState.currentId);
+    await updateNotebookStats();
+  } catch (e) {
+    showToast('فشل حذف الملاحظة', 'error');
+  }
+}
+
+// ===== QUERY =====
+async function queryNotebook() {
+  if (!nbState.currentId) return;
+  const input = document.getElementById('npQueryInput');
+  const q = input.value.trim();
+  if (!q) return;
+  const resultDiv = document.getElementById('npQueryResult');
+  const container = document.getElementById('npQueryResultContainer');
+  resultDiv.textContent = '⏳ جارٍ البحث...';
+  resultDiv.style.display = '';
+  container.style.display = '';
+  try {
+    const data = await apiPost(`/api/notebooks/${nbState.currentId}/query`, { question: q });
+    resultDiv.textContent = data.answer;
+    resultDiv.classList.add('show');
+  } catch (e) {
+    resultDiv.textContent = '❌ ' + e.message;
+    resultDiv.classList.add('show');
+  }
+}
+
+// ===== SNAPSHOTS =====
+async function createSnapshot() {
+  if (!nbState.currentId) return;
+  try {
+    await apiPost(`/api/notebooks/${nbState.currentId}/snapshots`, { label: '' });
+    await loadSnapshots(nbState.currentId);
+  } catch (e) {
+    showToast('فشل إنشاء اللقطة: ' + e.message, 'error');
+  }
+}
+
+async function loadSnapshots(notebookId) {
+  try {
+    const data = await apiGet(`/api/notebooks/${notebookId}/snapshots`);
+    const list = document.getElementById('npSnapshotsList');
+    if (!data.snapshots || data.snapshots.length === 0) {
+      list.innerHTML = '<div class="np-empty">لا توجد لقطات.</div>';
+      return;
+    }
+    list.innerHTML = data.snapshots.map(s => `
+      <div class="snapshot-item">
+        <div class="si-info">
+          <div class="si-label">📸 ${escHtml(s.label || 'لقطة غير معنونة')}</div>
+          <div class="si-meta">${s.source_count} مصادر • ${s.note_count} ملاحظات • ${new Date(s.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+        <div class="si-actions">
+          <button class="danger" onclick="deleteSnapshot('${s.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error('Failed to load snapshots', e);
+  }
+}
+
+async function generateAudioOverview() {
+  if (!nbState.currentId) return;
+  try {
+    const data = await apiPost(`/api/notebooks/${nbState.currentId}/audio`, {});
+    if (data.error) showToast(data.error, 'warning');
+    else showToast('تم إنشاء النظرة العامة الصوتية', 'success');
+  } catch (e) {
+    showToast('النظرة العامة الصوتية غير متاحة حالياً', 'warning');
+  }
+}
+
+async function deleteSnapshot(snapshotId) {
+  if (!nbState.currentId) return;
+  if (!(await showConfirm('حذف اللقطة', 'حذف هذه اللقطة؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete(`/api/notebooks/${nbState.currentId}/snapshots/${snapshotId}`);
+    await loadSnapshots(nbState.currentId);
+  } catch (e) {
+    showToast('فشل حذف اللقطة', 'error');
+  }
+}
+
+// ===== NOTEBOOK HELPERS =====
+async function updateNotebookStats() {
+  if (!nbState.currentId) return;
+  try {
+    const nb = await apiGet(`/api/notebooks/${nbState.currentId}`);
+    document.getElementById('npStats').innerHTML = `
+      <div class="np-stat"><div class="num">${nb.source_count}</div><div class="label">مصادر</div></div>
+      <div class="np-stat"><div class="num">${nb.note_count}</div><div class="label">ملاحظات</div></div>
+    `;
+  } catch (e) {}
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  state.isDark = !state.isDark;
+  localStorage.setItem('toll_theme', state.isDark ? 'dark' : 'light');
+  applyTheme();
+}
+function applyTheme() {
+  document.documentElement.classList.toggle('light', !state.isDark);
+  const btn = document.querySelector('.header-actions button:first-child');
+  if (btn) btn.textContent = state.isDark ? '☀️' : '🌙';
+  const toggle = document.getElementById('themeToggle');
+  if (toggle) toggle.classList.toggle('active', state.isDark);
+}
+function toggleThemeSwitch(el) {
+  state.isDark = !state.isDark;
+  localStorage.setItem('toll_theme', state.isDark ? 'dark' : 'light');
+  applyTheme();
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== CONVERSATIONS =====
+function renderConversations(filter = '') {
+  const pinned = document.getElementById('pinnedList');
+  const list = document.getElementById('convList');
+  pinned.innerHTML = '';
+  list.innerHTML = '';
+
+  const convs = state.conversations.filter(c =>
+    c.title.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  convs.filter(c => c.pinned).forEach(c => {
+    pinned.appendChild(createConvItem(c));
+  });
+  convs.filter(c => !c.pinned).forEach(c => {
+    list.appendChild(createConvItem(c));
+  });
+}
+
+function createConvItem(conv) {
+  const div = document.createElement('div');
+  div.className = `conv-item${conv.pinned ? ' pinned' : ''}${conv.id === state.currentId ? ' active' : ''}`;
+  div.innerHTML = `
+    <span class="pin-icon">📌</span>
+    <span class="conv-title">${escHtml(conv.title)}</span>
+    <span class="conv-actions">
+      <button onclick="event.stopPropagation(); togglePin('${conv.id}')" title="${conv.pinned ? 'إلغاء التثبيت' : 'تثبيت'}">📌</button>
+      <button onclick="event.stopPropagation(); deleteConv('${conv.id}')" title="حذف">✕</button>
+    </span>
+  `;
+  div.onclick = () => loadConversation(conv.id);
+  return div;
+}
+
+async function newChat() {
+  const id = await createServerConversation('محادثة جديدة');
+  state.currentId = id;
+  const conv = { id, title: 'محادثة جديدة', messages: [], pinned: false, createdAt: new Date().toISOString() };
+  state.conversations.unshift(conv);
+  renderConversations();
+  showWelcome();
+  document.getElementById('chatInput').focus();
+  if (window.innerWidth <= 768) toggleSidebar();
+}
+
+async function loadConversation(id) {
+  state.currentId = id;
+  const conv = state.conversations.find(c => c.id === id);
+  if (!conv) return;
+  renderConversations();
+
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+  const messages = await loadServerMessages(id);
+  conv.messages = messages;
+  if (messages.length === 0) {
+    showWelcome();
+    return;
+  }
+  messages.forEach(m => appendMessage(m.role, m.content, false));
+  container.scrollTop = container.scrollHeight;
+}
+
+function togglePin(id) {
+  const conv = state.conversations.find(c => c.id === id);
+  if (conv) { conv.pinned = !conv.pinned; saveConversations(); renderConversations(); }
+}
+
+async function deleteConv(id) {
+  try {
+    await apiDelete('/api/conversations/' + id);
+  } catch (e) {
+    console.error('Failed to delete conversation on server', e);
+  }
+  state.conversations = state.conversations.filter(c => c.id !== id);
+  if (state.currentId === id) {
+    state.currentId = state.conversations.length > 0 ? state.conversations[0].id : null;
+    state.currentId ? loadConversation(state.currentId) : newChat();
+  }
+  saveConversations();
+  renderConversations();
+}
+
+function searchConversations(q) { renderConversations(q); }
+
+async function clearConversations() {
+  if (!(await showConfirm('حذف كل المحادثات', 'سيتم حذف جميع المحادثات بشكل دائم.', { type: 'danger', dangerLabel: 'حذف الكل' }))) return;
+  state.conversations = [];
+  state.currentId = null;
+  saveConversations();
+  renderConversations();
+  showWelcome();
+}
+
+function getCurrentConv() {
+  return state.conversations.find(c => c.id === state.currentId);
+}
+
+// ===== MESSAGES =====
+function showWelcome() {
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="welcome">
+      <div class="logo-big">ت</div>
+      <h2>مرحباً بك في تول</h2>
+      <p>مساعدك الشخصي الموحد — تقارير، أبحاث، Carousels، برومبتات، وأكثر</p>
+      <div class="suggestions">
+        <button onclick="sendSuggestion('اكتب تقرير عن الذكاء الاصطناعي')">📄 تقرير</button>
+        <button onclick="sendSuggestion('أبحث عن آخر أخبار التكنولوجيا')">🔍 بحث</button>
+        <button onclick="sendSuggestion('اعمل عرض تقديمي عن منتج جديد')">📺 عرض</button>
+        <button onclick="sendSuggestion('ولد برومبت تسويق لتطبيق')">🧠 برومبت</button>
+        <button onclick="sendSuggestion('Carousel عن موضوع flexbox')">🎠 Carousel</button>
+        <button onclick="sendSuggestion('اكتب بحث علمي عن تغير المناخ')">🔬 بحث علمي</button>
+      </div>
+    </div>`;
+}
+
+function appendMessage(role, content, animate = true) {
+  const container = document.getElementById('chatMessages');
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  const avatar = role === 'user' ? 'U' : 'ت';
+  div.innerHTML = `
+    <div class="avatar">${avatar}</div>
+    <div class="bubble">${content}</div>
+  `;
+  if (animate) div.style.animation = 'none';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message assistant';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="avatar">ت</div>
+    <div class="bubble">
+      <div class="typing-indicator"><span></span><span></span><span></span></div>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+// ===== TASK TYPE =====
+function selectTaskType(el) {
+  document.querySelectorAll('.task-type').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function getSelectedType() {
+  const active = document.querySelector('.task-type.active');
+  return active ? active.dataset.type : 'auto';
+}
+
+// ===== IMAGE =====
+function previewImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.imageData = ev.target.result;
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('previewName').textContent = file.name;
+    document.getElementById('imagePreview').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+function removeImage() {
+  state.imageData = null;
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('imageInput').value = '';
+}
+
+// ===== SEND =====
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  const btn = document.getElementById('sendBtn');
+
+  if (!text && !state.imageData) return;
+
+  btn.disabled = true;
+  const type = getSelectedType();
+
+  if (!state.currentId) {
+    await newChat();
+  }
+
+  const conv = getCurrentConv();
+  if (!conv) return;
+
+  // Handle workspace chat commands
+  const chatCmd = parseChatCommand(text);
+  if (chatCmd) {
+    appendMessage('user', text);
+    const reply = await handleChatCommand(chatCmd);
+    appendMessage('assistant', reply);
+    await addServerMessage(state.currentId, 'user', text);
+    await addServerMessage(state.currentId, 'assistant', reply);
+    input.value = '';
+    input.style.height = 'auto';
+    btn.disabled = false;
+    input.focus();
+    return;
+  }
+
+  const userContent = state.imageData
+    ? `${text}\n\n<div class="file-preview"><img src="${state.imageData}" style="max-width:200px;border-radius:8px"></div>`
+    : text;
+
+  conv.messages.push({ role: 'user', content: userContent });
+  appendMessage('user', userContent);
+  if (conv.title === 'محادثة جديدة' && text.length > 0) {
+    conv.title = text.slice(0, 40) + (text.length > 40 ? '...' : '');
+  }
+  renderConversations();
+  await addServerMessage(state.currentId, 'user', userContent);
+
+  input.value = '';
+  input.style.height = 'auto';
+  removeImage();
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        type: type,
+        image: state.imageData,
+        conversation_id: state.currentId,
+        model: document.getElementById('modelSelect').value,
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+
+    const reply = data.response || data.error || '❌ حدث خطأ';
+    conv.messages.push({ role: 'assistant', content: reply });
+    appendMessage('assistant', reply);
+    await addServerMessage(state.currentId, 'assistant', reply);
+    renderConversations();
+
+    if (data.html_files) {
+      const fileMsg = `📁 تم إنشاء: ${data.html_files.join(', ')}`;
+      conv.messages.push({ role: 'assistant', content: fileMsg });
+      appendMessage('assistant', fileMsg);
+      await addServerMessage(state.currentId, 'assistant', fileMsg);
+    }
+  } catch (e) {
+    removeTyping();
+    appendMessage('assistant', '❌ خطأ في الاتصال: ' + e.message);
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+function sendSuggestion(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+  const hasText = el.value.trim().length > 0 || state.imageData;
+  document.getElementById('sendBtn').disabled = !hasText;
+
+  document.getElementById('sendBtn').disabled = !(el.value.trim() || state.imageData);
+}
+
+setInterval(() => {
+  const el = document.getElementById('chatInput');
+  if (el) autoResize(el);
+}, 100);
+
+// ===== API =====
+async function checkStatus() {
+  try {
+    const r = await fetch('/api/status');
+    const data = await r.json();
+    const msg = Object.entries(data).map(([k,v]) =>
+      `${v.can_use ? '✅' : '❌'} ${k}: ${v.remaining} طلب`
+    ).join('\n');
+    appendMessage('assistant', `📊 **حالة AI**\n\n${msg}`);
+  } catch(e) {
+    appendMessage('assistant', '❌ لا يمكن الاتصال بالخادم');
+  }
+}
+
+async function loadStatus() {
+  try {
+    const r = await fetch('/api/status');
+    const data = await r.json();
+    const allOut = Object.values(data).every(v => !v.can_use);
+    document.getElementById('statusBtn').textContent = allOut ? '⚠️' : '📊';
+  } catch(e) {}
+}
+setInterval(loadStatus, 30000);
+
+// ===== SETTINGS =====
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('open');
+  const settings = state.settings;
+  if (settings.provider) document.getElementById('settingsAiProvider').value = settings.provider;
+  if (settings.defaultType) document.getElementById('settingsDefaultType').value = settings.defaultType;
+  if (settings.outputPath) document.getElementById('settingsOutputPath').value = settings.outputPath;
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+function saveSetting(key, val) {
+  state.settings[key] = val;
+  localStorage.setItem('toll_settings', JSON.stringify(state.settings));
+}
+function toggleSwitch(el) { el.classList.toggle('active'); }
+
+// ===== STORAGE =====
+function saveConversations() {
+  localStorage.setItem('toll_convs', JSON.stringify(state.conversations));
+}
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ===== TOAST NOTIFICATIONS =====
+function showToast(message, type, duration) {
+  type = type || 'info';
+  duration = duration || 4000;
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
+  toast.innerHTML = '<span>' + (icons[type] || 'ℹ️') + '</span><span>' + message + '</span>';
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'toastOut .3s ease forwards';
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
+  }, duration);
+}
+
+// ===== LOADING / EMPTY / ERROR HELPERS =====
+function showLoading(containerId, message) {
+  message = message || 'جاري التحميل...';
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">⏳ ' + message + '</div>';
+}
+
+function showEmpty(containerId, message) {
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">' + message + '</div>';
+}
+
+function showError(containerId, message) {
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:40px">❌ ' + message + '</div>';
+}
+
+// ===== STATUS BADGE RENDERER =====
+function renderStatusBadge(status) {
+  const s = (status || 'draft').toLowerCase();
+  const labels = {
+    draft: 'مسودة', planned: 'مخطط له', pending: 'بانتظار الاعتماد',
+    approved: 'معتمد', running: 'قيد التشغيل', completed: 'مكتمل',
+    failed: 'فشل', rejected: 'مرفوض',
+  };
+  const label = labels[s] || status;
+  return '<span class="wf-status ' + s + '">' + escHtml(label) + '</span>';
+}
+
+// ===== CONFIRM DIALOG =====
+let _confirmResolve = null;
+function showConfirm(title, message, options) {
+  options = options || {};
+  const dangerLabel = options.dangerLabel || 'تأكيد';
+  const cancelLabel = options.cancelLabel || 'إلغاء';
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = message;
+  const actionBtn = document.getElementById('confirmActionBtn');
+  actionBtn.textContent = dangerLabel;
+  actionBtn.className = options.type === 'danger' ? 'btn-danger' : 'btn-primary';
+  document.getElementById('confirmCancelBtn').textContent = cancelLabel;
+  document.getElementById('confirmDialog').classList.add('open');
+  return new Promise(resolve => { _confirmResolve = resolve; });
+}
+function closeConfirm() {
+  document.getElementById('confirmDialog').classList.remove('open');
+  if (_confirmResolve) { _confirmResolve(false); _confirmResolve = null; }
+}
+function confirmResolve() {
+  document.getElementById('confirmDialog').classList.remove('open');
+  if (_confirmResolve) { _confirmResolve(true); _confirmResolve = null; }
+}
+
+// ===== BRAND DNA =====
+let brandState = { profiles: [], currentId: null, dirty: false, voiceDirty: false };
+
+function switchBrandTab(tab) {
+  document.querySelectorAll('.op-tab[data-brtab]').forEach(el => {
+    el.classList.toggle('active', el.dataset.brtab === tab);
+  });
+  document.querySelectorAll('#brandBody .op-section').forEach(el => el.classList.remove('active'));
+  const section = document.getElementById('brandSection' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (section) section.classList.add('active');
+
+  if (tab === 'profiles') loadBrandProfiles();
+  else if (tab === 'typography') populateBrandSelect('brandTypeProfileSelect');
+  else if (tab === 'colors') populateBrandSelect('brandColorProfileSelect');
+  else if (tab === 'voice') populateBrandSelect('brandVoiceProfileSelect');
+  else if (tab === 'preview') populateBrandSelect('brandPreviewProfileSelect');
+}
+
+function populateBrandSelect(selectId, callback) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">اختر ملفاً...</option>';
+  brandState.profiles.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name + (p.is_default ? ' (الافتراضي)' : '');
+    if (p.id === currentVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadBrandProfiles() {
+  const list = document.getElementById('brandProfileList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:8px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/brand');
+    brandState.profiles = data.profiles || [];
+    if (brandState.profiles.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:20px;text-align:center">لا توجد ملفات هوية. أنشئ ملفاً جديداً.</div>';
+      return;
+    }
+    list.innerHTML = brandState.profiles.map(p => `
+      <div class="model-card" style="position:relative">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,${escHtml(p.logo_gradient_from)},${escHtml(p.logo_gradient_to)});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0">${escHtml(p.logo_text)}</div>
+          <h3 style="font-size:.95rem;flex:1">${escHtml(p.name)} ${p.is_default ? '<span style="font-size:.7rem;color:var(--primary)">الافتراضي</span>' : ''}</h3>
+        </div>
+        <div style="font-size:.8rem;color:var(--text2);display:flex;gap:12px;flex-wrap:wrap">
+          <span>🔤 ${escHtml(p.font_display)} / ${escHtml(p.font_body)}</span>
+          <span>🗣️ ${escHtml(p.voice_tone)}</span>
+          <span>📌 ${p.workspace_id ? 'مرتبط بمساحة عمل' : 'عام'}</span>
+          <span>🔄 v${p.version}</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button class="op-btn op-btn-primary" onclick="editBrandProfile('${p.id}')">✏️ تعديل</button>
+          <button class="op-btn op-btn-secondary" onclick="deleteBrandProfile('${p.id}')" ${p.is_default ? 'disabled style="opacity:.4"' : ''}>🗑 حذف</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+function showNewBrandForm() {
+  document.getElementById('brandNewForm').style.display = '';
+  document.getElementById('newBrandName').focus();
+}
+
+function cancelNewBrandForm() {
+  document.getElementById('brandNewForm').style.display = 'none';
+  document.getElementById('newBrandName').value = '';
+}
+
+async function createBrandProfile() {
+  const name = document.getElementById('newBrandName').value.trim();
+  if (!name) return;
+  try {
+    await apiPost('/api/brand', { name });
+    document.getElementById('newBrandName').value = '';
+    cancelNewBrandForm();
+    await loadBrandProfiles();
+  } catch (e) {
+    showToast('فشل إنشاء الملف: ' + e.message, 'error');
+  }
+}
+
+async function editBrandProfile(id) {
+  try {
+    const profile = await apiGet('/api/brand/' + id);
+    brandState.currentId = id;
+    brandState.dirty = false;
+    brandState.voiceDirty = false;
+
+    // Typography
+    document.getElementById('brandFontDisplay').value = profile.font_display || 'KO Ghorab';
+    document.getElementById('brandFontBody').value = profile.font_body || 'DIN Next Arabic';
+    document.getElementById('brandFontAccent').value = profile.font_accent || 'Dast Nevis';
+    document.getElementById('brandFontDisplaySize').value = profile.font_display_size_min || 24;
+    document.getElementById('brandFontFallback').value = profile.font_fallback || 'system-ui, sans-serif';
+    document.getElementById('brandTypeSaveBtn').disabled = true;
+    const typeSel = document.getElementById('brandTypeProfileSelect');
+    if (typeSel) typeSel.value = id;
+    switchBrandTab('typography');
+    document.getElementById('brandTypographyForm').style.display = '';
+
+    // Colors
+    const colorSel = document.getElementById('brandColorProfileSelect');
+    if (colorSel) colorSel.value = id;
+    loadBrandColors(id);
+    switchBrandTab('colors');
+    document.getElementById('brandColorsForm').style.display = '';
+
+    // Voice
+    document.getElementById('brandVoiceTone').value = profile.voice_tone || 'professional';
+    document.getElementById('brandVoiceLang').value = profile.voice_language || 'ar';
+    document.getElementById('brandVoiceDir').value = profile.voice_direction || 'rtl';
+    document.getElementById('brandVoicePersonality').value = profile.voice_personality || 'professional, academic, design-conscious';
+    document.getElementById('brandVoiceSaveBtn').disabled = true;
+    const voiceSel = document.getElementById('brandVoiceProfileSelect');
+    if (voiceSel) voiceSel.value = id;
+    switchBrandTab('voice');
+    document.getElementById('brandVoiceForm').style.display = '';
+  } catch (e) {
+    showToast('فشل تحميل الملف: ' + e.message, 'error');
+  }
+}
+
+async function deleteBrandProfile(id) {
+  if (!(await showConfirm('حذف الملف', 'حذف ملف الهوية هذا؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete('/api/brand/' + id);
+    await loadBrandProfiles();
+  } catch (e) {
+    showToast('فشل حذف الملف: ' + e.message, 'error');
+  }
+}
+
+function markBrandDirty() {
+  brandState.dirty = true;
+  document.getElementById('brandTypeSaveBtn').disabled = false;
+}
+
+async function saveBrandTypography() {
+  if (!brandState.currentId) return;
+  const data = {
+    font_display: document.getElementById('brandFontDisplay').value,
+    font_body: document.getElementById('brandFontBody').value,
+    font_accent: document.getElementById('brandFontAccent').value,
+    font_display_size_min: parseInt(document.getElementById('brandFontDisplaySize').value) || 24,
+    font_fallback: document.getElementById('brandFontFallback').value,
+  };
+  try {
+    await apiPut('/api/brand/' + brandState.currentId, data);
+    brandState.dirty = false;
+    document.getElementById('brandTypeSaveBtn').disabled = true;
+    await loadBrandProfiles();
+    await applyBrandContext();
+  } catch (e) {
+    showToast('فشل حفظ الخطوط: ' + e.message, 'error');
+  }
+}
+
+// ===== BRAND COLORS =====
+async function loadBrandColors(profileId) {
+  if (!profileId) {
+    document.getElementById('brandColorsForm').style.display = 'none';
+    return;
+  }
+  brandState.currentId = profileId;
+  document.getElementById('brandColorsForm').style.display = '';
+  try {
+    const profile = await apiGet('/api/brand/' + profileId);
+    const colors = profile.colors || {};
+    const container = document.getElementById('brandColorInputs');
+    const defaults = {
+      '--bg': '#1a1a2e', '--primary': '#38bdf8', '--accent': '#a78bfa',
+      '--accent2': '#f472b6', '--text': '#f1f5f9', '--text2': '#94a3b8',
+      '--border': '#1e293b', '--surface': '#1f2937',
+    };
+    container.innerHTML = Object.entries(defaults).map(([key, defVal]) => `
+      <div class="setting-group" style="display:flex;align-items:center;gap:10px">
+        <label style="flex:1;margin:0;font-size:.8rem;font-family:monospace">${key}</label>
+        <input type="color" id="brandColor_${key.replace(/--/g, '')}" value="${colors[key] || defVal}" style="width:40px;height:36px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0" onchange="markBrandColorDirty()">
+        <input type="text" id="brandColorText_${key.replace(/--/g, '')}" value="${colors[key] || defVal}" style="width:90px;padding:6px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-size:.8rem;font-family:monospace;outline:none" onchange="markBrandColorDirty()">
+      </div>
+    `).join('');
+    document.getElementById('brandColorSaveBtn').disabled = true;
+  } catch (e) {
+    document.getElementById('brandColorInputs').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+let brandColorDirty = false;
+
+function markBrandColorDirty() {
+  brandColorDirty = true;
+  document.getElementById('brandColorSaveBtn').disabled = false;
+}
+
+async function saveBrandColors() {
+  if (!brandState.currentId) return;
+  const defaults = ['--bg', '--primary', '--accent', '--accent2', '--text', '--text2', '--border', '--surface'];
+  const colors = {};
+  defaults.forEach(key => {
+    const val = document.getElementById('brandColorText_' + key.replace(/--/g, '')).value;
+    colors[key] = val;
+  });
+  try {
+    await apiPut('/api/brand/' + brandState.currentId, { colors_json: JSON.stringify(colors) });
+    brandColorDirty = false;
+    document.getElementById('brandColorSaveBtn').disabled = true;
+    await applyBrandContext();
+  } catch (e) {
+    showToast('فشل حفظ الألوان: ' + e.message, 'error');
+  }
+}
+
+// ===== BRAND VOICE =====
+function markVoiceDirty() {
+  brandState.voiceDirty = true;
+  document.getElementById('brandVoiceSaveBtn').disabled = false;
+}
+
+async function loadBrandVoice(profileId) {
+  if (!profileId) {
+    document.getElementById('brandVoiceForm').style.display = 'none';
+    return;
+  }
+  brandState.currentId = profileId;
+  document.getElementById('brandVoiceForm').style.display = '';
+  try {
+    const profile = await apiGet('/api/brand/' + profileId);
+    document.getElementById('brandVoiceTone').value = profile.voice_tone || 'professional';
+    document.getElementById('brandVoiceLang').value = profile.voice_language || 'ar';
+    document.getElementById('brandVoiceDir').value = profile.voice_direction || 'rtl';
+    document.getElementById('brandVoicePersonality').value = profile.voice_personality || 'professional, academic, design-conscious';
+    document.getElementById('brandVoiceSaveBtn').disabled = true;
+    brandState.voiceDirty = false;
+  } catch (e) {
+    document.getElementById('brandVoiceForm').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function saveBrandVoice() {
+  if (!brandState.currentId) return;
+  const data = {
+    voice_tone: document.getElementById('brandVoiceTone').value,
+    voice_language: document.getElementById('brandVoiceLang').value,
+    voice_direction: document.getElementById('brandVoiceDir').value,
+    voice_personality: document.getElementById('brandVoicePersonality').value,
+  };
+  try {
+    await apiPut('/api/brand/' + brandState.currentId, data);
+    brandState.voiceDirty = false;
+    document.getElementById('brandVoiceSaveBtn').disabled = true;
+    await applyBrandContext();
+  } catch (e) {
+    showToast('فشل حفظ الصوت: ' + e.message, 'error');
+  }
+}
+
+// ===== BRAND PREVIEW =====
+async function loadBrandPreview(profileId) {
+  if (!profileId) {
+    document.getElementById('brandPreviewContent').style.display = 'none';
+    return;
+  }
+  document.getElementById('brandPreviewContent').style.display = '';
+  try {
+    const preview = await apiGet('/api/brand/' + profileId + '/preview');
+    const colors = await apiGet('/api/brand/' + profileId);
+    const profile = colors;
+    const colorMap = profile.colors || {};
+
+    document.getElementById('brandPreviewLogo').innerHTML = `
+      <div style="width:${preview.logo.size}px;height:${preview.logo.size}px;border-radius:${preview.logo.radius}px;background:linear-gradient(135deg,${preview.logo.gradient_from},${preview.logo.gradient_to});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff;flex-shrink:0">${escHtml(preview.logo.text)}</div>
+      <div>
+        <div style="font-weight:600;font-size:1rem">${escHtml(profile.name)}</div>
+        <div style="font-size:.8rem;color:var(--text2)">v${profile.version}</div>
+      </div>
+    `;
+
+    const colorKeys = Object.keys(colorMap);
+    document.getElementById('brandPreviewColors').innerHTML = `
+      <h4 style="font-size:.85rem;color:var(--text2);margin-bottom:8px">🎨 الألوان</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${colorKeys.map(k => `<div style="display:flex;align-items:center;gap:4px;background:var(--surface);padding:4px 10px;border-radius:6px;border:1px solid var(--border);font-size:.75rem"><span style="width:14px;height:14px;border-radius:3px;background:${colorMap[k]};border:1px solid var(--border2);flex-shrink:0"></span><span style="font-family:monospace">${k}: ${colorMap[k]}</span></div>`).join('')}
+      </div>`;
+
+    document.getElementById('brandPreviewTypography').innerHTML = `
+      <h4 style="font-size:.85rem;color:var(--text2);margin-bottom:8px">🔤 الخطوط</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <div style="background:var(--surface);padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);flex:1;min-width:150px">
+          <div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Display</div>
+          <div style="font-weight:600">${escHtml(preview.typography.display)}</div>
+          <div style="font-size:.75rem;color:var(--text3)">≥ ${preview.typography.display_size_min}px</div>
+        </div>
+        <div style="background:var(--surface);padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);flex:1;min-width:150px">
+          <div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Body</div>
+          <div>${escHtml(preview.typography.body)}</div>
+        </div>
+        <div style="background:var(--surface);padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);flex:1;min-width:150px">
+          <div style="font-size:.7rem;color:var(--text3);margin-bottom:2px">Accent</div>
+          <div>${escHtml(preview.typography.accent)}</div>
+        </div>
+      </div>`;
+
+    document.getElementById('brandPreviewVoice').innerHTML = `
+      <h4 style="font-size:.85rem;color:var(--text2);margin-bottom:8px">🗣️ الصوت</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <div style="background:var(--surface);padding:8px 12px;border-radius:6px;border:1px solid var(--border);font-size:.85rem"><strong>النبرة:</strong> ${escHtml(preview.voice.tone)}</div>
+        <div style="background:var(--surface);padding:8px 12px;border-radius:6px;border:1px solid var(--border);font-size:.85rem"><strong>اللغة:</strong> ${escHtml(preview.voice.language)}</div>
+        <div style="background:var(--surface);padding:8px 12px;border-radius:6px;border:1px solid var(--border);font-size:.85rem"><strong>الاتجاه:</strong> ${preview.voice.direction === 'rtl' ? 'يمين→يسار' : 'يسار→يمين'}</div>
+      </div>
+      <div style="margin-top:8px;background:var(--surface);padding:8px 12px;border-radius:6px;border:1px solid var(--border);font-size:.82rem"><strong>الشخصية:</strong> ${escHtml(preview.voice.personality)}</div>`;
+  } catch (e) {
+    document.getElementById('brandPreviewContent').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+// ===== BRAND HELPER: load typography when select changes =====
+async function loadBrandTypography(profileId) {
+  if (!profileId) {
+    document.getElementById('brandTypographyForm').style.display = 'none';
+    return;
+  }
+  brandState.currentId = profileId;
+  document.getElementById('brandTypographyForm').style.display = '';
+  try {
+    const profile = await apiGet('/api/brand/' + profileId);
+    document.getElementById('brandFontDisplay').value = profile.font_display || 'KO Ghorab';
+    document.getElementById('brandFontBody').value = profile.font_body || 'DIN Next Arabic';
+    document.getElementById('brandFontAccent').value = profile.font_accent || 'Dast Nevis';
+    document.getElementById('brandFontDisplaySize').value = profile.font_display_size_min || 24;
+    document.getElementById('brandFontFallback').value = profile.font_fallback || 'system-ui, sans-serif';
+    document.getElementById('brandTypeSaveBtn').disabled = true;
+    brandState.dirty = false;
+  } catch (e) {
+    document.getElementById('brandTypographyForm').innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+// ===== BRAND RUNTIME: apply active brand to UI chrome =====
+async function applyBrandContext() {
+  const brandId = state.activeWorkspace.active_brand_id;
+  if (!brandId) { resetBrandContext(); return; }
+  try {
+    const profile = await apiGet('/api/brand/workspace/' + brandId);
+    if (!profile || !profile.id) { resetBrandContext(); return; }
+
+    // Apply colors as CSS variable overrides
+    const html = document.documentElement;
+    if (window._brandVars) {
+      window._brandVars.forEach(v => html.style.removeProperty(v));
+    }
+    const colors = profile.colors || {};
+    const brandKeys = Object.keys(colors);
+    brandKeys.forEach(k => html.style.setProperty(k, colors[k]));
+    window._brandVars = brandKeys;
+
+    // Apply typography
+    const bodyStack = profile.font_body
+      ? (profile.font_body + ', ' + (profile.font_fallback || 'system-ui, sans-serif'))
+      : '';
+    if (profile.font_body) html.style.setProperty('--brand-font-body', profile.font_body);
+    if (profile.font_display) html.style.setProperty('--brand-font-display', profile.font_display);
+    if (bodyStack) html.style.fontFamily = bodyStack;
+
+    // Apply direction
+    if (profile.voice_direction) html.setAttribute('dir', profile.voice_direction);
+
+    // Show brand badge
+    const badge = document.getElementById('brandBadge');
+    const logo = document.getElementById('brandBadgeLogo');
+    const name = document.getElementById('brandBadgeName');
+    if (badge && logo && name) {
+      badge.style.display = 'flex';
+      logo.style.background = `linear-gradient(135deg, ${profile.logo_gradient_from || '#38bdf8'}, ${profile.logo_gradient_to || '#a78bfa'})`;
+      logo.textContent = profile.logo_text || 'ب';
+      name.textContent = profile.name || 'Brand';
+    }
+  } catch (e) {
+    console.error('Failed to apply brand context', e);
+    resetBrandContext();
+  }
+}
+
+function resetBrandContext() {
+  const html = document.documentElement;
+  if (window._brandVars) {
+    window._brandVars.forEach(v => html.style.removeProperty(v));
+    window._brandVars = null;
+  }
+  html.style.removeProperty('--brand-font-body');
+  html.style.removeProperty('--brand-font-display');
+  html.style.fontFamily = '';
+  html.setAttribute('dir', 'rtl');
+  const badge = document.getElementById('brandBadge');
+  if (badge) badge.style.display = 'none';
+}
+
+// ===== WORKFLOWS API =====
+let wfState = { tab: 'list' };
+
+function switchWfTab(tab) {
+  wfState.tab = tab;
+  document.querySelectorAll('[data-wftab]').forEach(el => el.classList.toggle('active', el.dataset.wftab === tab));
+  document.querySelectorAll('#workflowsBody .op-section').forEach(el => el.classList.remove('active'));
+  const section = document.getElementById('wfSection' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (section) section.classList.add('active');
+  if (tab === 'list') loadWorkflows();
+}
+
+async function loadWorkflows() {
+  const list = document.getElementById('wfListView');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/workflows');
+    const wfs = data.workflows || data || [];
+    if (wfs.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">لا توجد سير عمل. أنشئ واحداً من علامة "جديد".</div>';
+      return;
+    }
+    list.innerHTML = wfs.map(w => `
+      <div class="wf-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>${escHtml(w.plan?.title || 'سير عمل ' + w.id.slice(0, 8))}</h3>
+          <span class="wf-status ${(w.status || '').toLowerCase()}">${escHtml(w.status)}</span>
+        </div>
+        <div class="wf-meta">
+          <span>🆔 ${w.id.slice(0, 8)}...</span>
+          <span>🕐 ${new Date(w.created_at || w.created).toLocaleDateString('ar-SA')}</span>
+          ${w.plan?.intent ? `<span>🎯 ${escHtml(w.plan.intent)}</span>` : ''}
+        </div>
+        <div class="wf-detail-plan">${escHtml(JSON.stringify(w.plan, null, 2))}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          ${w.status === 'PENDING' ? `
+            <button class="op-btn op-btn-primary" onclick="approveWorkflow('${w.id}')">✅ اعتماد</button>
+            <button class="op-btn op-btn-danger" onclick="rejectWorkflow('${w.id}')">❌ رفض</button>
+          ` : ''}
+          ${w.status === 'APPROVED' || w.status === 'FAILED' ? `
+            <button class="op-btn op-btn-primary" onclick="runWorkflow('${w.id}')">▶️ تشغيل</button>
+          ` : ''}
+          <button class="op-btn op-btn-secondary" onclick="viewWorkflowDetail('${w.id}')">👁️ تفاصيل</button>
+        </div>
+        ${w.result ? `<div style="margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:6px;font-size:.82rem">${escHtml(typeof w.result === 'string' ? w.result : JSON.stringify(w.result).slice(0, 300))}</div>` : ''}
+        ${w.error ? `<div style="margin-top:8px;color:#ef4444;font-size:.82rem">❌ ${escHtml(w.error)}</div>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:40px">❌ فشل تحميل سير العمل: ${e.message}</div>`;
+  }
+}
+
+async function createWorkflow() {
+  const request = document.getElementById('wfNewRequest').value.trim();
+  if (!request) { showToast('الرجاء إدخال طلب', 'warning'); return; }
+  const resultDiv = document.getElementById('wfCreateResult');
+  resultDiv.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:12px">⏳ جاري إنشاء سير العمل...</div>';
+  try {
+    const data = await apiPost('/api/workflows', { request });
+    resultDiv.innerHTML = `
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:var(--radius);padding:12px;margin-top:8px">
+        <div style="font-weight:600;margin-bottom:4px">✅ تم إنشاء سير العمل</div>
+        <div style="font-size:.85rem;color:var(--text2)">🆔 ${data.workflow_id ? data.workflow_id.slice(0, 8) + '...' : '—'} • الحالة: ${data.status || '—'}</div>
+        ${data.result ? `<div style="margin-top:6px;font-size:.82rem;background:var(--bg);padding:8px;border-radius:4px">${escHtml(typeof data.result === 'string' ? data.result.slice(0, 500) : JSON.stringify(data.result).slice(0, 500))}</div>` : ''}
+        ${data.error ? `<div style="margin-top:6px;color:#ef4444;font-size:.82rem">❌ ${escHtml(data.error)}</div>` : ''}
+      </div>`;
+    document.getElementById('wfNewRequest').value = '';
+    switchWfTab('list');
+    loadWorkflows();
+  } catch (e) {
+    resultDiv.innerHTML = `<div style="color:#ef4444;font-size:.85rem;padding:12px">❌ ${e.message}</div>`;
+  }
+}
+
+async function approveWorkflow(id) {
+  try {
+    const data = await apiPost('/api/workflows/' + id + '/approve', {});
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('تم اعتماد سير العمل', 'success');
+    loadWorkflows();
+  } catch (e) { showToast('فشل الاعتماد: ' + e.message, 'error'); }
+}
+
+async function rejectWorkflow(id) {
+  if (!(await showConfirm('رفض سير العمل', 'رفض سير العمل هذا؟', { type: 'danger', dangerLabel: 'رفض' }))) return;
+  try {
+    await apiPost('/api/workflows/' + id + '/reject', { reason: 'رفض من قبل المستخدم' });
+    showToast('تم رفض سير العمل', 'success');
+    loadWorkflows();
+  } catch (e) { showToast('فشل الرفض: ' + e.message, 'error'); }
+}
+
+async function runWorkflow(id) {
+  try {
+    const data = await apiPost('/api/workflows/' + id + '/run', {});
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('تم تشغيل سير العمل', 'success');
+    loadWorkflows();
+  } catch (e) { showToast('فشل التشغيل: ' + e.message, 'error'); }
+}
+
+async function viewWorkflowDetail(id) {
+  switchWfTab('detail');
+  const detailDiv = document.getElementById('wfDetailView');
+  detailDiv.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:12px">⏳ جاري التحميل...</div>';
+  try {
+    const w = await apiGet('/api/workflows/' + id);
+    detailDiv.innerHTML = `
+      <button class="op-btn op-btn-secondary" onclick="switchWfTab('list')" style="margin-bottom:12px">← العودة</button>
+      <div class="wf-card">
+        <h3>تفاصيل سير العمل</h3>
+        <div class="wf-meta" style="margin:6px 0">
+          <span>🆔 ${w.id}</span>
+          <span class="wf-status ${(w.status || '').toLowerCase()}">${escHtml(w.status)}</span>
+          <span>🕐 ${new Date(w.created_at || w.created).toLocaleString('ar-SA')}</span>
+          ${w.updated_at ? `<span>🔄 ${new Date(w.updated_at).toLocaleString('ar-SA')}</span>` : ''}
+        </div>
+        <div style="font-weight:600;margin:8px 0 4px">الخطة</div>
+        <div class="wf-detail-plan">${escHtml(JSON.stringify(w.plan, null, 2))}</div>
+        ${w.result ? `<div style="font-weight:600;margin:8px 0 4px">النتيجة</div><div class="wf-detail-plan">${escHtml(typeof w.result === 'string' ? w.result : JSON.stringify(w.result, null, 2))}</div>` : ''}
+        ${w.error ? `<div style="font-weight:600;margin:8px 0 4px;color:#ef4444">الخطأ</div><div class="wf-detail-plan" style="color:#ef4444">${escHtml(w.error)}</div>` : ''}
+        <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+          ${w.status === 'PENDING' ? `
+            <button class="op-btn op-btn-primary" onclick="approveWorkflow('${w.id}')">✅ اعتماد</button>
+            <button class="op-btn op-btn-danger" onclick="rejectWorkflow('${w.id}')">❌ رفض</button>
+          ` : ''}
+          ${w.status === 'APPROVED' || w.status === 'FAILED' ? `
+            <button class="op-btn op-btn-primary" onclick="runWorkflow('${w.id}')">▶️ تشغيل</button>
+          ` : ''}
+        </div>
+      </div>`;
+  } catch (e) {
+    detailDiv.innerHTML = `<div style="color:#ef4444">❌ ${e.message}</div>`;
+  }
+}
+
+// ===== ARTIFACTS API =====
+let artState = { tab: 'list', artifacts: [] };
+
+function switchArtTab(tab) {
+  artState.tab = tab;
+  document.querySelectorAll('[data-artab]').forEach(el => el.classList.toggle('active', el.dataset.artab === tab));
+  document.querySelectorAll('#artifactsBody .op-section').forEach(el => el.classList.remove('active'));
+  const section = document.getElementById('artSection' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (section) section.classList.add('active');
+  if (tab === 'list') loadArtifacts();
+}
+
+async function loadArtifacts() {
+  const list = document.getElementById('artListView');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">جاري التحميل...</div>';
+  try {
+    const data = await apiGet('/api/artifacts');
+    artState.artifacts = data.artifacts || [];
+    if (artState.artifacts.length === 0) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:40px">لا توجد قطع أثرية بعد. استخدم الدردشة لإنشاء تقارير، عروض، أو Carousels.</div>';
+      return;
+    }
+    list.innerHTML = artState.artifacts.map(a => {
+      const type = (a.type || a.artifact_type || 'unknown').toLowerCase();
+      return `<div class="art-card" onclick="previewArtifact('${a.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>${escHtml(a.title || a.name || 'قطعة ' + a.id.slice(0, 8))}</h3>
+          <span class="art-type-badge ${type}">${escHtml(type)}</span>
+        </div>
+        <div class="art-meta">
+          <span>🆔 ${a.id.slice(0, 8)}...</span>
+          <span>🕐 ${new Date(a.created_at || a.created).toLocaleDateString('ar-SA')}</span>
+          ${a.workflow_id ? `<span>🔗 سير عمل: ${a.workflow_id.slice(0, 8)}...</span>` : ''}
+          ${a.status ? `<span class="wf-status ${(a.status || '').toLowerCase()}">${escHtml(a.status)}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="op-btn op-btn-secondary" onclick="event.stopPropagation(); previewArtifact('${a.id}')">👁️ معاينة</button>
+          <button class="op-btn op-btn-danger" onclick="event.stopPropagation(); deleteArtifact('${a.id}')">🗑 حذف</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:40px">❌ فشل تحميل القطع: ${e.message}</div>`;
+  }
+}
+
+async function previewArtifact(id) {
+  switchArtTab('preview');
+  const sel = document.getElementById('artPreviewSelect');
+  const content = document.getElementById('artPreviewContent');
+  content.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:12px">⏳ جاري التحميل...</div>';
+  if (sel) sel.value = id;
+  try {
+    const [meta, renderHtml] = await Promise.all([
+      apiGet('/api/artifacts/' + id),
+      apiGet('/api/artifacts/' + id + '/render').catch(() => null),
+    ]);
+    content.innerHTML = `
+      <div class="research-form-card">
+        <div style="font-weight:600;margin-bottom:8px">${escHtml(meta.title || meta.name || 'قطعة')}</div>
+        <div class="art-meta" style="margin-bottom:8px">
+          <span class="art-type-badge ${(meta.type || '').toLowerCase()}">${escHtml(meta.type)}</span>
+          <span>🕐 ${new Date(meta.created_at || meta.created).toLocaleString('ar-SA')}</span>
+          ${meta.workflow_id ? `<span>🔗 ${meta.workflow_id.slice(0, 8)}</span>` : ''}
+        </div>
+        ${renderHtml ? `<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:500px;overflow-y:auto"><iframe srcdoc="${escHtml(JSON.stringify(renderHtml)).replace(/"/g, '&quot;')}" style="width:100%;height:400px;border:none"></iframe></div>` : '<div style="color:var(--text3);font-size:.85rem">لا توجد معاينة متاحة</div>'}
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div style="color:#ef4444;font-size:.85rem">❌ ${e.message}</div>`;
+  }
+}
+
+async function loadArtifactPreview(id) {
+  if (!id) return;
+  await previewArtifact(id);
+}
+
+async function deleteArtifact(id) {
+  if (!(await showConfirm('حذف القطعة الأثرية', 'حذف هذه القطعة الأثرية؟', { type: 'danger' }))) return;
+  try {
+    await apiDelete('/api/artifacts/' + id);
+    showToast('تم حذف القطعة الأثرية', 'success');
+    loadArtifacts();
+  } catch (e) { showToast('فشل الحذف: ' + e.message, 'error'); }
+}
+
+// ===== RESEARCH API =====
+let researchState = { modes: [], styles: [] };
+
+async function loadResearchModes() {
+  const styleSel = document.getElementById('researchStyle');
+  try {
+    const [modeData, styleData] = await Promise.all([
+      apiGet('/api/research/modes'),
+      apiGet('/api/research/styles'),
+    ]);
+    researchState.modes = modeData.modes || ['standard', 'quick', 'deep'];
+    researchState.styles = styleData.styles || styleData.citation_styles || ['APA', 'MLA', 'IEEE', 'Chicago', 'Vancouver'];
+    const modeSel = document.getElementById('researchMode');
+    modeSel.innerHTML = researchState.modes.map(m => `<option value="${m}">${escHtml(m)}</option>`).join('');
+    styleSel.innerHTML = researchState.styles.map(s => `<option value="${s}">${escHtml(s)}</option>`).join('');
+  } catch (e) {
+    styleSel.innerHTML = '<option value="APA">APA</option><option value="MLA">MLA</option><option value="IEEE">IEEE</option>';
+  }
+}
+
+async function executeResearch() {
+  const topic = document.getElementById('researchTopic').value.trim();
+  if (!topic) { showToast('الرجاء إدخال موضوع البحث', 'warning'); return; }
+  const mode = document.getElementById('researchMode').value;
+  const style = document.getElementById('researchStyle').value;
+  const resultsDiv = document.getElementById('researchResults');
+  resultsDiv.innerHTML = '<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:30px">⏳ جاري البحث...</div>';
+  try {
+    const data = await apiPost('/api/research', {
+      topic,
+      mode,
+      citation_style: style,
+    });
+    const artifact = data.artifact || data;
+    resultsDiv.innerHTML = `
+      <div class="research-result-card">
+        <h3>${escHtml(artifact.title || 'نتائج البحث')}</h3>
+        ${artifact.synopsis ? `<div class="research-synopsis">${escHtml(artifact.synopsis)}</div>` : ''}
+        ${artifact.summary ? `<div class="research-synopsis">${escHtml(artifact.summary)}</div>` : ''}
+      </div>
+      ${artifact.sources && artifact.sources.length ? `
+        <div class="research-form-card">
+          <h4 style="font-size:.9rem;margin-bottom:8px">📚 المصادر (${artifact.sources.length})</h4>
+          ${artifact.sources.map(s => `
+            <div class="research-source">
+              <div style="font-weight:500">${escHtml(s.title || s.name || 'مصدر')}</div>
+              ${s.url ? `<div style="font-size:.78rem"><a href="${escHtml(s.url)}" target="_blank" style="color:var(--primary)">${escHtml(s.url.slice(0, 80))}</a></div>` : ''}
+              ${s.author ? `<div style="font-size:.78rem;color:var(--text3)">${escHtml(s.author)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      ${artifact.citations ? `<div class="research-form-card"><h4 style="font-size:.9rem;margin-bottom:8px">📝 الاستشهادات</h4><div style="font-size:.82rem;line-height:1.6">${escHtml(typeof artifact.citations === 'string' ? artifact.citations : artifact.citations.join('\n'))}</div></div>` : ''}
+      ${data.error ? `<div style="color:#ef4444;font-size:.85rem;margin-top:8px">❌ ${escHtml(data.error)}</div>` : ''}
+    `;
+  } catch (e) {
+    resultsDiv.innerHTML = `<div style="color:#ef4444;font-size:.85rem;text-align:center;padding:20px">❌ ${e.message}</div>`;
+  }
+}
+
+// ===== CLOSE MODAL ON OVERLAY CLICK =====
+document.getElementById('settingsModal').onclick = function(e) {
+  if (e.target === this) closeSettings();
+};
+document.getElementById('workspaceModal').onclick = function(e) {
+  if (e.target === this) closeWorkspaceModal();
+};
+
+// ===== KEYBOARD SHORTCUT =====
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeSettings();
+    closeWorkspaceModal();
+    if (window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('open')) {
+      toggleSidebar();
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault(); newChat();
+  }
+});
+</script>
+</body>
+</html>
