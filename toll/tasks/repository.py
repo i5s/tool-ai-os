@@ -65,7 +65,7 @@ class TaskRepository:
         return [self._row_to_task(r) for r in rows]
 
     def update_task(self, task_id: str, **fields) -> Optional[Task]:
-        allowed = {"title", "description", "status", "priority", "assigned_agent_id", "completed_at"}
+        allowed = {"title", "description", "status", "priority", "assigned_agent_id", "completed_at", "result", "result_metadata"}
         updates = {k: v for k, v in fields.items() if k in allowed}
         if updates.get("status") in (TaskStatus.COMPLETED.value, TaskStatus.FAILED.value, TaskStatus.CANCELLED.value):
             updates["completed_at"] = datetime.now(timezone.utc).isoformat()
@@ -115,6 +115,8 @@ class TaskRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
             completed_at=row["completed_at"] if "completed_at" in row.keys() else None,
+            result=row["result"] if "result" in row.keys() else None,
+            result_metadata=row["result_metadata"] if "result_metadata" in row.keys() else None,
         )
 
     @staticmethod

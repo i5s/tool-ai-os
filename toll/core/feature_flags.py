@@ -88,6 +88,13 @@ DEFAULT_FLAGS = {
     "agent_runtime": False,
     "shared_memory": False,
     "task_dispatcher": False,
+    "agent_runtime_bridge": False,
+    "agent_execution_history": False,
+    "agent_council": False,
+    "learning_loop": False,
+    "agent_analytics": False,
+    "agent_reputation": False,
+    "multi_agent_runtime": False,
 }
 
 _PREFIX = "feature_"

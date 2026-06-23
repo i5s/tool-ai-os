@@ -45,6 +45,8 @@ class Task:
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     completed_at: Optional[str] = None
+    result: Optional[str] = None
+    result_metadata: Optional[str] = None
 
 
 @dataclass

@@ -10,6 +10,12 @@ export const views = [
   { id: 'agents',      label: 'فريق AI',          icon: 'groups' },
   { id: 'shared-memory', label: 'الذاكرة المشتركة', icon: 'memory' },
   { id: 'tasks',         label: 'المهام',           icon: 'task_alt' },
+  { id: 'executions',    label: 'سجل التنفيذ',      icon: 'history' },
+  { id: 'council',       label: 'المجلس',          icon: 'groups' },
+  { id: 'learning',      label: 'التعلم',          icon: 'school' },
+  { id: 'analytics',     label: 'التحليلات',       icon: 'analytics' },
+  { id: 'reputation',    label: 'السمعة',          icon: 'verified_user' },
+  { id: 'runtime',       label: 'الوقت الحقيقي',    icon: 'smart_toy' },
   { id: 'settings',    label: 'الإعدادات',        icon: 'settings' },
 ]
 

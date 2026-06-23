@@ -276,15 +276,146 @@
   - `web/src/components/TasksPanel.svelte` — Tasks page with lifecycle management and event log
   - `tests/tasks/test_tasks.py` — 14 passing tests covering CRUD, lifecycle transitions, events, feature flag
 
+### Sprint X-3.5 — Agent Runtime Bridge MVP
+- **Goal**: Prove that a real agent can execute a task from inside TOOL
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/agents/adapter.py`, `toll/agents/adapters/hermes.py`, `toll/agents/adapter_factory.py` — AgentAdapter ABC + Hermes CLI adapter
+  - `api/routers/tasks.py` — added `POST /api/tasks/{id}/execute` endpoint
+  - `toll/model/migrations/0019_task_result.sql` — additive `result`, `result_metadata` columns on tasks
+  - `toll/tasks/models.py`, `toll/tasks/repository.py` — result fields
+  - Feature flag: `agent_runtime_bridge` (False by default)
+  - `tests/tasks/test_execution.py` — 5 tests covering happy path, missing agent, wrong status, shared memory, feature flag
+
+### Sprint X-3.6 — Agent Execution History MVP
+- **Goal**: Complete execution tracking for all agent runs; foundation for future Council, Learning Loop, Reputation
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/executions/` — models (AgentExecution), repository, service
+  - `api/routers/executions.py` — 4 endpoints (`/api/executions`, `/api/executions/{id}`, `/api/agents/{id}/executions`, `/api/tasks/{id}/executions`)
+  - `api/routers/tasks.py` — execution tracked automatically on `POST /api/tasks/{id}/execute`
+  - `toll/model/migrations/0020_agent_execution_history.sql` — `agent_executions` table + indexes
+  - Feature flag: `agent_execution_history` (False by default)
+  - `web/src/components/ExecutionsPanel.svelte` — Execution history table with filters
+  - `tests/executions/test_executions.py` — 7 tests
+- **Coverage**: start, complete, fail, duration, task linkage, agent linkage, feature flag
+
+### Sprint X-4 — Agent Council MVP
+- **Goal**: First multi-agent decision system; allow multiple agents to discuss tasks, submit proposals, vote, and produce a final decision stored in Shared Memory
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/council/` — models (CouncilSession, CouncilMember, CouncilVote, CouncilDecision), repository, service
+  - `api/routers/council.py` — 6 endpoints (`/api/council` list/create, `/api/council/{id}` detail, `/api/council/{id}/vote` submit, `/api/council/{id}/finalize` compute decision, `/api/council/{id}/decision` fetch)
+  - `toll/model/migrations/0021_agent_council.sql` — `council_sessions`, `council_members`, `council_votes`, `council_decisions` tables + indexes
+  - Decision strategies: **majority** (tally approve/reject) and **consensus** (unanimous approval required; NULL winner on failure)
+  - Initial agent pool restricted to **Hermes** and **OpenCode**
+  - Shared Memory integration: on finalization creates `type=decision` block with summary, rationale, vote summary
+  - Feature flag: `agent_council` (False by default)
+  - `web/src/components/CouncilPanel.svelte` — Council UI with sessions, members, votes, decision display
+- **Coverage**: session creation, member management, voting, majority strategy, consensus strategy, decision creation, memory integration, feature flag
+
+### Sprint X-5 — Learning Loop MVP
+- **Goal**: Transform TOOL from a system that executes tasks into a system that learns from tasks
+- **Status**: Complete
+- **Key Deliverables**:
+  - `toll/learning/` — models (LearningEntry, LearningFeedback), repository, service
+  - `api/routers/learning.py` — 6 endpoints (`/api/learning` list/create, `/api/learning/{id}` fetch, `/api/learning/{id}/useful`, `/api/learning/{id}/ignored`, `/api/learning/{id}/incorrect`)
+  - `toll/model/migrations/0022_learning_loop.sql` — `learning_entries`, `learning_feedback` tables + indexes
+  - Runtime integration: after execution completes, automatically records learning entry via `LearningService.record_execution_learning()`
+  - Runtime integration: after council finalization, automatically records learning entry via `LearningService.record_council_learning()`
+  - Shared Memory integration: `create_learning()` automatically creates `type=lesson` memory blocks
+  - Feature flag: `learning_loop` (False by default)
+  - `web/src/components/LearningPanel.svelte` — Learning UI with lessons, source type, agent, confidence, feedback buttons
+| **Coverage**: create learning, execution integration, council integration, memory integration, feedback useful/ignored/incorrect, feature flag
+
+### Sprint X-5.5 — Agent Analytics MVP
+| **Goal**: Generate measurable performance metrics from existing execution, council, and learning data without changing agent behavior
+| **Status**: Complete
+| **Key Deliverables**:
+  - `toll/analytics/` — models (AgentMetrics), service
+  - `api/routers/analytics.py` — 3 endpoints (`/api/analytics/agents` list, `/api/analytics/agents/top` ranking, `/api/analytics/agents/{id}` detail)
+  - Metrics: total_executions, successful_executions, failed_executions, success_rate, average_duration_ms, council_participation_count, learning_entries_created
+  - No new tables — reuses `agents`, `agent_executions`, `council_members`, `learning_entries`
+  - `web/src/components/AnalyticsPanel.svelte` — Analytics UI with success rate, avg duration, executions, council participation, learning entries
+  - Feature flag: `agent_analytics` (False by default)
+| **Coverage**: metrics calculation, success rate, duration calculation, ranking order, feature flag behavior
+
+### Sprint X-6 — Reputation Engine MVP
+| **Goal**: Automatically score agents based on real performance data without changing behavior
+| **Status**: Complete
+| **Key Deliverables**:
+  - `toll/reputation/` — models (`AgentReputation`), repository, service
+  - `api/routers/reputation.py` — 4 endpoints (`GET /api/reputation` list, `GET /api/reputation/{id}` detail, `POST /api/reputation/recalculate_all` recalculate, `GET /api/reputation/leaderboard` top-N)
+  - `toll/model/migrations/0023_agent_reputation.sql` — `agent_reputation` table
+  - Scoring: quality_score (execution success rate), speed_score (avg duration), reliability_score (quality*speed weight), learning_score (feedback ratio), council_score (participation+wins), reputation_score (weighted combination)
+  - Recommended rank: leader/deputy/advisor/worker based on score thresholds (0.9/0.7/0.4)
+  - No auto-promotion — rank recommendation only
+  - `web/src/components/ReputationPanel.svelte` — Reputation UI showing scores and recommended rank
+  - Feature flag: `agent_reputation` (False by default)
+| **Coverage**: reputation calculation, leaderboard ordering, score weighting, feature flag behavior
+
+### Sprint X-7 — Multi-Agent Runtime MVP
+| **Goal**: Transform TOOL from a single-agent execution system into a true multi-agent execution platform
+| **Status**: Complete
+| **Key Deliverables**:
+  - `toll/runtime/` — models (`RuntimeJob`, `RuntimeAssignment`, `RuntimeResult`, `RuntimeMemory`), repository, service
+  - `api/routers/runtime.py` — 5 endpoints (`GET /api/runtime/jobs` list, `POST /api/runtime/jobs` create, `GET /api/runtime/jobs/{id}` detail, `POST /api/runtime/jobs/{id}/execute` run, `GET /api/runtime/jobs/{id}/results` results)
+  - `toll/model/migrations/0024_multi_agent_runtime.sql` — `runtime_jobs`, `runtime_assignments`, `runtime_results`, `runtime_memory` tables
+  - Execution flow: create job → auto-assign (default to Hermes) → execute parallel → merge results → finalize
+  - Shared memory integration: merged result stored in `runtime_memory`
+  - `web/src/components/RuntimePanel.svelte` — Runtime UI showing jobs, status, assignments, results
+  - Feature flag: `multi_agent_runtime` (False by default)
+| **Coverage**: job creation, task splitting, assignment creation, agent assignment, execution flow, merge flow, memory integration, feature flag behavior
+
+### Sprint X-7.5 — Real Agent Connectivity
+| **Goal**: Replace all simulated runtime execution with real agent execution for Hermes and OpenCode, with OpenDesign deferred until adapter exists
+| **Status**: Complete
+| **Key Deliverables**:
+  - Removed simulated result generation from `RuntimeService.execute_assignments()`
+  - Hermes: real CLI execution via `HermesAdapter.execute()` — timeout raised to 300s
+  - OpenCode: real CLI execution via `OpenCodeProvider.ask()` (async sync wrapper)
+  - OpenDesign: no adapter registered; explicit error if assigned
+  - Execution history auto-created per assignment via `ExecutionService.start_execution()` + `complete_execution()`/`fail_execution()`
+  - Learning auto-recorded via `LearningService.record_execution_learning()`
+  - Reputation auto-refreshed via `ReputationService.refresh_agent_reputation()`
+| **Proof**: `proof_runtime.py` against isolated SQLite DB showing:
+  - `runtime_jobs`: status=completed, merged_result contains real Hermes Arabic output
+  - `runtime_assignments`: status=completed, real `execution_id` FK
+  - `runtime_results`: real `result` text + metadata `{"returncode": 0}`
+  - `agent_executions`: status=completed, duration_ms=13787, stdout with real Hermes response
+  - `learning_entries`: source_type=execution, lesson=real stdout
+  - `agent_reputation`: quality_score=1.0, recommended_rank=advisor
+| **Coverage**: real CLI execution, failure path, execution history linkage, learning linkage, reputation linkage, feature flag behavior
+
+### Sprint X-7.6 — Bring OpenCode Online
+| **Goal**: Enable real OpenCode execution inside Runtime, alongside Hermes
+| **Status**: Complete
+| **Key Deliverables**:
+  - OpenCode binary detected at `/Users/S3EED/.opencode/bin/opencode` (v1.17.7)
+  - `toll/core/settings.py` default `opencode_bin = ~/.opencode/bin/opencode`
+  - `api/routers/health.py` — `/api/health/agents` lists availability for Hermes + OpenCode; `/api/health/agents/{name}/test` executes a real test prompt
+  - `RuntimeService._run_agent()` dispatches to `HermesAdapter` or `OpenCodeProvider` by agent name prefix
+  - OpenCode executed via async `OpenCodeProvider.ask()` wrapped in sync event loop
+  - `proof_opencode.py` proves end-to-end real execution with both agents
+| **Proof**: `proof_opencode.py` isolated SQLite run:
+  - runtime_jobs: 1 completed job
+  - runtime_assignments: 2 completed (Hermes + OpenCode)
+  - runtime_results: 2 real outputs (Hermes Arabic greeting + OpenCode English greeting)
+  - agent_executions: 2 records with duration_ms values
+  - learning_entries: 2 records linked to real executions
+  - agent_reputation: 2 refreshed scores
+| **Coverage**: real CLI execution, binary path detection, health endpoint, dual-agent execution, execution history linkage, learning linkage, reputation linkage
+
 ## Current Architecture
 
 ### Core Layer
 - **toll/core/** — Config, Storage, Settings, FeatureFlags, ConnectionManager, RateLimiter, ConversationStore, ProviderRegistry, ProviderSelector
-- **toll/agents/** — Agent Registry (models, repository, service)
-- **toll/shared_memory/** — Shared Knowledge Memory (models, repository, service)
+|- **toll/agents/** — Agent Registry (models, repository, service)
+|- **toll/council/** — Agent Council (models, repository, service)
+|- **toll/shared_memory/** — Shared Knowledge Memory (models, repository, service)
 - **toll/tasks/** — Task Dispatcher (models, repository, service)
 - **toll/ports/** — ABCs for LLM, Search, Research, Settings, Repository
-- **api/** — FastAPI application with 16 routers
+|- **api/** — FastAPI application with 18 routers
 - **cli/** — CLI entry point
 - **bot/** — Telegram bot
 

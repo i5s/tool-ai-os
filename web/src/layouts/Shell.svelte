@@ -4,6 +4,12 @@ import { activeView, views } from '../lib/view.js'
 import AgentsPanel from '../components/AgentsPanel.svelte'
 import SharedMemoryPanel from '../components/SharedMemoryPanel.svelte'
 import TasksPanel from '../components/TasksPanel.svelte'
+import ExecutionsPanel from '../components/ExecutionsPanel.svelte'
+import CouncilPanel from '../components/CouncilPanel.svelte'
+import LearningPanel from '../components/LearningPanel.svelte'
+import AnalyticsPanel from '../components/AnalyticsPanel.svelte'
+import ReputationPanel from '../components/ReputationPanel.svelte'
+import RuntimePanel from '../components/RuntimePanel.svelte'
 
 let sidebarOpen = $state(true)
 
@@ -101,6 +107,18 @@ function handleNavClick(viewId) {
         <SharedMemoryPanel />
       {:else if $activeView === 'tasks'}
         <TasksPanel />
+      {:else if $activeView === 'executions'}
+        <ExecutionsPanel />
+      {:else if $activeView === 'council'}
+        <CouncilPanel />
+      {:else if $activeView === 'learning'}
+        <LearningPanel />
+      {:else if $activeView === 'analytics'}
+        <AnalyticsPanel />
+      {:else if $activeView === 'reputation'}
+        <ReputationPanel />
+      {:else if $activeView === 'runtime'}
+        <RuntimePanel />
       {:else}
         <div class="placeholder-panel">
           <span class="material-symbols-outlined" style="font-size:48px;color:var(--text3)">{views.find(v => v.id === $activeView)?.icon || 'dashboard'}</span>
