@@ -10,6 +10,7 @@ import LearningPanel from '../components/LearningPanel.svelte'
 import AnalyticsPanel from '../components/AnalyticsPanel.svelte'
 import ReputationPanel from '../components/ReputationPanel.svelte'
 import RuntimePanel from '../components/RuntimePanel.svelte'
+import HealthPanel from '../components/HealthPanel.svelte'
 
 let sidebarOpen = $state(true)
 
@@ -119,6 +120,8 @@ function handleNavClick(viewId) {
         <ReputationPanel />
       {:else if $activeView === 'runtime'}
         <RuntimePanel />
+      {:else if $activeView === 'health'}
+        <HealthPanel />
       {:else}
         <div class="placeholder-panel">
           <span class="material-symbols-outlined" style="font-size:48px;color:var(--text3)">{views.find(v => v.id === $activeView)?.icon || 'dashboard'}</span>

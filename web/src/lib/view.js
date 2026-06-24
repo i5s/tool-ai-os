@@ -16,6 +16,7 @@ export const views = [
   { id: 'analytics',     label: 'التحليلات',       icon: 'analytics' },
   { id: 'reputation',    label: 'السمعة',          icon: 'verified_user' },
   { id: 'runtime',       label: 'الوقت الحقيقي',    icon: 'smart_toy' },
+  { id: 'health',        label: 'الصحة',           icon: 'monitoring' },
   { id: 'settings',    label: 'الإعدادات',        icon: 'settings' },
 ]
 
