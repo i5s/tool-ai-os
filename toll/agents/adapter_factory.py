@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from .adapters import HermesAdapter
-from ..adapters.llm.opencode import OpenCodeProvider
+from toll.agents.adapters.hermes import HermesAdapter
+from toll.agents.adapters.opendesign import OpenDesignAdapter
+from toll.adapters.llm.opencode import OpenCodeProvider
 
 
 class AdapterFactory:
@@ -16,5 +17,8 @@ class AdapterFactory:
 
         if adapter_name in {"opencode", "open code"}:
             return OpenCodeProvider()
+
+        if adapter_name in {"opendesign", "open design"}:
+            return OpenDesignAdapter()
 
         raise ValueError(f"No adapter registered for agent: {agent_name!r}")
