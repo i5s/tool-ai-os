@@ -1,0 +1,15 @@
+[Unit]
+Description=TOOL Backend
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/tool
+EnvironmentFile=/opt/tool/.env
+ExecStart=/opt/tool/.venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8001
+Restart=always
+RestartSec=5
+User=tool
+Group=tool
+
+[Install]
+WantedBy=multi-user.target

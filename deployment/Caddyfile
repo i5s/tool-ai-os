@@ -1,0 +1,17 @@
+{
+  admin off
+}
+
+tool.example.com {
+  encode gzip
+  redir https://{host}{uri} permanent
+
+  handle_path /api/* {
+    reverse_proxy 127.0.0.1:8001
+  }
+
+  handle {
+    root * /var/www/tool
+    file_server
+  }
+}
